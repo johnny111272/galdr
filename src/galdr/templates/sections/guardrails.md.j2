@@ -1,0 +1,13 @@
+
+## Guardrails
+
+{% if constraints %}
+{% for rule in constraints.rules %}
+- {{ rule }}
+{% endfor %}
+{% endif %}
+{% if anti_patterns %}
+{% for pattern in anti_patterns.patterns %}
+- {{ pattern }}
+{% endfor %}
+{% endif %}

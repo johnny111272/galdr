@@ -1,0 +1,17 @@
+---
+name: "{{ frontmatter.name }}"
+description: "{{ frontmatter.description }}"
+tools: "{{ frontmatter.tools }}"
+model: "{{ frontmatter.model }}"
+permissionMode: "{{ frontmatter.permission_mode }}"
+{% if frontmatter.hooks %}
+hooks:
+  PreToolUse:
+{% for hook in frontmatter.hooks %}
+  - matcher: {{ hook.matcher }}
+    hooks:
+    - type: command
+      command: {{ hook.command }}
+{% endfor %}
+{% endif %}
+---

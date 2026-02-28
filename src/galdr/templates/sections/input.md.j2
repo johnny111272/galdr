@@ -1,0 +1,29 @@
+
+## Input
+
+{{ input.description }}
+{% if input.parameters %}
+
+The dispatcher provides:
+{% for param in input.parameters %}
+- {{ param.name }}{% if param.type %} ({{ param.type }}){% endif %}{% if not param.required %} (optional){% endif %}{% if param.description %}: {{ param.description }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if input.input_schema %}
+Input validates against: `{{ input.input_schema }}`
+{% endif %}
+{% if input.context_required %}
+
+**Required context:**
+{% for ctx in input.context_required %}
+- **{{ ctx.label }}:** `{{ ctx.path }}`
+{% endfor %}
+{% endif %}
+{% if input.context_available %}
+
+**Available context:**
+{% for ctx in input.context_available %}
+- **{{ ctx.label }}:** `{{ ctx.path }}`
+{% endfor %}
+{% endif %}

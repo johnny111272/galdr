@@ -1,0 +1,20 @@
+
+# {{ identity.title }}
+
+**Purpose:** {{ identity.description }}
+{% if identity.role_identity %}
+
+You are a {{ identity.role_identity }}.
+{% endif %}
+{% if identity.role_description %}
+
+{{ identity.role_description }}
+{% endif %}
+{% if identity.role_responsibility %}
+
+**Your responsibility:** {{ identity.role_responsibility }}
+{% endif %}
+{% if identity.role_expertise %}
+
+**Expertise:** {{ identity.role_expertise | join(', ') }}
+{% endif %}

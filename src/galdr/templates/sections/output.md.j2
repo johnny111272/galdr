@@ -1,0 +1,17 @@
+
+## Output
+
+{% if output.schema_path %}
+**Schema:** `{{ output.schema_path }}`
+{% endif %}
+{% if output.file_path %}
+**Output file:** `{{ output.file_path }}`
+{% elif output.directory_path %}
+**Output directory:** `{{ output.directory_path }}`
+{% endif %}
+
+{{ output.description }}
+{% if output.name_known == 'unknown' and output.name_instruction %}
+
+{{ output.name_instruction }}
+{% endif %}

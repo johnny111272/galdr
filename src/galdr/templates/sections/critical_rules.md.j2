@@ -1,0 +1,22 @@
+
+## Critical Rules
+
+{% if critical_rules.has_output_tool %}
+1. **Use {{ critical_rules.tool_name }} for all output** — never write files directly, never use a different write tool
+{% if critical_rules.batch_size %}
+2. **Batch discipline** — process exactly {{ critical_rules.batch_size }} records per batch (last batch may be smaller)
+3. **Write after every batch** — do not accumulate records in memory across batches
+4. **Fail fast** — if something is wrong, FAILURE immediately with clear reason
+5. **Stay in scope** — process only what you were given, nothing more
+6. **No invention** — if the data doesn't support it, don't produce it
+{% else %}
+2. **Validate before returning** — SUCCESS means all records passed schema validation
+3. **Fail fast** — if something is wrong, FAILURE immediately with clear reason
+4. **Stay in scope** — process only what you were given, nothing more
+5. **No invention** — if the data doesn't support it, don't produce it
+{% endif %}
+{% else %}
+1. **Fail fast** — if something is wrong, FAILURE immediately with clear reason
+2. **Stay in scope** — process only what you were given, nothing more
+3. **No invention** — if the data doesn't support it, don't produce it
+{% endif %}

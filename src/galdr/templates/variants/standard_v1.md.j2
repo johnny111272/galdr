@@ -1,0 +1,38 @@
+{# variant: standard_v1 — ordered section includes #}
+{% include 'sections/frontmatter.md.j2' %}
+{% include 'sections/identity.md.j2' %}
+{% if security_boundary and security_boundary.has_grants %}
+
+---
+{% include 'sections/security_boundary.md.j2' %}
+{% endif %}
+
+---
+{% include 'sections/input.md.j2' %}
+
+---
+{% include 'sections/instructions.md.j2' %}
+{% if examples %}
+
+---
+{% include 'sections/examples.md.j2' %}
+{% endif %}
+
+---
+{% include 'sections/output.md.j2' %}
+{% if writing_output %}
+
+---
+{% include 'sections/writing_output.md.j2' %}
+{% endif %}
+{% if constraints or anti_patterns %}
+
+---
+{% include 'sections/guardrails.md.j2' %}
+{% endif %}
+
+---
+{% include 'sections/return_format.md.j2' %}
+
+---
+{% include 'sections/critical_rules.md.j2' %}

@@ -1,0 +1,15 @@
+
+## Examples
+
+{% for group in examples.groups %}
+### {{ group.group_name }}
+
+{% for entry in group.entries %}
+{% if group.display_headings %}
+#### {{ entry.heading }}
+
+{% endif %}
+{{ entry.text }}
+
+{% endfor %}
+{% endfor %}
