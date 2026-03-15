@@ -1,36 +1,24 @@
-"""Jinja2 template engine for rendering agent markdown files.
+"""Rendering entry points for agent and dispatcher markdown files.
 
-Impure: reads template files from disk via FileSystemLoader.
+Thin adapter: calls pure composition functions with default recipe and style.
 """
 
-from pathlib import Path
-
-import jinja2
-
+from galdr.functions.pure.compose import compose_agent, compose_dispatcher
+from galdr.functions.pure.defaults import default_recipe, default_style
+from galdr.structures.recipe import RecipeConfig
+from galdr.structures.style import StyleConfig
 from galdr.structures.template_context import RenderContext
 
-TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
 
-
-def create_environment() -> jinja2.Environment:
-    """Create a Jinja2 environment loading from the templates directory."""
-    return jinja2.Environment(
-        loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
-        trim_blocks=True,
-        lstrip_blocks=True,
-        keep_trailing_newline=True,
-    )
-
-
-def render_agent(context: RenderContext) -> str:
+def render_agent(
+    context: RenderContext,
+    recipe: RecipeConfig | None = None,
+    style: StyleConfig | None = None,
+) -> str:
     """Render an agent markdown file from a typed context."""
-    env = create_environment()
-    template = env.get_template("variants/standard_v1.md.j2")
-    return template.render(dict(context))
+    return compose_agent(context, recipe or default_recipe(), style or default_style())
 
 
 def render_dispatcher(context: RenderContext) -> str:
     """Render a dispatcher SKILL.md file from a typed context."""
-    env = create_environment()
-    template = env.get_template("skills/dispatch_v1.md.j2")
-    return template.render(dict(context))
+    return compose_dispatcher(context)

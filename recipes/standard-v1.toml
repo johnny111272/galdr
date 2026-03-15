@@ -1,0 +1,44 @@
+name = "standard-v1"
+style = "default"
+
+[[modules]]
+section = "frontmatter"
+
+[[modules]]
+section = "identity"
+
+[[modules]]
+section = "security_boundary"
+
+[[modules]]
+section = "input"
+
+[[modules]]
+section = "instructions"
+
+[[modules]]
+section = "examples"
+
+[[modules]]
+section = "output"
+
+[[modules]]
+section = "writing_output"
+
+[[modules]]
+section = "constraints"
+
+[[modules]]
+section = "anti_patterns"
+
+[[modules]]
+section = "success_criteria"
+
+[[modules]]
+section = "failure_criteria"
+
+[[modules]]
+section = "return_format"
+
+[[modules]]
+section = "critical_rules"

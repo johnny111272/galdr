@@ -1,10 +1,9 @@
 [project]
 name = "galdr"
 version = "0.1.0"
-description = "Template renderer — transforms structured render data into deployable agent artifacts via Jinja2 templates"
+description = "Composition engine — transforms structured render data into deployable agent artifacts"
 requires-python = ">=3.13"
 dependencies = [
-    "jinja2>=3.1",
     "loguru>=0.7",
     "pydantic>=2.0",
 ]

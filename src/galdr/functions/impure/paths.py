@@ -23,3 +23,13 @@ def derive_dispatcher_output_path(input_path: Path, workspace: Path) -> Path:
     """Derive dispatcher output: {workspace}/definitions/staging/dispatch-{agent_name}/SKILL.md."""
     agent_name = input_path.parent.name
     return workspace / "definitions" / "staging" / f"dispatch-{agent_name}" / "SKILL.md"
+
+
+def discover_recipes(batch_dir: Path) -> list[str]:
+    """Find all .toml files in a directory, sorted by name."""
+    return sorted(str(path) for path in batch_dir.glob("*.toml"))
+
+
+def find_galdr_styles_dir() -> Path:
+    """Return the default styles directory in the galdr project root."""
+    return Path(__file__).resolve().parent.parent.parent.parent / "styles"

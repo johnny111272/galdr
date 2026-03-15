@@ -1,0 +1,41 @@
+name = "default"
+
+[frontmatter]
+
+[identity]
+
+[security_boundary]
+heading = "Security Boundary"
+
+[input]
+heading = "Input"
+
+[instructions]
+heading = "Processing"
+
+[examples]
+heading = "Examples"
+
+[output]
+heading = "Output"
+
+[writing_output]
+heading = "Writing Output (MANDATORY)"
+
+[constraints]
+heading = "Constraints"
+
+[anti_patterns]
+heading = "Anti-Patterns"
+
+[success_criteria]
+heading = "Success Criteria"
+
+[failure_criteria]
+heading = "Failure Criteria"
+
+[return_format]
+heading = "Return Format"
+
+[critical_rules]
+heading = "Critical Rules"

@@ -1,7 +1,6 @@
-"""Typed template context models for Jinja2 rendering.
+"""Typed context models for the composition engine.
 
-Each model represents exactly what its corresponding template section
-needs. Jinja2 accesses these via attribute access ({{ obj.field }}).
+Each model represents exactly what its corresponding section renderer needs.
 """
 
 from pydantic import BaseModel, ConfigDict
