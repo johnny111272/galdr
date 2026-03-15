@@ -20,9 +20,11 @@ def reshape_examples(examples: Examples | None) -> ExamplesContext | None:
 
 def reshape_group(group: ExampleGroup) -> ExampleGroupContext:
     """Reshape a single example group."""
+    max_entries = unwrap(group.examples_max_number) if group.examples_max_number is not None else None
     return ExampleGroupContext(
         group_name=unwrap(group.example_group_name),
         display_headings=unwrap(group.example_display_headings),
+        max_entries=max_entries,
         entries=[reshape_entry(entry) for entry in group.example_entries.root],
     )
 

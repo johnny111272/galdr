@@ -91,6 +91,7 @@ class ExampleGroupContext(BaseModel):
     model_config = ConfigDict(frozen=True)
     group_name: str
     display_headings: bool
+    max_entries: int | None = None
     entries: list[ExampleEntryContext]
 
 

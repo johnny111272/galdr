@@ -1,8 +1,8 @@
 # Building a Dispatcher with Galdr
 
-**Status: Planned — not yet implemented.**
-
 A dispatcher is a **skill** (`.claude/skills/dispatch-{name}/SKILL.md`) that orchestrates agent work. It is NOT a subagent — it runs as instructions for the orchestrating Claude when the user types `/dispatch-{name}`.
+
+Dispatchers are mechanistic. They route input to agents, split batches, and report results. They do not contribute to the quality of the agent's output beyond ensuring the correct materials are handed over. For this reason, dispatchers have minimal composition variation compared to agents.
 
 ---
 
@@ -11,12 +11,12 @@ A dispatcher is a **skill** (`.claude/skills/dispatch-{name}/SKILL.md`) that orc
 Three things:
 
 1. **Orchestrate** — receive user intent, route to the right agent with the right input
-2. **Batch split** — divide work into chunks using `split_jsonl_batches`
-3. **Scope discovery** (no-args only) — read filesystem, figure out what's undone/stale, present options via AskUserQuestion
+2. **Batch split** — divide work into chunks using `split_jsonl_batches` (batch mode only)
+3. **Scope discovery** (no-args only) — read filesystem state, figure out what work exists, present options via AskUserQuestion
 
-Everything else is either baked into the agent prompt (galdr already renders instructions, guardrails, output config, write tool, return format, critical rules) or is standard Claude behavior that doesn't need scripting.
+Everything else is baked into the agent prompt. The dispatcher provides only: `subagent_type` + input path + dispatch parameters.
 
-**The Task prompt is thin.** The agent already has everything it needs. The dispatcher provides only: `subagent_type` + input path + dispatch parameters.
+**The Task prompt is thin.** The agent already has everything it needs.
 
 ---
 
@@ -75,9 +75,9 @@ When the user provides specific targets (entry IDs, UIDs), the dispatcher valida
 
 ### No Arguments (Scope Discovery)
 
-The dispatcher reads filesystem state to figure out what work exists, what's done, what's stale. Presents sensible options via AskUserQuestion. The orchestrating Claude handles the actual filesystem inspection — the dispatcher just needs to describe what "done" looks like and what input/output paths to check.
+The dispatcher reads filesystem state to figure out what work exists, what's done, what's stale. Presents sensible options via AskUserQuestion. The orchestrating Claude handles the actual filesystem inspection — the dispatcher describes what "done" looks like and what input/output paths to check.
 
-**Mandate:** Every step uses actual tool calls. Never cached/remembered state.
+**Mandate:** Every step uses actual tool calls. Never cached or remembered state.
 
 ### Batch Splitting
 
@@ -109,6 +109,16 @@ Collect results. Report aggregate summary. Offer to redispatch failures.
 
 ---
 
+## Composition
+
+Dispatchers are rendered from a single template (`templates/skills/dispatch_v1.md.j2`). Unlike agent prompts, dispatchers have minimal composition variation — the structure is mechanical and consistent across all dispatchers.
+
+The dispatcher template reads from the same `RenderContext` as the agent, accessing `dispatcher`, `identity`, `input`, and `output` contexts.
+
+If dispatcher variants become necessary in the future, they follow the same module system as agents: module directories with variant templates, selected by recipe. For now, a single template with batch/full conditionals is sufficient.
+
+---
+
 ## Design Rules
 
 1. **Task prompt is thin.** `subagent_type` + input path + parameters. The agent already knows its job.
@@ -116,22 +126,19 @@ Collect results. Report aggregate summary. Offer to redispatch failures.
 3. **Tempfiles survive failure.** Never cleaned up automatically.
 4. **State is never cached.** Every filesystem check is a real tool call.
 5. **User-invoked only.** `disable-model-invocation: true`.
+6. **Dispatchers don't affect output quality.** Their job is logistics — correct materials to correct agents. Quality comes from the agent prompt.
 
 ---
 
 ## Open Questions
 
-### Q1. Paths Data Source
+### Paths Data Source
 
-The dispatcher data packet carries dispatch config but not a consolidated path listing with labels. The IDEAL_RENDER_FORMAT.md designs a `dispatcher.paths` array composed upstream from security IO, schema, and context paths. Currently unclear whether this is populated in the anthropic render TOML.
+The dispatcher data packet carries dispatch config but not a consolidated path listing with labels. A `dispatcher.paths` array composed upstream from security IO, schema, and context paths would make the Paths section cleaner. Currently unclear whether this is populated in the anthropic render TOML.
 
-### Q2. Scope Discovery Content
+### Scope Discovery Content
 
-The "no arguments" flow is the only part that varies significantly between dispatchers — what constitutes "done", what options to present. Options for how this enters the system:
+The "no arguments" flow varies between dispatchers — what constitutes "done", what options to present. Options:
 - Prose field in the definition describing what "done" looks like
-- Generated skeleton with the mechanical structure, Claude figures out the domain logic
+- Generated skeleton with mechanical structure, Claude figures out domain logic
 - Not generated — hand-written per dispatcher
-
-### Q3. Template Strategy
-
-Single dispatcher template with batch/full conditionals, or separate variants? The dispatcher is simpler than the agent — a single template with a conditional for batch splitting is likely sufficient.

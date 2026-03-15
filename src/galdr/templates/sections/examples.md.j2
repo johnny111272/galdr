@@ -4,7 +4,8 @@
 {% for group in examples.groups %}
 ### {{ group.group_name }}
 
-{% for entry in group.entries %}
+{% set capped_entries = group.entries[:group.max_entries] if group.max_entries else group.entries %}
+{% for entry in capped_entries %}
 {% if group.display_headings %}
 #### {{ entry.heading }}
 

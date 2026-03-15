@@ -6,10 +6,15 @@ from galdr.structures.template_context import DisplayEntryContext, SecurityBound
 
 
 def reshape_security_boundary(security_boundary: SecurityBoundaryAnthropic) -> SecurityBoundaryContext:
-    """Unwrap has_grants and display entries from RootModel wrappers."""
+    """Derive has_grants from display entries presence."""
+    display = (
+        [reshape_display_entry(entry) for entry in security_boundary.display.root]
+        if security_boundary.display is not None
+        else []
+    )
     return SecurityBoundaryContext(
-        has_grants=unwrap(security_boundary.has_grants),
-        display=[reshape_display_entry(entry) for entry in security_boundary.display.root],
+        has_grants=len(display) > 0,
+        display=display,
     )
 
 

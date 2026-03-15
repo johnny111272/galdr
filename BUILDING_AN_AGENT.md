@@ -1,300 +1,328 @@
 # Building an Agent with Galdr
 
-Galdr is the final stage of the bragi agent pipeline. It takes an `anthropic_render.toml` file and renders it into a deployable `.claude/agents/{name}.md` file.
+Galdr is the universal agent composer. It takes a vendor-specific render TOML (e.g., `anthropic_render.toml`) and composes it into a deployable agent prompt and companion dispatcher skill.
 
-## Prerequisites
+Galdr is vendor-agnostic. The composition system — modules, recipes, styles — works identically regardless of which vendor format produced the content. Resin level 7 produces a `universal_render.toml` (vendor-agnostic), level 8 fans out for per-vendor resolution. Anthropic is the first implemented target. The architecture supports additional vendor targets without changing the composition layer.
 
-An `anthropic_render.toml` file. This file is produced by the upstream pipeline stages (draupnir + regin) and lives at:
+## Three Axes
+
+Agent rendering has three independent concerns:
+
+1. **Content** — vendor render TOML (e.g., `anthropic_render.toml`) — what the agent knows, does, and produces. This comes from the upstream pipeline (regin) and is never modified by Galdr.
+2. **Composition** — recipe TOML — which modules to include, what order, which structural variant of each module. Controls the shape of the prompt.
+3. **Style** — style TOML — framing language, section headings, tone. Controls how each section is introduced to the LLM.
+
+Content is frozen. Composition and style are the independent variables. Changing one does not affect the others. The recipe and style layer do not know or care which vendor produced the content.
+
+---
+
+## Why Composability Matters
+
+The entire reason for building a template system instead of string concatenation is empirical optimization. Given one vendor render TOML:
+
+- Produce N different agent prompts by varying composition and style
+- Run all N against the same benchmark dataset with the same rubric
+- Measure which prompt structure produces the best agent behavior for the task
+- Iterate on the winning composition
+
+This only works if the content is identical across variants and only the template composition varies. If content and structure are entangled, the experiment is contaminated and results are incomparable.
+
+---
+
+## Modules
+
+Every section of the agent prompt is an independent **module**. Each module is a self-contained Jinja2 template that renders one section from its own data packet. Modules never reach across each other's data.
+
+### Module Directory
 
 ```
-definitions/agents/{agent-name}/anthropic_render.toml
+templates/modules/
+  frontmatter/
+    standard.md.j2
+  identity/
+    standard.md.j2
+  security_boundary/
+    standard.md.j2
+  input/
+    standard.md.j2
+  instructions/
+    standard.md.j2
+  examples/
+    standard.md.j2
+    compact.md.j2
+  output/
+    standard.md.j2
+  writing_output/
+    standard.md.j2
+  constraints/
+    bullets.md.j2
+    prose.md.j2
+    numbered.md.j2
+  anti_patterns/
+    bullets.md.j2
+    stern.md.j2
+  return_format/
+    standard.md.j2
+  critical_rules/
+    standard.md.j2
 ```
 
-The file is TOML, validated against `schemas/agent-anthropic-render.schema.json` by a compiled Rust/PyO3 gate. Python never reads the TOML directly and never does schema validation.
+Each module directory contains one or more **variants** — different structural approaches to rendering the same data. A recipe selects which variant to use for each module. If no variant is specified, the engine falls back to the default for that module.
+
+### Naming Convention
+
+`{section}/{variant-name}.md.j2`
+
+Variant names describe the structural approach:
+
+- `bullets` — bullet list
+- `prose` — paragraph text with framing
+- `numbered` — numbered list
+- `stern` — bullet list with failure-oriented framing
+- `compact` — minimal rendering, fewer headings, limited entries
+- `standard` — the default rendering for this module
+
+Room for further specialization: `prose-collaborative`, `bullets-minimal`, etc.
+
+### Module Independence
+
+Constraints and anti-patterns are **separate modules**, not subsections of a combined guardrails module. This allows:
+
+- Placing them adjacent or apart in the prompt
+- Using different structural variants for each (constraints as numbered, anti-patterns as prose)
+- Including one without the other
+- Testing whether proximity to instructions vs examples affects behavior
+
+Any two modules that have distinct semantic purposes should be separate modules, even if they are often rendered together.
+
+---
+
+## Recipes
+
+A recipe is a TOML file that declares the composition: which modules, what order, which variant, and per-module parameters.
+
+```toml
+name = "prose-verbose-v1"
+style = "stern"
+
+[[modules]]
+section = "frontmatter"
+
+[[modules]]
+section = "identity"
+
+[[modules]]
+section = "constraints"
+variant = "prose"
+
+[[modules]]
+section = "input"
+
+[[modules]]
+section = "instructions"
+
+[[modules]]
+section = "examples"
+max_entries = 3
+display_headings = true
+
+[[modules]]
+section = "anti_patterns"
+variant = "stern"
+
+[[modules]]
+section = "output"
+
+[[modules]]
+section = "writing_output"
+
+[[modules]]
+section = "return_format"
+
+[[modules]]
+section = "critical_rules"
+```
+
+### Recipe Fields
+
+| Field | Scope | Purpose |
+|-------|-------|---------|
+| `name` | recipe | Human-readable identifier, used in output filenames |
+| `style` | recipe | Which style TOML to load for framing language |
+| `section` | per-module | Which module to render |
+| `variant` | per-module | Which template variant (omit for default) |
+| `max_entries` | per-module | Cap on rendered entries (examples) |
+| `display_headings` | per-module | Show/hide per-entry headings (examples) |
+
+Per-module parameters override any defaults from the data. The data carries `display_headings` and `examples_max_number` from the definition — the recipe can override them per composition.
+
+### Locked Positions
+
+Three sections have fixed positions that recipes must respect:
+
+| Section | Position | Why |
+|---------|----------|-----|
+| `frontmatter` | first | YAML block parsed by Claude Code before the LLM sees the prompt |
+| `identity` | second | Establishes who the agent is before any task content |
+| `critical_rules` | last | Recency bias — the last thing read carries extra weight |
+
+Everything between identity and critical_rules is freely reorderable.
+
+---
+
+## Styles
+
+A style is a TOML file that provides framing language and headings for every module in a particular tone.
+
+```toml
+# styles/stern.toml
+name = "stern"
+
+[constraints]
+heading = "Constraints"
+framing = "You must at all times stay within these boundaries:"
+
+[anti_patterns]
+heading = "Anti-Patterns"
+framing = "If you display any of the below traits you are *actively failing*:"
+
+[instructions]
+heading = "Processing"
+framing = ""
+
+[examples]
+heading = "Examples"
+framing = "Study these carefully before beginning work:"
+
+[critical_rules]
+heading = "Critical Rules"
+framing = "These are non-negotiable:"
+```
+
+```toml
+# styles/collaborative.toml
+name = "collaborative"
+
+[constraints]
+heading = "Boundaries"
+framing = "Keep these constraints in mind as you work:"
+
+[anti_patterns]
+heading = "Common Mistakes"
+framing = "Watch out for these — they are easy to fall into:"
+
+[examples]
+heading = "Examples"
+framing = "Here are some examples to guide your approach:"
+
+[critical_rules]
+heading = "Final Reminders"
+framing = "Before you begin, remember:"
+```
+
+The style is selected by the recipe's `style` field. Templates access style data as `{{ style.heading }}` and `{{ style.framing }}`.
+
+### Style vs Variant
+
+These are different concerns:
+
+- **Variant** = structural choice — bullets, prose, numbered, compact
+- **Style** = textual choice — headings, framing language, tone
+
+A `prose` variant with a `stern` style produces different output than a `prose` variant with a `collaborative` style. The variant controls shape. The style controls voice.
+
+---
 
 ## Running Galdr
 
 ```bash
-# Render to definitions/staging/{agent-name}.md (default)
 cd tools/galdr
-uv run python -m galdr.cli path/to/anthropic_render.toml
 
-# Render to a specific output path
-uv run python -m galdr.cli path/to/anthropic_render.toml -o path/to/output.md
+# Default recipe (backward compatible)
+uv run python -m galdr.cli path/to/vendor_render.toml
 
-# Preview to stdout without writing
-uv run python -m galdr.cli path/to/anthropic_render.toml --check
+# With a specific recipe
+uv run python -m galdr.cli path/to/vendor_render.toml --recipe recipes/prose-verbose.toml
+
+# Benchmark set: render all recipes in a directory
+uv run python -m galdr.cli path/to/vendor_render.toml --recipe-batch recipes/benchmark-set/
+
+# Preview to stdout
+uv run python -m galdr.cli path/to/vendor_render.toml --recipe recipes/stern.toml --check
 ```
 
-Workspace root is auto-detected by walking parent directories until finding `schemas/` + `definitions/` as siblings. Override with `--workspace`.
-
----
-
-## Sections
-
-Every rendered agent prompt is assembled from independent sections. Each section has its own Jinja2 template and its own data packet extracted from the `anthropic_render.toml` input. Sections never reach across each other's data.
-
-### Frontmatter
-
-YAML metadata block consumed by Claude Code's agent system, not by the LLM.
-
-| Field | Source |
-|-------|--------|
-| `name` | Agent display name |
-| `description` | One-line purpose |
-| `tools` | Comma-separated tool list (Read, Write, Bash, etc.) |
-| `model` | Resolved model name (haiku, sonnet, opus) |
-| `permissionMode` | Always `bypassPermissions` |
-| `hooks` | PreToolUse hook commands per tool matcher |
-
-Hooks are the security enforcement mechanism. Each hook maps a tool (Read, Write, Bash, etc.) to a validation command that checks whether the agent's file access stays within its declared boundaries.
-
-**Always present.** Not reorderable (must be first).
-
-### Identity
-
-The opening section. Establishes who the agent is and what it does.
-
-| Field | Purpose |
-|-------|---------|
-| `title` | H1 heading |
-| `description` | One-line purpose statement ("Purpose: ...") |
-| `role_identity` | What the agent is ("semantic quality assessor") |
-| `role_description` | Expanded context (nullable) |
-| `role_expertise` | Skill areas as comma-separated list (nullable) |
-| `role_responsibility` | Core mandate sentence |
-
-**Always present.** Not reorderable (must follow frontmatter).
-
-### Security Boundary
-
-Tells the agent what file operations are permitted. Agents run under `bypassPermissions` with hook enforcement. This section documents the allowed operations so the agent does not waste turns attempting blocked actions.
-
-| Field | Purpose |
-|-------|---------|
-| `has_grants` | Whether any explicit grants exist |
-| `display` | Array of `{path, tools}` entries showing what is allowed where |
-
-Each display entry is a workspace-relative path paired with the tools/commands permitted there. Example: `Read: ./schemas` means the Read tool is allowed on files under `schemas/`.
-
-**Present when `has_grants` is true.** Reorderable.
-
-### Input
-
-Describes what the agent receives and how.
-
-| Field | Purpose |
-|-------|---------|
-| `description` | What the input contains ("JSONL tempfile of embedding targets") |
-| `format` | Data format (text, json, jsonl) |
-| `delivery` | How the input arrives (tempfile, inline, file, directory) |
-| `input_schema` | Path to schema the input validates against (nullable) |
-| `parameters` | Dispatcher-provided parameters with name, type, required (nullable) |
-| `context_required` | Reference resources the agent must read (nullable) |
-| `context_available` | Reference resources available but not mandatory (nullable) |
-
-**Always present.** Reorderable.
-
-### Instructions (rendered as "Processing")
-
-The core work definition. Contains ordered steps that tell the agent what to do.
-
-| Field | Purpose |
-|-------|---------|
-| `steps` | Array of `{mode, text}` entries |
-
-Each step has a `mode` (deterministic or probabilistic) and `text` (the actual instruction content). The text often contains its own markdown headings. The template renders each step's text in order without adding structure — instruction structure is author-controlled.
-
-`mode` is carried in the data for future template sophistication (framing deterministic steps more imperatively) but is not used in v1 rendering.
-
-**Always present.** Reorderable.
-
-### Examples
-
-Concrete demonstrations of expected behavior. Organized into named groups.
-
-| Field | Purpose |
-|-------|---------|
-| `groups` | Array of example groups |
-
-Each group has:
-- `group_name` — heading text ("Good Rewrites", "Bad Rewrites")
-- `display_headings` — whether individual entry headings are shown
-- `max_entries` — cap on entries rendered from this group (nullable)
-- `entries` — array of `{heading, text}` examples
-
-**Optional.** Reorderable.
-
-### Output
-
-Describes what the agent produces.
-
-| Field | Purpose |
-|-------|---------|
-| `description` | What the output contains |
-| `format` | Output format (text, json, jsonl, markdown) |
-| `name_known` | Whether the output filename is known (known, partially, unknown) |
-| `name_instruction` | How to determine the filename when not fully known (nullable) |
-| `schema_path` | Path to output schema (nullable) |
-| `file_path` | Exact output file when known (nullable) |
-| `directory_path` | Output directory when file not fully known (nullable) |
-
-**Always present.** Reorderable.
-
-### Writing Output
-
-The mandatory write tool section. Present only when the agent uses a custom validated write tool (not Claude Code's built-in Write). Contains a pre-composed `invocation_display` — the complete bash heredoc command the agent copies to write output.
-
-| Field | Purpose |
-|-------|---------|
-| `invocation_display` | Ready-to-use bash command block |
-
-This block is composed upstream by the anthropic resolver (regin level 8) from enforcement fields. The template renders it as-is.
-
-**Optional** (present only when custom output tool exists). Reorderable.
-
-### Guardrails
-
-Behavioral constraints and known mistakes to avoid. Two sources are merged into a single bullet list:
-
-| Source | Purpose |
-|--------|---------|
-| `constraints` | MUST/NEVER rules ("MUST validate every record") |
-| `anti_patterns` | Known failure modes ("Do not batch-summarize from memory") |
-
-Both are arrays of plain strings rendered as bullet items.
-
-**Optional** (present when either constraints or anti_patterns exist). Reorderable.
-
-### Return Format
-
-Defines how the agent signals completion.
-
-| Field | Purpose |
-|-------|---------|
-| `mode` | Return type (status, status-metrics, metrics-output, output) |
-| `status_instruction` | How to report status (nullable) |
-| `metrics_instruction` | How to report metrics (nullable) |
-| `output_instruction` | How to report output (nullable) |
-| `success_criteria` | What constitutes success, with evidence items (nullable) |
-| `failure_criteria` | What constitutes failure, with evidence items (nullable) |
-
-When mode includes "status", the template renders the SUCCESS/FAILURE block.
-
-**Always present.** Reorderable.
-
-### Critical Rules
-
-Final emphasis — the non-negotiable rules. Content varies based on whether the agent has a custom output tool:
-
-| Field | Purpose |
-|-------|---------|
-| `has_output_tool` | Whether a custom write tool exists |
-| `tool_name` | Name of the write tool (nullable) |
-| `batch_size` | Records per batch for batch writers (nullable) |
-
-When `has_output_tool` is true, rules include tool discipline and batch discipline. When false, rules are limited to fail-fast, stay-in-scope, and no-invention.
-
-**Always present.** Not reorderable (must be last body section).
-
----
-
-## Standard Template Order
-
-The default variant (`standard_v1`) renders sections in this order:
-
-```
-1. frontmatter          (locked — must be first)
-2. identity             (locked — must follow frontmatter)
-   ---
-3. security_boundary    (if has_grants)
-   ---
-4. input
-   ---
-5. instructions
-   ---
-6. examples             (if present)
-   ---
-7. output
-   ---
-8. writing_output       (if present)
-   ---
-9. guardrails           (if constraints or anti_patterns exist)
-   ---
-10. return_format
-    ---
-11. critical_rules      (locked — must be last)
-```
-
-Horizontal rules (`---`) separate sections visually.
-
----
-
-## Section Reordering and A/B Testing
-
-### How Ordering is Controlled
-
-Section order is controlled by the **variant template**. Each variant is a Jinja2 file in `templates/variants/` that includes section templates in a specific order. To test a different order, create a new variant.
-
-For example, `standard_v1.md.j2` includes sections in the order above. A hypothetical `examples_first_v1.md.j2` could move examples before instructions.
-
-### Locked Positions
-
-Three sections have fixed positions:
-
-| Section | Position | Why |
-|---------|----------|-----|
-| frontmatter | First | YAML block parsed by Claude Code before the LLM sees the prompt |
-| identity | Second | Establishes who the agent is before any task content |
-| critical_rules | Last | Final emphasis — recency bias means the last thing read carries extra weight |
-
-### Reorderable Sections
-
-Everything between identity and critical_rules can be reordered:
-
-- **security_boundary** — could move after input (learn what you can do after learning what you receive)
-- **input** — could move before or after security boundary
-- **instructions** — could move after examples (see examples before reading instructions)
-- **examples** — could move before instructions (learn by example first)
-- **output** — could move closer to writing_output
-- **writing_output** — could follow immediately after output or after guardrails
-- **guardrails** — could move before instructions (set constraints before giving directions)
-- **return_format** — could move earlier if success/failure criteria are important context
-
-### A/B Testing Surfaces
-
-Beyond section order, templates expose these testing surfaces:
-
-| Surface | What Varies | Where |
-|---------|-------------|-------|
-| Section order | Which information appears first | Variant template |
-| Identity framing | "You are a..." vs "Your role is..." vs leading with responsibility | `identity.md.j2` |
-| Guardrail separation | Constraints and anti-patterns as one list vs separate headed lists | `guardrails.md.j2` |
-| Example count | How many examples rendered from a larger bank | `max_entries` in data |
-| Example headings | Show/hide per-entry headings within groups | `display_headings` in data |
-| Instruction framing | Deterministic steps as imperatives vs probabilistic as guidance | `instructions.md.j2` |
-
-### Creating a New Variant
-
-1. Copy `templates/variants/standard_v1.md.j2`
-2. Reorder the `{% include %}` lines
-3. Keep frontmatter first, identity second, critical_rules last
-4. Name it descriptively: `guardrails_early_v1.md.j2`, `examples_first_v1.md.j2`
-5. Update `engine.py` to select the variant (currently hardcoded to `standard_v1`)
+The input file can be any vendor render TOML (e.g., `anthropic_render.toml`). Output goes to `definitions/staging/`. When using `--recipe-batch`, each output is suffixed with the recipe name for disambiguation.
 
 ---
 
 ## Pipeline Architecture
 
 ```
-anthropic_render.toml
-  → gate_anthropic_render_input (Rust/PyO3: reads TOML, validates schema, returns JSON)
-    → Pydantic models (frozen, generated from schema)
-      → reshape functions (pure: explicit field selection per section)
-        → RenderContext (frozen Pydantic model with all section contexts)
-          → Jinja2 variant template (includes section templates)
-            → rendered markdown string
-              → writer (writes to disk)
+vendor_render.toml     (content — e.g., anthropic_render.toml)
+recipe.toml            (composition)
+style.toml             (framing)
+    │
+    ▼
+vendor gate (Rust/PyO3: reads TOML, validates against vendor schema, returns JSON)
+    │
+    ▼
+Pydantic models (frozen, generated from schema)
+    │
+    ▼
+reshape functions (pure: content → per-module data packets)
+    │
+    ▼
+recipe engine (reads recipe, resolves module variants, loads style)
+    │
+    ▼
+Jinja2 renders each module with its data packet + style context
+    │
+    ▼
+assembled markdown string
+    │
+    ▼
+writer (disk)
 ```
 
-Key principle: **boilerplate lives in templates, not in definition data.** The definition carries only the raw content insertions each section needs. Standard language ("This agent operates under bypassPermissions...") is baked into templates.
+Key principle: **boilerplate lives in templates, not in definition data.** The definition carries only the raw content insertions each section needs. Standard language, framing, and section structure are owned by the template + style layer.
+
+---
+
+## Design Rules
+
+1. **Content and composition are separate.** The vendor render TOML is never modified by Galdr. It is read-only input.
+2. **Modules are independent.** Each module renders from its own data packet. No cross-module data access.
+3. **Recipes are declarative.** A recipe is a TOML manifest, not executable code. The engine interprets it.
+4. **Styles are complete.** A style file provides entries for every module. No partial styles.
+5. **Per-module parameters override data defaults.** The recipe is the authority on composition choices.
+6. **Locked positions are enforced.** The engine validates that frontmatter is first, identity is second, critical_rules is last.
+7. **Gate validates, Pydantic types, templates render.** Three layers, no overlap.
+8. **Reshape is the explicit mapping layer.** Schema field names to template field names, every selection visible.
+9. **Frozen models everywhere.** `ConfigDict(frozen=True)` on every model.
+10. **IO lives in impure boundary only.** `gates.py`, `loader.py`, `engine.py`, `writer.py` are the only files that touch the filesystem.
+
+---
+
+## What NOT to Do
+
+1. **Do not read TOML directly in Python.** The Nornir gate handles TOML parsing and schema validation. Galdr receives validated JSON.
+2. **Do not validate data in Python.** The gate validates against JSON Schema. Pydantic models provide typed access. No third layer.
+3. **Do not put IO outside the impure boundary.** Four files touch the filesystem. Everything else is pure.
+4. **Do not inline boilerplate in definition data.** Standard language belongs in templates and styles.
+5. **Do not entangle content and composition.** If changing a template requires changing the TOML, the boundary is broken.
+6. **Do not silently drop fields in reshape functions.** Every field the data carries must either flow through to the template context or be explicitly documented as unused.
+7. **Do not fabricate data in Galdr.** Galdr renders what it receives. If data is missing, the upstream pipeline is responsible — Galdr does not invent defaults, derive fields, or compose strings.
+
+---
+
+## Current State
+
+The module system, recipe engine, and style registry described above are the target architecture. The current implementation uses a single monolithic variant template (`standard_v1.md.j2`) with hardcoded section includes. Migration path:
+
+1. Split existing section templates into module directories
+2. Implement recipe loading and module resolution in the engine
+3. Implement style loading and injection into template context
+4. Create a default recipe that reproduces current `standard_v1` output
+5. Build additional recipes and styles for benchmarking
+
+The reshape functions, gate integration, and pure/impure boundary are already in place and do not change.

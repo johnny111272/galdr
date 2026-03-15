@@ -26,13 +26,11 @@ def render_agent(context: RenderContext) -> str:
     """Render an agent markdown file from a typed context."""
     env = create_environment()
     template = env.get_template("variants/standard_v1.md.j2")
-    template_vars = {field: getattr(context, field) for field in RenderContext.model_fields}
-    return template.render(template_vars)
+    return template.render(dict(context))
 
 
 def render_dispatcher(context: RenderContext) -> str:
     """Render a dispatcher SKILL.md file from a typed context."""
     env = create_environment()
     template = env.get_template("skills/dispatch_v1.md.j2")
-    template_vars = {field: getattr(context, field) for field in RenderContext.model_fields}
-    return template.render(template_vars)
+    return template.render(dict(context))
