@@ -1,0 +1,96 @@
+# SECURITY_BOUNDARY -- TOML Extraction
+
+## structure.toml
+```toml
+[security_boundary]
+# Whether to fuse workspace_path with path-resolution instruction in a single sentence
+fuse_workspace_path_and_resolver = true
+
+# Whether to render an intro line before display entries
+filesystem_map_intro_visible = true
+
+# Whether to render a preamble between heading and entries
+section_preamble_visible = true
+
+# Whether to render a closing after entries
+section_closing_visible = false
+
+# Whether to include a mediated-access note for empty-display agents
+empty_display_mediated_access_note_visible = true
+
+# Whether to show tool names alongside paths (hooks enforce regardless)
+tool_names_visible = true
+
+# Whether to include per-path semantic annotations
+path_semantic_annotation_visible = false
+
+# Whether to include an explicit read-only/read-write capability hint
+read_only_vs_read_write_hint_visible = false
+
+# Framing paradigm: selects which content posture the section uses
+framing_paradigm = "territory"  # "territory" | "environmental" | "cage"
+```
+**Decisions:**
+
+- `section_closing_visible`: Default false — closing text risks priming "what if I need more access?" thinking.
+- `tool_names_visible`: Open question whether tool names add value given hook enforcement. Default true (conservative).
+
+## content.toml
+```toml
+[security_boundary]
+# Section heading text
+heading = "Your Workspace"
+
+# Workspace path declaration with resolver framing (template)
+workspace_path_declaration = "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
+
+# Intro line before display entries (when enabled)
+filesystem_map_intro = "Your filesystem map:"
+
+# Preamble establishing workspace-to-entries relationship (template, when enabled)
+section_preamble = "All file operations are confined to {{WORKSPACE_PATH}}. Within this workspace, you can access:"
+
+# Closing text after entries (when enabled)
+section_closing = "If your task requires access to a path not listed above, report this in your return status."
+
+# Mediated-access note for empty-display agents (template, when enabled)
+empty_display_mediated_access_note = "Your access is fully managed -- input arrives through a tempfile and output is written through a dedicated tool."
+
+# Compound entry template for per-entry format (template)
+compound_entry_template = "{{PATH}} -- {{TOOLS}}"
+
+# Grouped format: tool header when all entries share the same tool set (template)
+grouped_tool_header = "Available tools: {{TOOLS}}"
+```
+**Decisions:**
+
+- `heading`: "Your Workspace" — possessive territory framing. Alternative: "Operating Environment".
+- Preamble and intro are distinct: preamble establishes root relationship, intro labels the entry list.
+
+## display.toml
+```toml
+[security_boundary]
+# Path style: "relative_dotslash" | "relative_bare" | "absolute"
+path_style = "relative_dotslash"
+
+# Entry format when tool sets are uniform across all entries: "grouped" | "per_entry"
+uniform_toolset_format = "grouped"
+
+# Entry format when tool sets differ across entries: "per_entry_list" | "per_entry_prose"
+heterogeneous_toolset_format = "per_entry_list"
+
+# Entry count threshold for switching from no-intro to intro-present
+filesystem_map_intro_visibility_threshold = 4
+
+# Entry list marker style (applied by display layer)
+entry_list_format = "bullet"
+```
+**Decisions:**
+
+- `filesystem_map_intro_visibility_threshold`: Interacts with structure toggle — below threshold, intro suppressed regardless of toggle.
+
+## Excluded (invariant rules / bare data)
+
+- **permission_mode_display**: Implementation details (`bypassPermissions`, hook-based) never leak into agent prompts. Always omit.
+- **Path-first ordering**: Tool-first is a defect. Invariant.
+- **Section always renders**: Even empty-display agents get workspace_path. Invariant.
