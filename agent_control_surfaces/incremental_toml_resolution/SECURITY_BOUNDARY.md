@@ -15,20 +15,11 @@ section_preamble_visible = true
 # Whether to render a closing after entries
 section_closing_visible = false
 
-# Whether to include a mediated-access note for empty-display agents
-empty_display_mediated_access_note_visible = true
-
 # Whether to show tool names alongside paths (hooks enforce regardless)
 tool_names_visible = true
 
-# Whether to include per-path semantic annotations
-path_semantic_annotation_visible = false
-
-# Whether to include an explicit read-only/read-write capability hint
-read_only_vs_read_write_hint_visible = false
-
 # Framing paradigm: selects which content posture the section uses
-framing_paradigm = "territory"  # "territory" | "environmental" | "cage"
+framing_variant = "territory"  # "territory" | "environmental" | "cage"
 ```
 **Decisions:**
 
@@ -38,23 +29,26 @@ framing_paradigm = "territory"  # "territory" | "environmental" | "cage"
 ## content.toml
 ```toml
 [security_boundary]
-# Section heading text
-heading = "Your Workspace"
+# Section heading — keyed by framing_variant
+heading_territory = "Your Workspace"
+heading_environmental = "Operating Environment"
+heading_cage = "Permitted Boundaries"
 
-# Workspace path declaration with resolver framing (template)
-workspace_path_declaration = "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
+# Workspace path declaration — keyed by framing_variant
+workspace_path_declaration_territory = "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
+workspace_path_declaration_environmental = "You operate within {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
+workspace_path_declaration_cage = "You are confined to {{WORKSPACE_PATH}}. You cannot access anything outside this path."
 
 # Intro line before display entries (when enabled)
 filesystem_map_intro = "Your filesystem map:"
 
-# Preamble establishing workspace-to-entries relationship (template, when enabled)
-section_preamble = "All file operations are confined to {{WORKSPACE_PATH}}. Within this workspace, you can access:"
+# Preamble — keyed by framing_variant
+section_preamble_territory = "Within this workspace, you can access:"
+section_preamble_environmental = "The following paths are available to you:"
+section_preamble_cage = "You are permitted to access only the following paths:"
 
 # Closing text after entries (when enabled)
 section_closing = "If your task requires access to a path not listed above, report this in your return status."
-
-# Mediated-access note for empty-display agents (template, when enabled)
-empty_display_mediated_access_note = "Your access is fully managed -- input arrives through a tempfile and output is written through a dedicated tool."
 
 # Compound entry template for per-entry format (template)
 compound_entry_template = "{{PATH}} -- {{TOOLS}}"

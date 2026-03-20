@@ -5,28 +5,28 @@
 ```toml
 [return_format]
 # Two-channel model: output goes to files, return carries status signal
-files_vs_status_explanation_visible = true
+files_vs_status_explanation_preamble_visible = true
 
 # Protocol preamble: tokens are machine-parsed, first-position requirement
-token_must_be_first_word_visible = true
+token_must_be_first_word_preamble_visible = true
 
 # Metrics obligation: agents must report all specified metrics
-report_all_metrics_visible = true
+report_all_metrics_postscript_visible = true
 
 # ABORT vs FAILURE semantic distinction (conditional on ABORT in status_instruction)
-abort_vs_failure_distinction_visible = true
+abort_vs_failure_distinction_preamble_visible = true
 
 # Failure honesty: explicit permission to return clean FAILURE
-honest_failure_over_dubious_success_visible = true
+honest_failure_over_dubious_success_preamble_visible = true
 
 # Retroactive orientation: return requirements imply tracking requirements
-track_metrics_as_you_work_visible = true
+track_metrics_as_you_work_postscript_visible = true
 
 # Accuracy clause: report actual metrics, do not fabricate
-do_not_fabricate_metrics_visible = true
+do_not_fabricate_metrics_postscript_visible = true
 
 # Cross-reference to failure_criteria section
-failure_cross_reference_visible = false
+failure_cross_reference_preamble_visible = false
 ```
 
 **Decisions:**
@@ -87,23 +87,11 @@ failure_cross_reference_preamble = "The conditions for failure are defined in yo
 
 ```toml
 [return_format]
-description = "Format selectors for the completion protocol section"
-
-# No display knobs identified for this section.
-# All fragments are prose blocks or verbatim pass-through.
-# The status_instruction is author-provided data, not format-controlled.
-# Token lists are conditional content variants, not format selectors.
+# No display knobs for this section.
 ```
-
-**Decisions:**
-- No format enums, threshold tuples, or joiner strings apply to this section. The section is entirely prose-oriented: protocol framing, obligation statements, permission grants. There are no list-formatted entries that need format selectors (bullet vs inline vs numbered). The status_instruction is verbatim pass-through data. The conditional ABORT branch is handled via content variants (tokens_three vs tokens_two), not display formatting. Metric complexity (1-2 vs 3+) from Analysis A was considered as a potential threshold tuple but the behavioral difference maps to structure toggles (whether track_metrics_as_you_work renders) not display formatting.
 
 ## Excluded (invariant rules / bare data)
 
-- **Silence for absence**: abort_vs_failure_distinction omitted entirely when ABORT not in status_instruction. Not a knob — invariant conditional logic in code.
-- **End-of-prompt placement**: Both analyses agree this section belongs at the end. Placement is architectural, not configurable.
-- **status_instruction verbatim pass-through**: The definition author's status_instruction text is data, not a template knob. It passes through unmodified. No TOML entry.
-- **Heading level**: Rendered at whatever level the section hierarchy dictates. Not a knob.
-- **Sub-block ordering**: token_must_be_first_word before status_instruction before report_all_metrics before honest_failure_over_dubious_success. Converged ordering — invariant in code.
-- **mode="status" gate**: The entire section assumes status mode. Other modes would need a different section entirely. This is a code-level gate, not a TOML toggle.
-- **Cross-section dependency directions**: failure_criteria -> return_format, success_criteria -> return_format, etc. These are architectural relationships enforced by rendering order, not configuration.
+- **Sub-block ordering**: token_must_be_first_word → status_instruction → report_all_metrics → honest_failure_over_dubious_success. Invariant.
+- **status_instruction verbatim pass-through**: Author's status_instruction text is data. Passes through unmodified.
+- **mode="status" gate**: Entire section assumes status mode. Other modes would need a different section entirely.

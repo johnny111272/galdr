@@ -26,6 +26,19 @@ def list_as_numbered(items: list[str]) -> str:
     return "\n".join(f"{i}. {item}" for i, item in enumerate(items, 1))
 
 
+def list_as_prose(items: list[str]) -> str:
+    """Render items as flowing prose. Appends period to items that lack terminal punctuation."""
+    if not items:
+        return ""
+    sentences = []
+    for item in items:
+        if item and item[-1] not in ".!?":
+            sentences.append(item + ".")
+        else:
+            sentences.append(item)
+    return " ".join(sentences)
+
+
 def bold_label(label: str, value: str) -> str:
     """Produce **label:** value."""
     return f"**{label}:** {value}"
@@ -70,6 +83,23 @@ def section_frame(heading_text: str, level: int, framing: str, warning: str, con
         parts.append(warning)
     parts.append(content)
     return "\n\n".join(parts)
+
+
+def structured_entries(
+    entries: list[tuple[str, list[str]]],
+    evidence_mode: str = "standard",
+    evidence_label: str = "Evidence:",
+) -> str:
+    """Render definition + evidence entries. Standard shows evidence, compact shows definitions only."""
+    if not entries:
+        return ""
+    if evidence_mode == "compact":
+        return list_as_bullets([definition for definition, _ in entries])
+    blocks = []
+    for definition, evidence in entries:
+        rendered_evidence = list_as_bullets(evidence)
+        blocks.append(f"{definition}\n\n{evidence_label}\n{rendered_evidence}")
+    return "\n\n".join(blocks)
 
 
 def yaml_frontmatter(fields: dict[str, str]) -> str:

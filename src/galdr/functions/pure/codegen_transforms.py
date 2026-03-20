@@ -1,10 +1,10 @@
 """Pure string transforms for post-processing generated Pydantic modules.
 
 Applied after datamodel-code-generator runs. Each transform fixes a
-specific codegen output issue: unwanted __future__ import, missing
-frozen config, duplicated RootModel constraints.
+specific codegen output issue: unwanted __future__ import, duplicated
+RootModel constraints.
 
-No IO. Pure string -> string.
+No IO. Pure string → string.
 """
 
 import re
@@ -19,14 +19,6 @@ def strip_future_annotations(content: str) -> str:
     marker = "__future__"
     target = f"from {marker} import annotations\n\n"
     return content.replace(target, "")
-
-
-def inject_frozen(content: str) -> str:
-    """Add frozen=True to all model configs."""
-    return content.replace(
-        "extra='forbid',",
-        "extra='forbid',\n        frozen=True,",
-    )
 
 
 def collect_rootmodel_names(content: str) -> set[str]:
@@ -67,5 +59,5 @@ def strip_redundant_constraints(content: str) -> str:
 def apply_all_transforms(content: str) -> str:
     """Apply all post-generation transforms in sequence."""
     content = strip_future_annotations(content)
-    content = inject_frozen(content)
-    return strip_redundant_constraints(content)
+    content = strip_redundant_constraints(content)
+    return content

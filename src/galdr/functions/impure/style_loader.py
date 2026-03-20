@@ -1,14 +1,23 @@
 """Load and validate style TOML files."""
 
-import tomllib
+import json
 from pathlib import Path
 
-from pydantic import ValidationError
+import gate_galdr_style_input
 
-from galdr.functions.pure.compose import reshape_style_toml, validate_style_sections
-from galdr.functions.pure.defaults import default_style
+from galdr.functions.pure.compose import reshape_style_toml
+from galdr.functions.pure.defaults import default_style, section_style_model
 from galdr.structures.errors import StyleLoadError
-from galdr.structures.style import StyleConfig
+from galdr.structures.style import DispatcherStyle, SectionStyle, StyleConfig
+
+
+def typed_sections(raw_sections: dict[str, dict[str, str]]) -> dict[str, SectionStyle]:
+    """Instantiate typed style models for each section from raw TOML dicts."""
+    result: dict[str, SectionStyle] = {}
+    for section_name, section_data in raw_sections.items():
+        model_class = section_style_model(section_name)
+        result[section_name] = model_class.model_validate(section_data)
+    return result
 
 
 def resolve_style(style_name: str, styles_dir: Path) -> StyleConfig:
@@ -22,24 +31,21 @@ def resolve_style(style_name: str, styles_dir: Path) -> StyleConfig:
 
 
 def load_style(path: str) -> StyleConfig:
-    """Load a style TOML file and return a validated StyleConfig."""
-    try:
-        with open(path, "rb") as fh:
-            parsed_toml = tomllib.load(fh)
-    except tomllib.TOMLDecodeError as err:
-        raise StyleLoadError(f"Invalid TOML in {path}: {err}") from err
+    """Load a style TOML file, validate against schema, return StyleConfig."""
+    result = gate_galdr_style_input.validate(path)
 
-    reshaped = reshape_style_toml(parsed_toml)
+    if not result["ok"]:
+        raise StyleLoadError(f"Style validation failed for {path}: {result['error']['message']}")
 
-    try:
-        style = StyleConfig.model_validate(reshaped)
-    except ValidationError as err:
-        raise StyleLoadError(f"Style validation failed for {path}: {err}") from err
+    parsed = json.loads(result["data"])
+    reshaped = reshape_style_toml(parsed)
 
-    unknown = validate_style_sections(style)
-    if unknown:
-        raise StyleLoadError(
-            f"Unknown section names in {path}: {', '.join(unknown)}"
-        )
+    sections = typed_sections(reshaped.get("sections", {}))
+    dispatcher_data = reshaped.get("dispatcher")
+    dispatcher = DispatcherStyle.model_validate(dispatcher_data) if dispatcher_data else None
 
-    return style
+    return StyleConfig(
+        name=reshaped.get("name", ""),
+        sections=sections,
+        dispatcher=dispatcher,
+    )

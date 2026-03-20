@@ -17,7 +17,21 @@ from galdr.functions.pure.render_sections import (
     render_writing_output,
 )
 from galdr.structures.recipe import ModuleConfig
-from galdr.structures.style import StyleEntry
+from galdr.structures.style import (
+    AntiPatternsStyle,
+    ConstraintsStyle,
+    CriticalRulesStyle,
+    ExamplesStyle,
+    FailureCriteriaStyle,
+    IdentityStyle,
+    InputStyle,
+    InstructionsStyle,
+    OutputStyle,
+    ReturnFormatStyle,
+    SecurityBoundaryStyle,
+    SuccessCriteriaStyle,
+    WritingOutputStyle,
+)
 from galdr.structures.template_context import (
     AntiPatternsContext,
     ConstraintsContext,
@@ -43,7 +57,6 @@ from galdr.structures.template_context import (
 )
 
 DEFAULT_CONFIG = ModuleConfig(section="test")
-DEFAULT_STYLE = StyleEntry()
 
 
 # --- frontmatter ---
@@ -95,7 +108,7 @@ def test_render_identity_all_fields():
         role_responsibility="Extract signal from noise",
         role_expertise=["NLP", "summarization"],
     )
-    result = render_identity(data, DEFAULT_STYLE, DEFAULT_CONFIG)
+    result = render_identity(data, IdentityStyle(), DEFAULT_CONFIG)
     assert result.startswith("# Summary Writer")
     assert "**Purpose:** Writes summaries" in result
     assert "You are a summary extraction specialist." in result
@@ -106,7 +119,7 @@ def test_render_identity_all_fields():
 
 def test_render_identity_minimal():
     data = IdentityContext(title="Agent", description="Does work")
-    result = render_identity(data, DEFAULT_STYLE, DEFAULT_CONFIG)
+    result = render_identity(data, IdentityStyle(), DEFAULT_CONFIG)
     assert "# Agent" in result
     assert "**Purpose:** Does work" in result
     assert "You are a" not in result
@@ -124,8 +137,7 @@ def test_render_security_boundary():
             DisplayEntryContext(path="/other/path", tools=["Bash"]),
         ],
     )
-    style = StyleEntry(heading="Security Boundary")
-    result = render_security_boundary(data, style, DEFAULT_CONFIG)
+    result = render_security_boundary(data, SecurityBoundaryStyle(), DEFAULT_CONFIG)
     assert "## Security Boundary" in result
     assert "**Read, Write:** `/some/path`" in result
     assert "**Bash:** `/other/path`" in result
@@ -145,8 +157,7 @@ def test_render_input_with_parameters():
             ParameterContext(name="mode", type="string", required=False),
         ],
     )
-    style = StyleEntry(heading="Input")
-    result = render_input(data, style, DEFAULT_CONFIG)
+    result = render_input(data, InputStyle(), DEFAULT_CONFIG)
     assert "## Input" in result
     assert "JSONL records" in result
     assert "The dispatcher provides:" in result
@@ -162,8 +173,7 @@ def test_render_input_with_context():
         context_required=[ContextItemContext(label="Schema", path="/schemas/test.json")],
         context_available=[ContextItemContext(label="Docs", path="/docs/guide.md")],
     )
-    style = StyleEntry(heading="Input")
-    result = render_input(data, style, DEFAULT_CONFIG)
+    result = render_input(data, InputStyle(), DEFAULT_CONFIG)
     assert "**Required context:**" in result
     assert "**Schema:** `/schemas/test.json`" in result
     assert "**Available context:**" in result
@@ -177,8 +187,7 @@ def test_render_input_with_schema():
         delivery="inline",
         input_schema="/schemas/input.json",
     )
-    style = StyleEntry(heading="Input")
-    result = render_input(data, style, DEFAULT_CONFIG)
+    result = render_input(data, InputStyle(), DEFAULT_CONFIG)
     assert "Input validates against: `/schemas/input.json`" in result
 
 
@@ -192,8 +201,7 @@ def test_render_instructions():
             InstructionStepContext(mode="mandatory", text="Process each record."),
         ],
     )
-    style = StyleEntry(heading="Processing")
-    result = render_instructions(data, style, DEFAULT_CONFIG)
+    result = render_instructions(data, InstructionsStyle(), DEFAULT_CONFIG)
     assert "## Processing" in result
     assert "Read the input file." in result
     assert "Process each record." in result
@@ -215,8 +223,7 @@ def test_render_examples_with_headings():
             ),
         ],
     )
-    style = StyleEntry(heading="Examples")
-    result = render_examples(data, style, DEFAULT_CONFIG)
+    result = render_examples(data, ExamplesStyle(), DEFAULT_CONFIG)
     assert "## Examples" in result
     assert "### Basic" in result
     assert "#### Example 1" in result
@@ -236,8 +243,7 @@ def test_render_examples_without_headings():
             ),
         ],
     )
-    style = StyleEntry(heading="Examples")
-    result = render_examples(data, style, DEFAULT_CONFIG)
+    result = render_examples(data, ExamplesStyle(), DEFAULT_CONFIG)
     assert "#### Example 1" not in result
     assert "Content one" in result
 
@@ -255,9 +261,8 @@ def test_render_examples_with_cap():
             ),
         ],
     )
-    style = StyleEntry(heading="Examples")
     config = ModuleConfig(section="examples", max_entries=2)
-    result = render_examples(data, style, config)
+    result = render_examples(data, ExamplesStyle(), config)
     assert "Text 0" in result
     assert "Text 1" in result
     assert "Text 2" not in result
@@ -277,8 +282,7 @@ def test_render_examples_data_cap():
             ),
         ],
     )
-    style = StyleEntry(heading="Examples")
-    result = render_examples(data, style, DEFAULT_CONFIG)
+    result = render_examples(data, ExamplesStyle(), DEFAULT_CONFIG)
     assert "First" in result
     assert "Second" not in result
 
@@ -293,8 +297,7 @@ def test_render_output_with_file():
         schema_path="/schemas/output.json",
         file_path="/output/results.jsonl",
     )
-    style = StyleEntry(heading="Output")
-    result = render_output(data, style, DEFAULT_CONFIG)
+    result = render_output(data, OutputStyle(), DEFAULT_CONFIG)
     assert "## Output" in result
     assert "**Schema:** `/schemas/output.json`" in result
     assert "**Output file:** `/output/results.jsonl`" in result
@@ -307,8 +310,7 @@ def test_render_output_with_directory():
         format="jsonl",
         directory_path="/output/interviews",
     )
-    style = StyleEntry(heading="Output")
-    result = render_output(data, style, DEFAULT_CONFIG)
+    result = render_output(data, OutputStyle(), DEFAULT_CONFIG)
     assert "**Output directory:** `/output/interviews`" in result
 
 
@@ -319,8 +321,7 @@ def test_render_output_name_instruction():
         name_known="unknown",
         name_instruction="Name files by their UID.",
     )
-    style = StyleEntry(heading="Output")
-    result = render_output(data, style, DEFAULT_CONFIG)
+    result = render_output(data, OutputStyle(), DEFAULT_CONFIG)
     assert "Name files by their UID." in result
 
 
@@ -329,8 +330,7 @@ def test_render_output_name_instruction():
 
 def test_render_writing_output():
     data = WritingOutputContext(invocation_display="append_records <<'EOF'\n{json_data}\nEOF")
-    style = StyleEntry(heading="Writing Output (MANDATORY)")
-    result = render_writing_output(data, style, DEFAULT_CONFIG)
+    result = render_writing_output(data, WritingOutputStyle(), DEFAULT_CONFIG)
     assert "## Writing Output (MANDATORY)" in result
     assert "```\nappend_records <<'EOF'" in result
 
@@ -340,8 +340,7 @@ def test_render_writing_output():
 
 def test_render_constraints():
     data = ConstraintsContext(rules=["Stay focused", "No hallucination"])
-    style = StyleEntry(heading="Constraints")
-    result = render_constraints(data, style, DEFAULT_CONFIG)
+    result = render_constraints(data, ConstraintsStyle(), DEFAULT_CONFIG)
     assert "### Constraints" in result
     assert "- Stay focused" in result
     assert "- No hallucination" in result
@@ -349,7 +348,7 @@ def test_render_constraints():
 
 def test_render_constraints_with_framing():
     data = ConstraintsContext(rules=["Rule one"])
-    style = StyleEntry(heading="Constraints", framing="You must stay within these boundaries:")
+    style = ConstraintsStyle(framing="You must stay within these boundaries:")
     config = ModuleConfig(section="constraints", framing=True)
     result = render_constraints(data, style, config)
     assert "You must stay within these boundaries:" in result
@@ -361,8 +360,7 @@ def test_render_constraints_with_framing():
 
 def test_render_anti_patterns():
     data = AntiPatternsContext(patterns=["Verbosity", "Hallucination"])
-    style = StyleEntry(heading="Anti-Patterns")
-    result = render_anti_patterns(data, style, DEFAULT_CONFIG)
+    result = render_anti_patterns(data, AntiPatternsStyle(), DEFAULT_CONFIG)
     assert "### Anti-Patterns" in result
     assert "- Verbosity" in result
 
@@ -377,8 +375,7 @@ def test_render_success_criteria():
             evidence=["Output file exists", "Record count matches"],
         ),
     ]
-    style = StyleEntry(heading="Success Criteria")
-    result = render_success_criteria(data, style, DEFAULT_CONFIG)
+    result = render_success_criteria(data, SuccessCriteriaStyle(), DEFAULT_CONFIG)
     assert "### Success Criteria" in result
     assert "All records processed" in result
     assert "Evidence:" in result
@@ -387,7 +384,7 @@ def test_render_success_criteria():
 
 
 def test_render_success_criteria_empty():
-    result = render_success_criteria([], DEFAULT_STYLE, DEFAULT_CONFIG)
+    result = render_success_criteria([], SuccessCriteriaStyle(), DEFAULT_CONFIG)
     assert result == ""
 
 
@@ -401,8 +398,7 @@ def test_render_failure_criteria():
             evidence=["Invalid JSON", "Missing required field"],
         ),
     ]
-    style = StyleEntry(heading="Failure Criteria")
-    result = render_failure_criteria(data, style, DEFAULT_CONFIG)
+    result = render_failure_criteria(data, FailureCriteriaStyle(), DEFAULT_CONFIG)
     assert "### Failure Criteria" in result
     assert "Schema validation fails" in result
     assert "- Invalid JSON" in result
@@ -416,8 +412,7 @@ def test_render_return_format_with_status():
         mode="status",
         status_instruction="Return SUCCESS or FAILURE.",
     )
-    style = StyleEntry(heading="Return Format")
-    result = render_return_format(data, style, DEFAULT_CONFIG)
+    result = render_return_format(data, ReturnFormatStyle(), DEFAULT_CONFIG)
     assert "## Return Format" in result
     assert "On success:" in result
     assert "SUCCESS" in result
@@ -431,8 +426,7 @@ def test_render_return_format_status_metrics():
         mode="status-metrics",
         metrics_instruction="Include record counts.",
     )
-    style = StyleEntry(heading="Return Format")
-    result = render_return_format(data, style, DEFAULT_CONFIG)
+    result = render_return_format(data, ReturnFormatStyle(), DEFAULT_CONFIG)
     assert "On success:" in result
     assert "Include record counts." in result
 
@@ -442,8 +436,7 @@ def test_render_return_format_no_status():
         mode="output",
         output_instruction="Return the processed data.",
     )
-    style = StyleEntry(heading="Return Format")
-    result = render_return_format(data, style, DEFAULT_CONFIG)
+    result = render_return_format(data, ReturnFormatStyle(), DEFAULT_CONFIG)
     assert "On success:" not in result
     assert "Return the processed data." in result
 
@@ -457,8 +450,7 @@ def test_render_critical_rules_with_tool_and_batch():
         tool_name="append_records",
         batch_size=20,
     )
-    style = StyleEntry(heading="Critical Rules")
-    result = render_critical_rules(data, style, DEFAULT_CONFIG)
+    result = render_critical_rules(data, CriticalRulesStyle(), DEFAULT_CONFIG)
     assert "## Critical Rules" in result
     assert "1. **Use append_records for all output**" in result
     assert "2. **Batch discipline** — process exactly 20 records" in result
@@ -473,8 +465,7 @@ def test_render_critical_rules_with_tool_no_batch():
         has_output_tool=True,
         tool_name="write_output",
     )
-    style = StyleEntry(heading="Critical Rules")
-    result = render_critical_rules(data, style, DEFAULT_CONFIG)
+    result = render_critical_rules(data, CriticalRulesStyle(), DEFAULT_CONFIG)
     assert "1. **Use write_output for all output**" in result
     assert "2. **Validate before returning**" in result
     assert "3. **Fail fast**" in result
@@ -483,9 +474,115 @@ def test_render_critical_rules_with_tool_no_batch():
 
 def test_render_critical_rules_no_tool():
     data = CriticalRulesContext(has_output_tool=False)
-    style = StyleEntry(heading="Critical Rules")
-    result = render_critical_rules(data, style, DEFAULT_CONFIG)
+    result = render_critical_rules(data, CriticalRulesStyle(), DEFAULT_CONFIG)
     assert "1. **Fail fast**" in result
     assert "2. **Stay in scope**" in result
     assert "3. **No invention**" in result
     assert "Use " not in result
+
+
+# --- variant dispatch ---
+
+
+def test_render_constraints_numbered():
+    data = ConstraintsContext(rules=["Stay focused", "No hallucination"])
+    config = ModuleConfig(section="constraints", variant="numbered")
+    result = render_constraints(data, ConstraintsStyle(), config)
+    assert "1. Stay focused" in result
+    assert "2. No hallucination" in result
+    assert "- " not in result
+
+
+def test_render_constraints_prose():
+    data = ConstraintsContext(rules=["Stay focused", "No hallucination"])
+    config = ModuleConfig(section="constraints", variant="prose")
+    result = render_constraints(data, ConstraintsStyle(), config)
+    assert "Stay focused." in result
+    assert "No hallucination." in result
+    assert "- " not in result
+    assert "1." not in result
+
+
+def test_render_anti_patterns_numbered():
+    data = AntiPatternsContext(patterns=["Verbosity", "Hallucination"])
+    config = ModuleConfig(section="anti_patterns", variant="numbered")
+    result = render_anti_patterns(data, AntiPatternsStyle(), config)
+    assert "1. Verbosity" in result
+    assert "2. Hallucination" in result
+
+
+def test_render_critical_rules_bullets():
+    data = CriticalRulesContext(has_output_tool=False)
+    config = ModuleConfig(section="critical_rules", variant="bullets")
+    result = render_critical_rules(data, CriticalRulesStyle(), config)
+    assert "- **Fail fast**" in result
+    assert "- **Stay in scope**" in result
+    assert "1." not in result
+
+
+def test_render_instructions_numbered():
+    data = InstructionsContext(
+        steps=[
+            InstructionStepContext(mode="mandatory", text="Read the input file."),
+            InstructionStepContext(mode="mandatory", text="Process each record."),
+        ],
+    )
+    config = ModuleConfig(section="instructions", variant="numbered")
+    result = render_instructions(data, InstructionsStyle(), config)
+    assert "1. Read the input file." in result
+    assert "2. Process each record." in result
+
+
+def test_render_success_criteria_compact():
+    data = [
+        SuccessCriterionContext(
+            definition="All records processed",
+            evidence=["Output file exists", "Record count matches"],
+        ),
+        SuccessCriterionContext(
+            definition="Schema valid",
+            evidence=["No validation errors"],
+        ),
+    ]
+    config = ModuleConfig(section="success_criteria", variant="compact")
+    result = render_success_criteria(data, SuccessCriteriaStyle(), config)
+    assert "- All records processed" in result
+    assert "- Schema valid" in result
+    assert "Evidence:" not in result
+    assert "Output file exists" not in result
+
+
+def test_render_failure_criteria_compact():
+    data = [
+        FailureCriterionContext(
+            definition="Schema validation fails",
+            evidence=["Invalid JSON", "Missing required field"],
+        ),
+    ]
+    config = ModuleConfig(section="failure_criteria", variant="compact")
+    result = render_failure_criteria(data, FailureCriteriaStyle(), config)
+    assert "- Schema validation fails" in result
+    assert "Evidence:" not in result
+    assert "Invalid JSON" not in result
+
+
+# --- field selection ---
+
+
+def test_render_identity_field_selection():
+    data = IdentityContext(
+        title="Summary Writer",
+        description="Writes summaries",
+        role_identity="summary extraction specialist",
+        role_description="You process interviews.",
+        role_responsibility="Extract signal from noise",
+        role_expertise=["NLP", "summarization"],
+    )
+    config = ModuleConfig(section="identity", fields=["title", "description"])
+    result = render_identity(data, IdentityStyle(), config)
+    assert "# Summary Writer" in result
+    assert "**Purpose:** Writes summaries" in result
+    assert "summary extraction specialist" not in result
+    assert "You process interviews." not in result
+    assert "responsibility" not in result
+    assert "Expertise" not in result

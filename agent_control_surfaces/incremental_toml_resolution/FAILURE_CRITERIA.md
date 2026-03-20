@@ -20,12 +20,12 @@ cite_definition_and_evidence_visible = false
 check_before_and_during_visible = false
 
 # Abort behavioral posture: "obligation" = MUST stop (batch/binary evidence), "permission" = correct action is to stop (creative/judgment evidence)
-abort_stance = "obligation"
+abort_stance_variant = "obligation"
 ```
 
 **Decisions:**
 
-- `abort_stance`: Highest-impact variable. "obligation" = MUST stop (batch/binary agents). "permission" = correct action is to stop (creative/judgment agents). Experimental — may need to be conditional on agent type.
+- `abort_stance_variant`: Highest-impact variable. "obligation" = MUST stop (batch/binary agents). "permission" = correct action is to stop (creative/judgment agents). Experimental — may need to be conditional on agent type.
 - `cite_definition_and_evidence_visible`: Off by default — conditional on return_format section existing.
 
 ## content.toml
@@ -36,15 +36,15 @@ abort_stance = "obligation"
 heading = "Abort Conditions"
 
 # Behavioral preamble — the completion-bias override
-preamble_obligation = "The following conditions make valid output impossible. When detected, stop immediately and report. Producing output after detecting a halt condition is worse than producing no output — it is confidently wrong output that downstream consumers will trust."
-preamble_permission = "Not every task can be completed. The following conditions indicate the task cannot produce valid output. The correct action is to stop and report. Attempting to force output past these conditions violates quality standards."
+abort_stance_preamble_obligation = "The following conditions make valid output impossible. When detected, stop immediately and report. Producing output after detecting a halt condition is worse than producing no output — it is confidently wrong output that downstream consumers will trust."
+abort_stance_preamble_permission = "Not every task can be completed. The following conditions indicate the task cannot produce valid output. The correct action is to stop and report. Attempting to force output past these conditions violates quality standards."
 
 # Multi-criteria disjunction statement (rendered only when >1 failure criterion exists)
 any_one_triggers_abort = "Any ONE of the following failure modes is sufficient to trigger abort."
 
 # Label template preceding each failure definition
-definition_label_obligation = "Halt condition:"
-definition_label_permission = "This work cannot succeed when:"
+abort_stance_definition_label_obligation = "Halt condition:"
+abort_stance_definition_label_permission = "This work cannot succeed when:"
 
 # Evidence list introduction
 evidence_preamble = "Any of the following indicates this failure — one signal is sufficient:"
@@ -67,18 +67,18 @@ check_before_and_during = "Check what you can before starting. Monitor the rest 
 ```toml
 [failure_criteria]
 # Evidence item format
-evidence_item_format = "bare"
+evidence_format = "bare"
 
-# Criteria-level disjunction threshold: at >1 criterion, render disjunction statement
-any_one_triggers_abort_threshold = 1
+# No other display knobs — evidence items are bare, disjunction is code-gated on count > 1
 ```
 
 **Decisions:**
 
-- `evidence_item_format`: "bare" — list introduction carries behavioral weight; items just need to be scannable. Alternatives: "conditional" (`IF...THEN`), "signal" (`SIGNAL: ...`).
+- `evidence_format`: "bare" — list introduction carries behavioral weight; items just need to be scannable. Alternatives: "conditional" (`IF...THEN`), "signal" (`SIGNAL: ...`).
 
 ## Excluded (invariant rules / bare data)
 
 - **Failure/success independence**: Never frame failure criteria as the opposite of success criteria. Cross-section invariant.
 - **Failure/guardrails boundary**: Guardrails = course-correct, failure = halt. Architectural invariant.
 - **Sub-block ordering**: Definition before evidence within each criterion. Invariant.
+- **Disjunction statement at count > 1**: Always renders `any_one_triggers_abort` when multiple criteria exist. Invariant.

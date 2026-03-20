@@ -22,7 +22,8 @@ from galdr.functions.pure.render_sections import (
 from typing import Any
 
 from galdr.structures.recipe import ModuleConfig, RecipeConfig
-from galdr.structures.style import StyleConfig, StyleEntry
+from galdr.functions.pure.defaults import default_section_style
+from galdr.structures.style import DispatcherStyle, SectionStyle, StyleConfig
 from galdr.structures.template_context import RenderContext
 
 
@@ -60,18 +61,19 @@ def reshape_style_toml(parsed_toml: dict[str, Any]) -> dict[str, Any]:
     """Reshape flat style TOML into StyleConfig-compatible dict.
 
     Style TOML uses top-level [section_name] tables. StyleConfig expects
-    sections: dict[str, StyleEntry]. This pops 'name' and wraps the rest."""
+    sections: dict[str, SectionStyle]. This pops 'name' and 'dispatcher',
+    wraps the rest as sections."""
     reshaped = dict(parsed_toml)
     name = reshaped.pop("name", None)
-    return {"name": name, "sections": reshaped}
+    dispatcher = reshaped.pop("dispatcher", None)
+    result: dict[str, Any] = {"name": name, "sections": reshaped}
+    if dispatcher is not None:
+        result["dispatcher"] = dispatcher
+    return result
 
 
 def extract_section_data(section: str, context: RenderContext):
     """Extract the data for a section from the render context."""
-    if section == "success_criteria":
-        return context.return_format.success_criteria
-    if section == "failure_criteria":
-        return context.return_format.failure_criteria
     return getattr(context, section, None)
 
 
@@ -107,7 +109,7 @@ def should_skip(section: str, data) -> bool:
     return False
 
 
-def render_module(section: str, data, style: StyleEntry, config: ModuleConfig) -> str:
+def render_module(section: str, data, style: SectionStyle, config: ModuleConfig) -> str:
     """Render a single module via its resolved renderer."""
     renderer = resolve_renderer(section)
     if section == "frontmatter":
@@ -130,7 +132,7 @@ def compose_agent(context: RenderContext, recipe: RecipeConfig, style: StyleConf
         if should_skip(module.section, data):
             continue
 
-        section_style = style.sections.get(module.section, StyleEntry())
+        section_style = style.sections.get(module.section, default_section_style(module.section))
         rendered = render_module(module.section, data, section_style, module)
 
         if not rendered:
@@ -150,29 +152,30 @@ def compose_agent(context: RenderContext, recipe: RecipeConfig, style: StyleConf
     return body + "\n" if body else ""
 
 
-def compose_dispatcher(context: RenderContext) -> str:
+def compose_dispatcher(context: RenderContext, style: StyleConfig | None = None) -> str:
     """Compose a complete dispatcher SKILL.md from context.
 
-    Fixed structure — no recipe or style. The dispatcher template has its own
-    layout that doesn't vary."""
+    Dispatcher structure is fixed — no recipe. Style controls text."""
     dispatcher = context.dispatcher
     if not dispatcher:
         return ""
 
+    dispatcher_style = style.dispatcher if style and style.dispatcher else DispatcherStyle()
+
     frontmatter = render_dispatcher_frontmatter(dispatcher)
     body_sections = [
-        render_dispatcher_header(dispatcher, context.identity.title),
-        render_dispatcher_paths(context),
-        render_dispatcher_with_arguments(dispatcher),
-        render_dispatcher_scope_discovery(dispatcher),
+        render_dispatcher_header(dispatcher, context.identity.title, dispatcher_style),
+        render_dispatcher_paths(context, dispatcher_style),
+        render_dispatcher_with_arguments(dispatcher, dispatcher_style),
+        render_dispatcher_scope_discovery(dispatcher, dispatcher_style),
     ]
 
     if dispatcher.dispatch_mode == "batch":
-        body_sections.append(render_dispatcher_batch_splitting(dispatcher))
+        body_sections.append(render_dispatcher_batch_splitting(dispatcher, dispatcher_style))
 
-    body_sections.append(render_dispatcher_dispatch(dispatcher))
-    body_sections.append(render_dispatcher_post_dispatch(dispatcher))
-    body_sections.append(render_dispatcher_rules())
+    body_sections.append(render_dispatcher_dispatch(dispatcher, dispatcher_style))
+    body_sections.append(render_dispatcher_post_dispatch(dispatcher, dispatcher_style))
+    body_sections.append(render_dispatcher_rules(dispatcher_style))
 
     body = "\n\n---\n\n".join(body_sections)
     return frontmatter + "\n\n" + body + "\n"
@@ -193,28 +196,27 @@ def render_dispatcher_frontmatter(dispatcher) -> str:
     return "\n".join(lines)
 
 
-def render_dispatcher_header(dispatcher, title: str) -> str:
+def render_dispatcher_header(dispatcher, title: str, style: DispatcherStyle) -> str:
     """Render dispatch title and execution mode."""
-    lines = [f"# Dispatch: {title}"]
-    lines.append(f"\n**Agent:** `{dispatcher.agent_name}`")
+    lines = [f"# {style.title_template.format(title=title)}"]
+    lines.append(f"\n**{style.agent_label}** `{dispatcher.agent_name}`")
 
     if dispatcher.dispatch_mode == "batch":
         lines.append(
-            f"**Execution:** BATCH — one agent per batch "
-            f"(~{dispatcher.batch_size[0]}-{dispatcher.batch_size[1]} entries), parallel"
+            f"**{style.execution_batch_template.format(min=dispatcher.batch_size[0], max=dispatcher.batch_size[1])}**"
         )
     else:
-        lines.append("**Execution:** FULL — single agent, all input at once")
+        lines.append(f"**{style.execution_full}**")
 
     return "\n".join(lines)
 
 
-def render_dispatcher_paths(context: RenderContext) -> str:
+def render_dispatcher_paths(context: RenderContext, style: DispatcherStyle) -> str:
     """Render the paths table from input/output context."""
     rows = []
 
     if context.input.input_schema:
-        rows.append(f"| Input schema | `{context.input.input_schema}` |")
+        rows.append(f"| {style.input_schema_label} | `{context.input.input_schema}` |")
     if context.input.context_required:
         for item in context.input.context_required:
             rows.append(f"| {item.label} | `{item.path}` |")
@@ -222,67 +224,67 @@ def render_dispatcher_paths(context: RenderContext) -> str:
         for item in context.input.context_available:
             rows.append(f"| {item.label} | `{item.path}` |")
     if context.output.schema_path:
-        rows.append(f"| Output schema | `{context.output.schema_path}` |")
+        rows.append(f"| {style.output_schema_label} | `{context.output.schema_path}` |")
     if context.output.file_path:
-        rows.append(f"| Output file | `{context.output.file_path}` |")
+        rows.append(f"| {style.output_file_label} | `{context.output.file_path}` |")
     if context.output.directory_path:
-        rows.append(f"| Output directory | `{context.output.directory_path}` |")
+        rows.append(f"| {style.output_directory_label} | `{context.output.directory_path}` |")
     if context.output.output_directory:
-        rows.append(f"| Output directory | `{context.output.output_directory}` |")
+        rows.append(f"| {style.output_directory_label} | `{context.output.output_directory}` |")
 
-    header = "## Paths\n\n| Label | Path |\n|-------|------|"
+    header = f"## {style.paths_heading}\n\n| {style.table_header_label} | {style.table_header_path} |\n|-------|------|"
     return header + "\n" + "\n".join(rows) if rows else header
 
 
-def render_dispatcher_with_arguments(dispatcher) -> str:
+def render_dispatcher_with_arguments(dispatcher, style: DispatcherStyle) -> str:
     """Render the 'With Arguments' section."""
     return (
-        "## With Arguments\n\n"
-        "When the user provides specific targets:\n\n"
-        f"1. Validate the targets exist\n"
-        f"2. Prepare input ({dispatcher.input_format} format)\n"
-        "3. Dispatch directly — skip scope discovery"
+        f"## {style.with_args_heading}\n\n"
+        f"{style.with_args_intro}\n\n"
+        f"1. {style.with_args_step_validate}\n"
+        f"2. {style.with_args_step_prepare.format(input_format=dispatcher.input_format)}\n"
+        f"3. {style.with_args_step_dispatch}"
     )
 
 
-def render_dispatcher_scope_discovery(dispatcher) -> str:
+def render_dispatcher_scope_discovery(dispatcher, style: DispatcherStyle) -> str:
     """Render the 'No Arguments — Scope Discovery' section."""
     delivery_note = " and write to a tempfile" if dispatcher.input_delivery == "tempfile" else ""
     return (
-        "## No Arguments — Scope Discovery\n\n"
-        "**MANDATORY: Every step requires actual tool calls. Never use cached or remembered state.**\n\n"
-        "When the user provides no arguments:\n\n"
-        "1. **Assess state** — Read the filesystem to determine what work exists, what is already done, and what is stale\n"
-        "2. **Present options** — Use AskUserQuestion to present sensible choices to the user\n"
-        f"3. **Prepare input** — Based on user selection, prepare the {dispatcher.input_format} input{delivery_note}\n"
-        "4. Proceed to dispatch"
+        f"## {style.scope_heading}\n\n"
+        f"**{style.scope_mandatory_warning}**\n\n"
+        f"{style.scope_intro}\n\n"
+        f"1. {style.scope_step_assess}\n"
+        f"2. {style.scope_step_present}\n"
+        f"3. {style.scope_step_prepare.format(input_format=dispatcher.input_format, delivery_note=delivery_note)}\n"
+        f"4. {style.scope_step_proceed}"
     )
 
 
-def render_dispatcher_batch_splitting(dispatcher) -> str:
+def render_dispatcher_batch_splitting(dispatcher, style: DispatcherStyle) -> str:
     """Render the 'Batch Splitting' section (only for batch mode)."""
     return (
-        "## Batch Splitting\n\n"
-        "Split input into batches using `split_jsonl_batches`:\n\n"
+        f"## {style.batch_heading}\n\n"
+        f"{style.batch_intro}\n\n"
         "```bash\n"
         f"split_jsonl_batches --input /tmp/input.jsonl --directory {dispatcher.agent_name} \\\n"
         f"  --min-batch {dispatcher.batch_size[0]} --max-batch {dispatcher.batch_size[1]}\n"
         "```\n\n"
-        "This outputs a JSONL manifest to stdout — one line per batch:\n"
+        f"{style.batch_manifest_explanation}\n"
         "```json\n"
         f'{{"batch":1,"file":"/tmp/{dispatcher.agent_name}/batch_001.jsonl","records":50}}\n'
         "```\n\n"
-        "Parse the manifest. Each line is one agent invocation."
+        f"{style.batch_parse_instruction}"
     )
 
 
-def render_dispatcher_dispatch(dispatcher) -> str:
+def render_dispatcher_dispatch(dispatcher, style: DispatcherStyle) -> str:
     """Render the 'Dispatch' section."""
     parts = [
-        "## Dispatch\n",
-        "Launch ALL Agent tool calls in a **SINGLE message** for foreground parallel execution.\n",
-        "**Do NOT use `run_in_background`.** Foreground parallel returns all results in one response.\n",
-        "Each Agent call:",
+        f"## {style.dispatch_heading}\n",
+        f"{style.dispatch_launch_instruction}\n",
+        f"{style.dispatch_background_warning}\n",
+        f"{style.dispatch_call_intro}",
         f"- `subagent_type`: `{dispatcher.agent_name}`",
     ]
 
@@ -299,28 +301,28 @@ def render_dispatcher_dispatch(dispatcher) -> str:
             prompt_line += " + " + " + ".join(f"`{name}`" for name in extra_params)
 
     parts.append(prompt_line)
-    parts.append("Tempfiles survive agent failure — failed batches can be redispatched without regenerating input.")
+    parts.append(style.dispatch_tempfile_note)
 
     return "\n".join(parts)
 
 
-def render_dispatcher_post_dispatch(dispatcher) -> str:
+def render_dispatcher_post_dispatch(dispatcher, style: DispatcherStyle) -> str:
     """Render the 'Post-Dispatch' section."""
     return (
-        "## Post-Dispatch\n\n"
-        "1. Collect all agent results\n"
-        f"2. Report aggregate summary ({dispatcher.return_mode} format)\n"
-        "3. If any agents failed, offer to redispatch the failed batches"
+        f"## {style.post_dispatch_heading}\n\n"
+        f"1. {style.post_dispatch_step_collect}\n"
+        f"2. {style.post_dispatch_step_report.format(return_mode=dispatcher.return_mode)}\n"
+        f"3. {style.post_dispatch_step_redispatch}"
     )
 
 
-def render_dispatcher_rules() -> str:
+def render_dispatcher_rules(style: DispatcherStyle) -> str:
     """Render the 'Rules' section."""
     return (
-        "## Rules\n\n"
-        "1. **Task prompt is thin.** `subagent_type` + input path + parameters. The agent already knows its job.\n"
-        "2. **Foreground parallel.** All Agent calls in a single message. No background dispatch.\n"
-        "3. **Tempfiles survive failure.** Never clean up tempfiles automatically.\n"
-        "4. **State is never cached.** Every filesystem check is a real tool call.\n"
-        "5. **User-invoked only.** This skill runs only when explicitly requested."
+        f"## {style.rules_heading}\n\n"
+        f"1. {style.rule_thin_prompt}\n"
+        f"2. {style.rule_foreground}\n"
+        f"3. {style.rule_tempfiles}\n"
+        f"4. {style.rule_no_cache}\n"
+        f"5. {style.rule_user_invoked}"
     )

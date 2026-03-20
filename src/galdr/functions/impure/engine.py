@@ -19,6 +19,6 @@ def render_agent(
     return compose_agent(context, recipe or default_recipe(), style or default_style())
 
 
-def render_dispatcher(context: RenderContext) -> str:
+def render_dispatcher(context: RenderContext, style: StyleConfig | None = None) -> str:
     """Render a dispatcher SKILL.md file from a typed context."""
-    return compose_dispatcher(context)
+    return compose_dispatcher(context, style or default_style())

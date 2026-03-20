@@ -3,8 +3,11 @@
 ## structure.toml
 ```toml
 [instructions]
+# Heading
+heading_variant = "default"                   # "default" | "procedure" | "steps_with_count"
+
 # Mode infrastructure
-exact_vs_judgment_explanation_visible = true
+exact_vs_judgment_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
 exact_vs_judgment_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
 signal_at_mode_change_boundaries_visible = false
 
@@ -28,22 +31,22 @@ cross_step_dependency_phrases_visible = false
 halfway_point_reminder_visible = false
 
 # Scaffolding tier override (null = auto from step count)
-structural_complexity_override = ""  # "" | "lightweight" | "standard" | "heavy"
+structural_complexity_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
 ```
 **Decisions:**
 
 - `signal_at_mode_change_boundaries_visible`: Off by default — synthesis warns against combining all four mode layers simultaneously.
 - `step_done_when_suffix_visible`: Experimental. `{{completion_condition}}` is template-generated, not author data.
 - `cross_step_dependency_phrases_visible` and `halfway_point_reminder_visible`: Conditional on step count (7+). Lightweight agents don't need these.
-- `structural_complexity_override`: "" = auto from step count. Override when auto-detection makes wrong choice.
+- `structural_complexity_override`: "auto" derives from step count. Override when auto-detection makes wrong choice.
 
 ## content.toml
 ```toml
 [instructions]
 # Heading — selector among variants (moved from structure: this is prose selection, not structural)
-heading = "Instructions"                               # default
-heading_procedure = "Procedure"                        # alternative
-heading_steps_with_count = "Steps ({{step_count}} total)"  # alternative with count
+heading_default = "Instructions"
+heading_procedure = "Procedure"
+heading_steps_with_count = "Steps ({{step_count}} total)"
 
 # Mode preamble
 exact_vs_judgment_explanation_mixed = "Steps marked (exact) must be followed precisely with no interpretation. Steps marked (judgment) require your reasoning and expertise."
@@ -93,8 +96,8 @@ section_closer_exact_vs_judgment_recap = "{{mode_recap_text}} There are no other
 step_header_format = "bold"  # "bold" | "h3"
 
 # Scaffolding tier thresholds
-lightweight_step_count_max = 3
-standard_step_count_max = 7
+scaffolding_tier_boundary_lightweight = 3
+scaffolding_tier_boundary_standard = 7
 
 # Mode recap format in closer
 exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
@@ -102,7 +105,7 @@ exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
 **Decisions:**
 
 - `step_header_format`: Bold is lower visual weight; H3 is strongest structural signal.
-- Tier thresholds drive conditional rendering of preamble components, progress anchors, and dependency signaling.
+- Tier boundaries: ≤3 lightweight, 4-7 standard, 8+ heavy. Drive conditional rendering of preamble components, progress anchors, and dependency signaling.
 
 ## Excluded (invariant rules / bare data)
 

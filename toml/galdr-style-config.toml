@@ -1,0 +1,259 @@
+description = "Complete style: per-section text models + optional dispatcher text."
+required = [
+    "name",
+    "sections",
+]
+title = "StyleConfig"
+type = "object"
+
+["$defs".DispatcherStyle]
+description = "Text for all dispatcher sections."
+title = "DispatcherStyle"
+type = "object"
+
+["$defs".DispatcherStyle.properties.agent_label]
+default = "Agent:"
+title = "Agent Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.batch_heading]
+default = "Batch Splitting"
+title = "Batch Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.batch_intro]
+default = "Split input into batches using `split_jsonl_batches`:"
+title = "Batch Intro"
+type = "string"
+
+["$defs".DispatcherStyle.properties.batch_manifest_explanation]
+default = "This outputs a JSONL manifest to stdout — one line per batch:"
+title = "Batch Manifest Explanation"
+type = "string"
+
+["$defs".DispatcherStyle.properties.batch_parse_instruction]
+default = "Parse the manifest. Each line is one agent invocation."
+title = "Batch Parse Instruction"
+type = "string"
+
+["$defs".DispatcherStyle.properties.dispatch_background_warning]
+default = "**Do NOT use `run_in_background`.** Foreground parallel returns all results in one response."
+title = "Dispatch Background Warning"
+type = "string"
+
+["$defs".DispatcherStyle.properties.dispatch_call_intro]
+default = "Each Agent call:"
+title = "Dispatch Call Intro"
+type = "string"
+
+["$defs".DispatcherStyle.properties.dispatch_heading]
+default = "Dispatch"
+title = "Dispatch Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.dispatch_launch_instruction]
+default = "Launch ALL Agent tool calls in a **SINGLE message** for foreground parallel execution."
+title = "Dispatch Launch Instruction"
+type = "string"
+
+["$defs".DispatcherStyle.properties.dispatch_tempfile_note]
+default = "Tempfiles survive agent failure — failed batches can be redispatched without regenerating input."
+title = "Dispatch Tempfile Note"
+type = "string"
+
+["$defs".DispatcherStyle.properties.execution_batch_template]
+default = "Execution: BATCH — one agent per batch (~{min}-{max} entries), parallel"
+title = "Execution Batch Template"
+type = "string"
+
+["$defs".DispatcherStyle.properties.execution_full]
+default = "Execution: FULL — single agent, all input at once"
+title = "Execution Full"
+type = "string"
+
+["$defs".DispatcherStyle.properties.input_schema_label]
+default = "Input schema"
+title = "Input Schema Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.output_directory_label]
+default = "Output directory"
+title = "Output Directory Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.output_file_label]
+default = "Output file"
+title = "Output File Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.output_schema_label]
+default = "Output schema"
+title = "Output Schema Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.paths_heading]
+default = "Paths"
+title = "Paths Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.post_dispatch_heading]
+default = "Post-Dispatch"
+title = "Post Dispatch Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.post_dispatch_step_collect]
+default = "Collect all agent results"
+title = "Post Dispatch Step Collect"
+type = "string"
+
+["$defs".DispatcherStyle.properties.post_dispatch_step_redispatch]
+default = "If any agents failed, offer to redispatch the failed batches"
+title = "Post Dispatch Step Redispatch"
+type = "string"
+
+["$defs".DispatcherStyle.properties.post_dispatch_step_report]
+default = "Report aggregate summary ({return_mode} format)"
+title = "Post Dispatch Step Report"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rule_foreground]
+default = "**Foreground parallel.** All Agent calls in a single message. No background dispatch."
+title = "Rule Foreground"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rule_no_cache]
+default = "**State is never cached.** Every filesystem check is a real tool call."
+title = "Rule No Cache"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rule_tempfiles]
+default = "**Tempfiles survive failure.** Never clean up tempfiles automatically."
+title = "Rule Tempfiles"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rule_thin_prompt]
+default = "**Task prompt is thin.** `subagent_type` + input path + parameters. The agent already knows its job."
+title = "Rule Thin Prompt"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rule_user_invoked]
+default = "**User-invoked only.** This skill runs only when explicitly requested."
+title = "Rule User Invoked"
+type = "string"
+
+["$defs".DispatcherStyle.properties.rules_heading]
+default = "Rules"
+title = "Rules Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_heading]
+default = "No Arguments — Scope Discovery"
+title = "Scope Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_intro]
+default = "When the user provides no arguments:"
+title = "Scope Intro"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_mandatory_warning]
+default = "MANDATORY: Every step requires actual tool calls. Never use cached or remembered state."
+title = "Scope Mandatory Warning"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_step_assess]
+default = "**Assess state** — Read the filesystem to determine what work exists, what is already done, and what is stale"
+title = "Scope Step Assess"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_step_prepare]
+default = "**Prepare input** — Based on user selection, prepare the {input_format} input{delivery_note}"
+title = "Scope Step Prepare"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_step_present]
+default = "**Present options** — Use AskUserQuestion to present sensible choices to the user"
+title = "Scope Step Present"
+type = "string"
+
+["$defs".DispatcherStyle.properties.scope_step_proceed]
+default = "Proceed to dispatch"
+title = "Scope Step Proceed"
+type = "string"
+
+["$defs".DispatcherStyle.properties.table_header_label]
+default = "Label"
+title = "Table Header Label"
+type = "string"
+
+["$defs".DispatcherStyle.properties.table_header_path]
+default = "Path"
+title = "Table Header Path"
+type = "string"
+
+["$defs".DispatcherStyle.properties.title_template]
+default = "Dispatch: {title}"
+title = "Title Template"
+type = "string"
+
+["$defs".DispatcherStyle.properties.with_args_heading]
+default = "With Arguments"
+title = "With Args Heading"
+type = "string"
+
+["$defs".DispatcherStyle.properties.with_args_intro]
+default = "When the user provides specific targets:"
+title = "With Args Intro"
+type = "string"
+
+["$defs".DispatcherStyle.properties.with_args_step_dispatch]
+default = "Dispatch directly — skip scope discovery"
+title = "With Args Step Dispatch"
+type = "string"
+
+["$defs".DispatcherStyle.properties.with_args_step_prepare]
+default = "Prepare input ({input_format} format)"
+title = "With Args Step Prepare"
+type = "string"
+
+["$defs".DispatcherStyle.properties.with_args_step_validate]
+default = "Validate the targets exist"
+title = "With Args Step Validate"
+type = "string"
+
+["$defs".SectionStyle]
+description = "Base for section styles. Provides heading, framing, and warning."
+title = "SectionStyle"
+type = "object"
+
+["$defs".SectionStyle.properties.framing]
+default = ""
+title = "Framing"
+type = "string"
+
+["$defs".SectionStyle.properties.heading]
+default = ""
+title = "Heading"
+type = "string"
+
+["$defs".SectionStyle.properties.warning]
+default = ""
+title = "Warning"
+type = "string"
+
+[[properties.dispatcher.anyOf]]
+"$ref" = "#/$defs/DispatcherStyle"
+
+[[properties.dispatcher.anyOf]]
+type = "null"
+
+[properties.name]
+title = "Name"
+type = "string"
+
+[properties.sections]
+title = "Sections"
+type = "object"
+
+[properties.sections.additionalProperties]
+"$ref" = "#/$defs/SectionStyle"

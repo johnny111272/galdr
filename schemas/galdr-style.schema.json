@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "galdr-style",
+  "title": "Galdr Style Configuration",
+  "description": "Per-section text configuration for the galdr composition engine. All section fields are optional strings with defaults.",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Style name identifier"
+    },
+    "frontmatter": {
+      "$ref": "#/$defs/base_section",
+      "description": "Frontmatter section style (machine-parsed, base fields only)"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "purpose_label": { "type": "string" },
+        "role_identity_template": { "type": "string" },
+        "responsibility_label": { "type": "string" },
+        "expertise_label": { "type": "string" }
+      }
+    },
+    "security_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "preamble": { "type": "string" },
+        "grants_intro": { "type": "string" },
+        "boundary_warning": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "parameters_intro": { "type": "string" },
+        "schema_intro": { "type": "string" },
+        "required_context_label": { "type": "string" },
+        "available_context_label": { "type": "string" },
+        "optional_suffix": { "type": "string" }
+      }
+    },
+    "instructions": {
+      "$ref": "#/$defs/base_section",
+      "description": "Instructions section style"
+    },
+    "examples": {
+      "$ref": "#/$defs/base_section",
+      "description": "Examples section style"
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "schema_label": { "type": "string" },
+        "file_label": { "type": "string" },
+        "directory_label": { "type": "string" }
+      }
+    },
+    "writing_output": {
+      "$ref": "#/$defs/base_section",
+      "description": "Writing output section style"
+    },
+    "constraints": {
+      "$ref": "#/$defs/base_section",
+      "description": "Constraints section style"
+    },
+    "anti_patterns": {
+      "$ref": "#/$defs/base_section",
+      "description": "Anti-patterns section style"
+    },
+    "success_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "evidence_label": { "type": "string" }
+      }
+    },
+    "failure_criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "evidence_label": { "type": "string" }
+      }
+    },
+    "return_format": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "success_label": { "type": "string" },
+        "failure_label": { "type": "string" },
+        "success_code": { "type": "string" },
+        "failure_code_template": { "type": "string" }
+      }
+    },
+    "critical_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" },
+        "tool_rule": { "type": "string" },
+        "batch_rule": { "type": "string" },
+        "write_after_batch_rule": { "type": "string" },
+        "validate_rule": { "type": "string" },
+        "fail_fast_rule": { "type": "string" },
+        "stay_in_scope_rule": { "type": "string" },
+        "no_invention_rule": { "type": "string" }
+      }
+    },
+    "dispatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title_template": { "type": "string" },
+        "agent_label": { "type": "string" },
+        "execution_batch_template": { "type": "string" },
+        "execution_full": { "type": "string" },
+        "paths_heading": { "type": "string" },
+        "input_schema_label": { "type": "string" },
+        "output_schema_label": { "type": "string" },
+        "output_file_label": { "type": "string" },
+        "output_directory_label": { "type": "string" },
+        "table_header_label": { "type": "string" },
+        "table_header_path": { "type": "string" },
+        "with_args_heading": { "type": "string" },
+        "with_args_intro": { "type": "string" },
+        "with_args_step_validate": { "type": "string" },
+        "with_args_step_prepare": { "type": "string" },
+        "with_args_step_dispatch": { "type": "string" },
+        "scope_heading": { "type": "string" },
+        "scope_mandatory_warning": { "type": "string" },
+        "scope_intro": { "type": "string" },
+        "scope_step_assess": { "type": "string" },
+        "scope_step_present": { "type": "string" },
+        "scope_step_prepare": { "type": "string" },
+        "scope_step_proceed": { "type": "string" },
+        "batch_heading": { "type": "string" },
+        "batch_intro": { "type": "string" },
+        "batch_manifest_explanation": { "type": "string" },
+        "batch_parse_instruction": { "type": "string" },
+        "dispatch_heading": { "type": "string" },
+        "dispatch_launch_instruction": { "type": "string" },
+        "dispatch_background_warning": { "type": "string" },
+        "dispatch_call_intro": { "type": "string" },
+        "dispatch_tempfile_note": { "type": "string" },
+        "post_dispatch_heading": { "type": "string" },
+        "post_dispatch_step_collect": { "type": "string" },
+        "post_dispatch_step_report": { "type": "string" },
+        "post_dispatch_step_redispatch": { "type": "string" },
+        "rules_heading": { "type": "string" },
+        "rule_thin_prompt": { "type": "string" },
+        "rule_foreground": { "type": "string" },
+        "rule_tempfiles": { "type": "string" },
+        "rule_no_cache": { "type": "string" },
+        "rule_user_invoked": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "base_section": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "heading": { "type": "string" },
+        "framing": { "type": "string" },
+        "warning": { "type": "string" }
+      }
+    }
+  }
+}

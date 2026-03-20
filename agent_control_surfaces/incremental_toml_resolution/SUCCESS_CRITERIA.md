@@ -11,19 +11,19 @@ section_visible = true
 max_entries_rendered = 0
 
 # Definition framing paradigm: "declarative_assertion" | "conditional_gate" | "completion_identity"
-definition_framing = "declarative_assertion"
+definition_framing_variant = "declarative_assertion"
 
 # Evidence list framing paradigm: "properties" | "verification_checklist" | "quality_signals"
-evidence_framing = "properties"
+evidence_framing_variant = "properties"
 
 # Hierarchy connector paradigm: "goal_then_criteria" | "proof" | "dual_presentation"
-definition_to_evidence_transition = "goal_then_criteria"
+definition_to_evidence_transition_variant = "goal_then_criteria"
 
-# Evidence type handling paradigm: "graduated_language" | "undifferentiated" | "verification_guidance_suffix"
-evidence_type_handling = "undifferentiated"
+# Evidence type handling: "graduated_language" (per-item type markers) | "undifferentiated" (all items equal)
+evidence_type_handling_variant = "undifferentiated"
 
 # Voice paradigm: "output_centric" | "agent_centric"
-output_vs_agent_voice = "output_centric"
+output_vs_agent_voice_variant = "output_centric"
 
 # Whether to include explicit statement that success != not-failing
 success_failure_independence_statement_visible = true
@@ -37,9 +37,9 @@ multi_criteria_relationship = "independent_blocks"
 
 **Decisions:**
 
-- `definition_framing`: Declarative assertion (safest). Conditional gate (batch agents). Completion identity (creative agents).
-- `evidence_framing`: Properties (general). Verification checklist (mechanical). Quality signals (judgment).
-- `output_vs_agent_voice`: Output-centric promotes objective evaluation. Agent-centric pairs with strong role identity.
+- `definition_framing_variant`: Declarative assertion (safest). Conditional gate (batch agents). Completion identity (creative agents).
+- `evidence_framing_variant`: Properties (general). Verification checklist (mechanical). Quality signals (judgment).
+- `output_vs_agent_voice_variant`: Output-centric promotes objective evaluation. Agent-centric pairs with strong role identity.
 - `multi_criteria_relationship`: "independent_blocks" is the only tested approach; "numbered_dimensions" is speculative.
 
 ## content.toml
@@ -54,9 +54,9 @@ definition_framing_conditional_gate = "This task is complete if and only if: {{D
 definition_framing_completion_identity = "You have succeeded when {{DEFINITION}}"
 
 # Evidence list preamble templates (one per paradigm)
-evidence_preamble_properties = "A successful output has these properties:"
-evidence_preamble_verification_checklist = "Verify each of the following before declaring completion:"
-evidence_preamble_quality_signals = "You know you have succeeded when all of the following are true:"
+evidence_framing_properties = "A successful output has these properties:"
+evidence_framing_verification_checklist = "Verify each of the following before declaring completion:"
+evidence_framing_quality_signals = "You know you have succeeded when all of the following are true:"
 
 # Hierarchy connector templates (one per paradigm)
 definition_to_evidence_transition_goal_then_criteria = "Meeting this standard means:"
@@ -64,10 +64,10 @@ definition_to_evidence_transition_proof = "This is proven by:"
 definition_to_evidence_transition_dual_presentation = "You can confirm this by checking:"
 
 # Verification guidance suffix (appended after evidence list when enabled)
-verification_guidance_suffix_text = "Some conditions above are mechanically verifiable; others require your judgment. Apply appropriate rigor to each."
+verification_guidance_suffix = "Some conditions above are mechanically verifiable; others require your judgment. Apply appropriate rigor to each."
 
 # Success-failure independence statement
-success_failure_independence_statement_text = "Success criteria define quality. Failure criteria define breakage. These are independent evaluations."
+success_failure_independence_statement = "Success criteria define quality. Failure criteria define breakage. These are independent evaluations."
 
 # Multi-criteria transition (between criteria blocks when count > 1)
 multi_criteria_transition = "Additionally:"
@@ -84,15 +84,12 @@ multi_criteria_transition = "Additionally:"
 [success_criteria]
 # Evidence item format: threshold-based on evidence count
 evidence_format_threshold = 5
-evidence_format = ["numbered", "bulleted"]
-
-# Definition presentation: always block (no threshold)
-definition_format = "block"
+evidence_format = ["bulleted", "numbered"]
 ```
 
 **Decisions:**
 
-- `evidence_format`: Numbered at ≤5 (implicit priority ordering). Bulleted above 5 (reduces false priority signaling when ordering is arbitrary).
+- `evidence_format`: Bulleted above 5 (reduces false priority signaling). Numbered at ≤5 (implicit priority ordering).
 
 ## Excluded (invariant rules / bare data)
 

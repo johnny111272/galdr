@@ -1,0 +1,5 @@
+# Schema-to-module mappings for generate_structures.py
+# Galdr only consumes the final anthropic render schema produced by regin.
+
+[checkpoint]
+agent-anthropic-render = "anthropic_render"

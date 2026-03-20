@@ -40,6 +40,7 @@ class DisplayEntryContext(BaseModel):
 
 class SecurityBoundaryContext(BaseModel):
     model_config = ConfigDict(frozen=True)
+    workspace_path: str
     has_grants: bool
     display: list[DisplayEntryContext]
 
@@ -144,14 +145,11 @@ class ReturnFormatContext(BaseModel):
     status_instruction: str | None = None
     metrics_instruction: str | None = None
     output_instruction: str | None = None
-    success_criteria: list[SuccessCriterionContext] | None = None
-    failure_criteria: list[FailureCriterionContext] | None = None
 
 
 class CriticalRulesContext(BaseModel):
     model_config = ConfigDict(frozen=True)
     has_output_tool: bool
-    workspace_path: str | None = None
     tool_name: str | None = None
     batch_size: int | None = None
 
@@ -190,5 +188,7 @@ class RenderContext(BaseModel):
     constraints: ConstraintsContext | None = None
     anti_patterns: AntiPatternsContext | None = None
     return_format: ReturnFormatContext
+    success_criteria: list[SuccessCriterionContext] | None = None
+    failure_criteria: list[FailureCriterionContext] | None = None
     critical_rules: CriticalRulesContext | None = None
     dispatcher: DispatcherContext | None = None

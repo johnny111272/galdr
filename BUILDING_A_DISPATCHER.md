@@ -111,11 +111,9 @@ Collect results. Report aggregate summary. Offer to redispatch failures.
 
 ## Composition
 
-Dispatchers are rendered from a single template (`templates/skills/dispatch_v1.md.j2`). Unlike agent prompts, dispatchers have minimal composition variation — the structure is mechanical and consistent across all dispatchers.
+Dispatchers are mechanistic. Unlike agent prompts — which benefit from style, display, and recipe variation — dispatchers have a fixed structure that is consistent across all dispatchers. They use the same three-axis inputs (data, style, display) but the dispatcher style controls text in the dispatcher sections (header, paths, scope discovery, batch splitting, dispatch, post-dispatch, rules).
 
-The dispatcher template reads from the same `RenderContext` as the agent, accessing `dispatcher`, `identity`, `input`, and `output` contexts.
-
-If dispatcher variants become necessary in the future, they follow the same module system as agents: module directories with variant templates, selected by recipe. For now, a single template with batch/full conditionals is sufficient.
+The dispatcher renderer reads from `data_model.dispatcher` plus dispatcher-specific style fields. If dispatcher variants become necessary in the future, they follow the same pattern as agent sections.
 
 ---
 

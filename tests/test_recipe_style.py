@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from galdr.functions.pure.defaults import default_recipe, default_style
 from galdr.structures.recipe import ModuleConfig, RecipeConfig
-from galdr.structures.style import StyleConfig, StyleEntry
+from galdr.structures.style import ConstraintsStyle, SectionStyle, StyleConfig
 
 
 # --- Model construction ---
@@ -45,8 +45,8 @@ def test_recipe_config_minimal():
     assert len(recipe.modules) == 1
 
 
-def test_style_entry_defaults():
-    entry = StyleEntry()
+def test_section_style_defaults():
+    entry = SectionStyle()
     assert entry.heading == ""
     assert entry.framing == ""
     assert entry.warning == ""
@@ -55,7 +55,7 @@ def test_style_entry_defaults():
 def test_style_config():
     style = StyleConfig(
         name="test",
-        sections={"constraints": StyleEntry(heading="Rules")},
+        sections={"constraints": ConstraintsStyle(heading="Rules")},
     )
     assert style.sections["constraints"].heading == "Rules"
 

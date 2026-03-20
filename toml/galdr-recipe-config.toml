@@ -1,0 +1,78 @@
+description = "Composition recipe: which modules, what order, what settings."
+required = [
+    "name",
+    "modules",
+]
+title = "RecipeConfig"
+type = "object"
+
+["$defs".ModuleConfig]
+description = "Per-module rendering config within a recipe."
+required = ["section"]
+title = "ModuleConfig"
+type = "object"
+
+["$defs".ModuleConfig.properties.display_headings]
+title = "Display Headings"
+
+[["$defs".ModuleConfig.properties.display_headings.anyOf]]
+type = "boolean"
+
+[["$defs".ModuleConfig.properties.display_headings.anyOf]]
+type = "null"
+
+["$defs".ModuleConfig.properties.fields]
+title = "Fields"
+
+[["$defs".ModuleConfig.properties.fields.anyOf]]
+type = "array"
+
+["$defs".ModuleConfig.properties.fields.anyOf.items]
+type = "string"
+
+[["$defs".ModuleConfig.properties.fields.anyOf]]
+type = "null"
+
+["$defs".ModuleConfig.properties.framing]
+default = false
+title = "Framing"
+type = "boolean"
+
+["$defs".ModuleConfig.properties.max_entries]
+title = "Max Entries"
+
+[["$defs".ModuleConfig.properties.max_entries.anyOf]]
+type = "integer"
+
+[["$defs".ModuleConfig.properties.max_entries.anyOf]]
+type = "null"
+
+["$defs".ModuleConfig.properties.section]
+title = "Section"
+type = "string"
+
+["$defs".ModuleConfig.properties.variant]
+default = "standard"
+title = "Variant"
+type = "string"
+
+["$defs".ModuleConfig.properties.warning]
+default = false
+title = "Warning"
+type = "boolean"
+
+[properties.modules]
+title = "Modules"
+type = "array"
+
+[properties.modules.items]
+"$ref" = "#/$defs/ModuleConfig"
+
+[properties.name]
+title = "Name"
+type = "string"
+
+[properties.style]
+default = "default"
+title = "Style"
+type = "string"

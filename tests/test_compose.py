@@ -9,7 +9,7 @@ from galdr.functions.pure.compose import (
 )
 from galdr.functions.pure.defaults import default_recipe, default_style
 from galdr.structures.recipe import ModuleConfig, RecipeConfig
-from galdr.structures.style import StyleConfig, StyleEntry
+from galdr.structures.style import ConstraintsStyle, InputStyle, SectionStyle, StyleConfig
 from galdr.structures.template_context import (
     ConstraintsContext,
     CriticalRulesContext,
@@ -244,7 +244,7 @@ def test_compose_dispatcher_full_mode():
     context = make_dispatcher_context()
     result = compose_dispatcher(context)
     assert "# Dispatch: Test Agent" in result
-    assert "**Execution:** FULL" in result
+    assert "**Execution: FULL" in result
     assert "Batch Splitting" not in result
 
 
@@ -253,7 +253,7 @@ def test_compose_dispatcher_batch_mode():
         dispatch_mode="batch", batch_size=[20, 50]
     )
     result = compose_dispatcher(context)
-    assert "**Execution:** BATCH" in result
+    assert "**Execution: BATCH" in result
     assert "## Batch Splitting" in result
     assert "split_jsonl_batches" in result
     assert "--min-batch 20 --max-batch 50" in result
@@ -372,19 +372,43 @@ def test_validate_style_sections_valid():
     style = StyleConfig(
         name="test",
         sections={
-            "input": StyleEntry(heading="Input"),
-            "constraints": StyleEntry(heading="Rules"),
+            "input": InputStyle(),
+            "constraints": ConstraintsStyle(heading="Rules"),
         },
     )
     assert validate_style_sections(style) == []
+
+
+def test_compose_agent_variant_recipe():
+    """A recipe with variant='numbered' on constraints produces numbered output."""
+    context = make_minimal_context(
+        constraints=ConstraintsContext(rules=["Stay focused", "No hallucination"]),
+    )
+    numbered_recipe = RecipeConfig(
+        name="numbered-test",
+        modules=[
+            ModuleConfig(section="frontmatter"),
+            ModuleConfig(section="identity"),
+            ModuleConfig(section="input"),
+            ModuleConfig(section="instructions"),
+            ModuleConfig(section="constraints", variant="numbered"),
+            ModuleConfig(section="output"),
+            ModuleConfig(section="return_format"),
+        ],
+    )
+    default_result = compose_agent(context, default_recipe(), default_style())
+    variant_result = compose_agent(context, numbered_recipe, default_style())
+    assert "- Stay focused" in default_result
+    assert "1. Stay focused" in variant_result
+    assert "- Stay focused" not in variant_result
 
 
 def test_validate_style_sections_unknown():
     style = StyleConfig(
         name="test",
         sections={
-            "input": StyleEntry(heading="Input"),
-            "constrants": StyleEntry(heading="Rules"),
+            "input": InputStyle(),
+            "constrants": ConstraintsStyle(heading="Rules"),
         },
     )
     unknown = validate_style_sections(style)

@@ -5,8 +5,8 @@
 ```toml
 [input]
 section_preamble_visible = true
-input_completeness_assertion_visible = true
-readiness_checkpoint_visible = true
+input_completeness_postscript_visible = true
+readiness_checkpoint_postscript_visible = true
 context_entry_presentation = "list"
 parameter_presentation = "list"
 ```
@@ -14,7 +14,7 @@ parameter_presentation = "list"
 **Decisions:**
 
 - `section_preamble_visible`: Data-gated (context_required must exist) AND structure-toggled. Both must be true.
-- `readiness_checkpoint_visible`: High-leverage for context-heavy agents, omittable for simple agents.
+- `readiness_checkpoint_postscript_visible`: High-leverage for context-heavy agents, omittable for simple agents.
 
 ## content.toml
 

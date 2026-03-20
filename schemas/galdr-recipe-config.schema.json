@@ -1,0 +1,97 @@
+{
+  "$defs": {
+    "ModuleConfig": {
+      "description": "Per-module rendering config within a recipe.",
+      "properties": {
+        "section": {
+          "title": "Section",
+          "type": "string"
+        },
+        "variant": {
+          "default": "standard",
+          "title": "Variant",
+          "type": "string"
+        },
+        "framing": {
+          "default": false,
+          "title": "Framing",
+          "type": "boolean"
+        },
+        "warning": {
+          "default": false,
+          "title": "Warning",
+          "type": "boolean"
+        },
+        "fields": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fields"
+        },
+        "max_entries": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Entries"
+        },
+        "display_headings": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Headings"
+        }
+      },
+      "required": [
+        "section"
+      ],
+      "title": "ModuleConfig",
+      "type": "object"
+    }
+  },
+  "description": "Composition recipe: which modules, what order, what settings.",
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "style": {
+      "default": "default",
+      "title": "Style",
+      "type": "string"
+    },
+    "modules": {
+      "items": {
+        "$ref": "#/$defs/ModuleConfig"
+      },
+      "title": "Modules",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "modules"
+  ],
+  "title": "RecipeConfig",
+  "type": "object"
+}

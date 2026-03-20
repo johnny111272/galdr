@@ -13,6 +13,7 @@ def reshape_security_boundary(security_boundary: SecurityBoundaryAnthropic) -> S
         else []
     )
     return SecurityBoundaryContext(
+        workspace_path=unwrap(security_boundary.workspace_path),
         has_grants=len(display) > 0,
         display=display,
     )

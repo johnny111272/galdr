@@ -8,8 +8,10 @@ from galdr.functions.pure.render_primitives import (
     join_sections,
     list_as_bullets,
     list_as_numbered,
+    list_as_prose,
     paragraph,
     section_frame,
+    structured_entries,
     yaml_frontmatter,
 )
 
@@ -145,6 +147,65 @@ def test_section_frame_empty_content():
 def test_section_frame_no_heading():
     result = section_frame("", 2, "", "", "content here")
     assert result == "content here"
+
+
+# --- list_as_prose ---
+
+
+def test_prose_multiple():
+    assert list_as_prose(["Stay focused", "No hallucination"]) == "Stay focused. No hallucination."
+
+
+def test_prose_single():
+    assert list_as_prose(["Only this"]) == "Only this."
+
+
+def test_prose_empty():
+    assert list_as_prose([]) == ""
+
+
+def test_prose_preserves_existing_punctuation():
+    assert list_as_prose(["Already done.", "Question?", "Exclaim!"]) == "Already done. Question? Exclaim!"
+
+
+# --- structured_entries ---
+
+
+def test_structured_entries_standard():
+    entries = [
+        ("All records processed", ["Output file exists", "Record count matches"]),
+        ("Schema valid", ["No validation errors"]),
+    ]
+    result = structured_entries(entries)
+    assert "All records processed" in result
+    assert "Evidence:" in result
+    assert "- Output file exists" in result
+    assert "- Record count matches" in result
+    assert "Schema valid" in result
+    assert "- No validation errors" in result
+
+
+def test_structured_entries_compact():
+    entries = [
+        ("All records processed", ["Output file exists"]),
+        ("Schema valid", ["No errors"]),
+    ]
+    result = structured_entries(entries, evidence_mode="compact")
+    assert "- All records processed" in result
+    assert "- Schema valid" in result
+    assert "Evidence:" not in result
+    assert "Output file exists" not in result
+
+
+def test_structured_entries_empty():
+    assert structured_entries([]) == ""
+
+
+def test_structured_entries_single():
+    entries = [("Done", ["File written"])]
+    result = structured_entries(entries)
+    assert "Done" in result
+    assert "- File written" in result
 
 
 # --- yaml_frontmatter ---

@@ -20,17 +20,18 @@ from pathlib import Path
 
 from galdr.functions.pure.codegen_transforms import apply_all_transforms
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PACKAGE_ROOT = Path(__file__).resolve().parent
+WORKSPACE = PACKAGE_ROOT.parents[3]
 SMIDJA = Path.home() / ".ai" / "smidja"
 SCHEMAS_DIR = SMIDJA / "verdandi" / "agent-builder" / "output"
-STRUCTURES_DIR = PROJECT_ROOT / "src" / "galdr" / "structures"
-CONFIG_PATH = PROJECT_ROOT / "codegen_schemas.toml"
+STRUCTURES_DIR = PACKAGE_ROOT / "structures"
+CONFIG_PATH = PACKAGE_ROOT / "codegen_schemas.toml"
 
 
 def main() -> int:
     """Generate all Pydantic model modules from JSON Schemas."""
     config = tomllib.loads(CONFIG_PATH.read_text())
-    all_schemas = config["schemas"]
+    all_schemas = {**config["checkpoint"], **config.get("include", {})}
 
     success = 0
     failed = 0
@@ -43,11 +44,17 @@ def main() -> int:
         output_path = STRUCTURES_DIR / f"{module_name}.py"
         result = subprocess.run(
             [
-                sys.executable, "-m", "datamodel_code_generator",
-                "--input", str(schema_path),
-                "--input-file-type", "jsonschema",
-                "--output", str(output_path),
-                "--output-model-type", "pydantic_v2.BaseModel",
+                sys.executable,
+                "-m",
+                "datamodel_code_generator",
+                "--input",
+                str(schema_path),
+                "--input-file-type",
+                "jsonschema",
+                "--output",
+                str(output_path),
+                "--output-model-type",
+                "pydantic_v2.BaseModel",
                 "--use-standard-collections",
                 "--use-annotated",
                 "--use-title-as-name",

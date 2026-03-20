@@ -29,7 +29,7 @@ Contains:
 - Text blobs — pure prose, no `{{DATA}}` references
 - Template blobs — prose with `{{DATA}}` holes
 
-Every field is a string. Empty string means "don't render this fragment."
+Every field is a string. Visibility is controlled by structure.toml toggles, not by empty strings in content.
 
 ### display.toml
 
@@ -371,6 +371,84 @@ closing_identity_reminder_visible = true
 ```
 
 Note: the override sets `closing_identity_reminder_visible = true` (structure concern — toggle visibility) without changing the text (content concern — stays as defined in content.toml). Override can contain fields from any of the three base files.
+
+---
+
+## Visibility Toggles vs Data Gates
+
+A critical distinction. The renderer has two independent mechanisms that can prevent a fragment from rendering:
+
+1. **Data gates** (code) — `has_output_tool`, `context_required` presence, empty arrays. The renderer checks data properties and silently omits fragments when the data isn't there. This is silence-for-absence. Not configurable.
+
+2. **Visibility toggles** (structure.toml) — `_visible` booleans that let an author suppress a fragment even when the data IS present.
+
+These are NOT redundant. A data gate says "this data doesn't exist, so there's nothing to render." A visibility toggle says "this data exists, but I don't want the boilerplate prose that wraps it."
+
+**Example**: CRITICAL_RULES has `output_tool_exclusivity_visible = true` and `batch_discipline_visible = true`. The renderer also checks `has_output_tool` (data gate). Both mechanisms are needed:
+- When `has_output_tool = false`: data gate suppresses everything. Toggle is irrelevant.
+- When `has_output_tool = true`: data gate passes. Toggle controls whether the prose renders. You might want to test whether the exclusivity rule actually helps, or whether the tool enforcement (hooks) makes it unnecessary.
+
+**Rule**: If the ONLY scenario is "data present → always render," there's no toggle. But if there's a legitimate reason to suppress prose when data is present (testing, simplification, section is already covered elsewhere), the toggle is justified.
+
+---
+
+## Section Categories
+
+Sections fall into distinct categories with different control surface needs.
+
+### Guardrails Family (experimental playground)
+
+**Sections**: anti_patterns, constraints, success_criteria, failure_criteria
+
+These four sections are the primary experimental surface for testing how much behavioral scaffolding an agent needs. They ALL get:
+- `section_visible` — master toggle to show/hide the entire section even when data exists
+- `max_entries_rendered` — truncation cap (0 = render all) to test "top N items" without changing the underlying data
+
+Why: You want to test combinations — success criteria only, constraints + anti_patterns only, all four, just two. You want to test whether 3 constraints work as well as 12. The data stays complete; the rendering layer controls what the agent sees.
+
+The other 9 sections do NOT get `section_visible` or `max_entries_rendered`. They are structural sections that either render (data present) or don't (data absent).
+
+### Critical Rules (boilerplate show/hide)
+
+Critical rules is NOT a guardrails section. Each rule is a designed prose fragment in content.toml, not author data that passes through. The per-rule `_visible` toggles exist to test which boilerplate rules earn their place. Some rules may be redundant with system enforcement (hooks prevent tool bypass anyway). Toggles let you test that hypothesis.
+
+### Mechanics Sections (data-driven, minimal knobs)
+
+**Sections**: output, writing_output, return_format
+
+These sections are primarily data-driven. The renderer checks data conditions and takes the appropriate path. The control surface is thin — mostly transition/framing prose and a few variant selectors. Content that just restates what the data provides or explains infrastructure the agent can't control does not get a TOML entry.
+
+### Intentional Cross-Section Overlap
+
+CRITICAL_RULES and WRITING_OUTPUT both assert tool exclusivity. This is intentional redundancy — critical_rules establishes the rule with hard-failure consequence, writing_output provides the mechanics. The CRITICAL_RULES version is terse ("this is the only correct tool"). The WRITING_OUTPUT version is operational ("here's how to invoke it").
+
+INPUT's `input_completeness_postscript` ("do not seek additional sources") overlaps with CRITICAL_RULES' `input_is_your_only_source`. Same principle — input frames it as completeness, critical_rules frames it as prohibition. Different behavioral levers for the same underlying rule.
+
+---
+
+## Section Boundary Rules
+
+Each section owns a specific concern. When in doubt about where a knob belongs:
+
+- **OUTPUT** — what is produced, what format, where it goes, what schema governs it. Never mentions tools, batch sizes, or write mechanics.
+- **WRITING_OUTPUT** — how to use the output tool. Invocation, batching, naming, validation. Only renders when `has_output_tool = true`.
+- **CRITICAL_RULES** — hard rules with failure consequences. Short, terse, non-negotiable.
+- **CONSTRAINTS** — ongoing compliance standards. Author data that passes through with framing prose.
+- **ANTI_PATTERNS** — specific failure modes. Author data with "Do not X — Y" structure.
+- **INPUT** — what the agent receives and prerequisite reading.
+- **INSTRUCTIONS** — step-by-step execution with mode markers.
+- **RETURN_FORMAT** — how to report completion status to the dispatcher.
+
+---
+
+## Threshold Types
+
+Three distinct threshold purposes, named by suffix:
+
+- **`_format_threshold`** — switches between display formats (e.g., bulleted vs numbered). Lives in display.toml.
+- **`_visibility_threshold`** — controls whether a fragment appears at a certain count. Lives in display.toml when count-driven, structure.toml when data-driven.
+- **`_activation_threshold`** — triggers a behavioral feature (e.g., polarity grouping at 11+ items). Lives in display.toml.
+- **`_auto_threshold`** — governs the "auto" mode of an auto/always/never toggle. Lives in structure.toml next to the toggle.
 
 ---
 

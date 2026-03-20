@@ -1,0 +1,753 @@
+description = "Top-level container: the complete template context."
+required = [
+    "frontmatter",
+    "identity",
+    "input",
+    "instructions",
+    "output",
+    "return_format",
+]
+title = "RenderContext"
+type = "object"
+
+["$defs".AntiPatternsContext]
+required = ["patterns"]
+title = "AntiPatternsContext"
+type = "object"
+
+["$defs".AntiPatternsContext.properties.patterns]
+title = "Patterns"
+type = "array"
+
+["$defs".AntiPatternsContext.properties.patterns.items]
+type = "string"
+
+["$defs".ConstraintsContext]
+required = ["rules"]
+title = "ConstraintsContext"
+type = "object"
+
+["$defs".ConstraintsContext.properties.rules]
+title = "Rules"
+type = "array"
+
+["$defs".ConstraintsContext.properties.rules.items]
+type = "string"
+
+["$defs".ContextItemContext]
+required = [
+    "label",
+    "path",
+]
+title = "ContextItemContext"
+type = "object"
+
+["$defs".ContextItemContext.properties.label]
+title = "Label"
+type = "string"
+
+["$defs".ContextItemContext.properties.path]
+title = "Path"
+type = "string"
+
+["$defs".CriticalRulesContext]
+required = ["has_output_tool"]
+title = "CriticalRulesContext"
+type = "object"
+
+["$defs".CriticalRulesContext.properties.batch_size]
+title = "Batch Size"
+
+[["$defs".CriticalRulesContext.properties.batch_size.anyOf]]
+type = "integer"
+
+[["$defs".CriticalRulesContext.properties.batch_size.anyOf]]
+type = "null"
+
+["$defs".CriticalRulesContext.properties.has_output_tool]
+title = "Has Output Tool"
+type = "boolean"
+
+["$defs".CriticalRulesContext.properties.tool_name]
+title = "Tool Name"
+
+[["$defs".CriticalRulesContext.properties.tool_name.anyOf]]
+type = "string"
+
+[["$defs".CriticalRulesContext.properties.tool_name.anyOf]]
+type = "null"
+
+["$defs".CriticalRulesContext.properties.workspace_path]
+title = "Workspace Path"
+
+[["$defs".CriticalRulesContext.properties.workspace_path.anyOf]]
+type = "string"
+
+[["$defs".CriticalRulesContext.properties.workspace_path.anyOf]]
+type = "null"
+
+["$defs".DispatcherContext]
+description = "Dispatcher skill generation context — orchestration, batching, scope discovery."
+required = [
+    "agent_name",
+    "agent_description",
+    "dispatch_mode",
+    "background_mode",
+    "input_format",
+    "input_delivery",
+    "input_description",
+    "output_format",
+    "output_name_known",
+    "return_mode",
+]
+title = "DispatcherContext"
+type = "object"
+
+["$defs".DispatcherContext.properties.agent_description]
+title = "Agent Description"
+type = "string"
+
+["$defs".DispatcherContext.properties.agent_name]
+title = "Agent Name"
+type = "string"
+
+["$defs".DispatcherContext.properties.background_mode]
+title = "Background Mode"
+type = "string"
+
+["$defs".DispatcherContext.properties.batch_size]
+title = "Batch Size"
+
+[["$defs".DispatcherContext.properties.batch_size.anyOf]]
+type = "array"
+
+["$defs".DispatcherContext.properties.batch_size.anyOf.items]
+type = "integer"
+
+[["$defs".DispatcherContext.properties.batch_size.anyOf]]
+type = "null"
+
+["$defs".DispatcherContext.properties.dispatch_mode]
+title = "Dispatch Mode"
+type = "string"
+
+["$defs".DispatcherContext.properties.input_delivery]
+title = "Input Delivery"
+type = "string"
+
+["$defs".DispatcherContext.properties.input_description]
+title = "Input Description"
+type = "string"
+
+["$defs".DispatcherContext.properties.input_format]
+title = "Input Format"
+type = "string"
+
+["$defs".DispatcherContext.properties.max_agents]
+title = "Max Agents"
+
+[["$defs".DispatcherContext.properties.max_agents.anyOf]]
+type = "integer"
+
+[["$defs".DispatcherContext.properties.max_agents.anyOf]]
+type = "null"
+
+["$defs".DispatcherContext.properties.output_format]
+title = "Output Format"
+type = "string"
+
+["$defs".DispatcherContext.properties.output_name_known]
+title = "Output Name Known"
+type = "string"
+
+["$defs".DispatcherContext.properties.parameters]
+title = "Parameters"
+
+[["$defs".DispatcherContext.properties.parameters.anyOf]]
+type = "array"
+
+["$defs".DispatcherContext.properties.parameters.anyOf.items]
+"$ref" = "#/$defs/ParameterContext"
+
+[["$defs".DispatcherContext.properties.parameters.anyOf]]
+type = "null"
+
+["$defs".DispatcherContext.properties.return_mode]
+title = "Return Mode"
+type = "string"
+
+["$defs".DisplayEntryContext]
+required = [
+    "path",
+    "tools",
+]
+title = "DisplayEntryContext"
+type = "object"
+
+["$defs".DisplayEntryContext.properties.path]
+title = "Path"
+type = "string"
+
+["$defs".DisplayEntryContext.properties.tools]
+title = "Tools"
+type = "array"
+
+["$defs".DisplayEntryContext.properties.tools.items]
+type = "string"
+
+["$defs".ExampleEntryContext]
+required = [
+    "heading",
+    "text",
+]
+title = "ExampleEntryContext"
+type = "object"
+
+["$defs".ExampleEntryContext.properties.heading]
+title = "Heading"
+type = "string"
+
+["$defs".ExampleEntryContext.properties.text]
+title = "Text"
+type = "string"
+
+["$defs".ExampleGroupContext]
+required = [
+    "group_name",
+    "display_headings",
+    "entries",
+]
+title = "ExampleGroupContext"
+type = "object"
+
+["$defs".ExampleGroupContext.properties.display_headings]
+title = "Display Headings"
+type = "boolean"
+
+["$defs".ExampleGroupContext.properties.entries]
+title = "Entries"
+type = "array"
+
+["$defs".ExampleGroupContext.properties.entries.items]
+"$ref" = "#/$defs/ExampleEntryContext"
+
+["$defs".ExampleGroupContext.properties.group_name]
+title = "Group Name"
+type = "string"
+
+["$defs".ExampleGroupContext.properties.max_entries]
+title = "Max Entries"
+
+[["$defs".ExampleGroupContext.properties.max_entries.anyOf]]
+type = "integer"
+
+[["$defs".ExampleGroupContext.properties.max_entries.anyOf]]
+type = "null"
+
+["$defs".ExamplesContext]
+required = ["groups"]
+title = "ExamplesContext"
+type = "object"
+
+["$defs".ExamplesContext.properties.groups]
+title = "Groups"
+type = "array"
+
+["$defs".ExamplesContext.properties.groups.items]
+"$ref" = "#/$defs/ExampleGroupContext"
+
+["$defs".FailureCriterionContext]
+required = [
+    "definition",
+    "evidence",
+]
+title = "FailureCriterionContext"
+type = "object"
+
+["$defs".FailureCriterionContext.properties.definition]
+title = "Definition"
+type = "string"
+
+["$defs".FailureCriterionContext.properties.evidence]
+title = "Evidence"
+type = "array"
+
+["$defs".FailureCriterionContext.properties.evidence.items]
+type = "string"
+
+["$defs".FrontmatterContext]
+required = [
+    "name",
+    "description",
+    "model",
+    "permission_mode",
+    "tools",
+]
+title = "FrontmatterContext"
+type = "object"
+
+["$defs".FrontmatterContext.properties.description]
+title = "Description"
+type = "string"
+
+["$defs".FrontmatterContext.properties.hooks]
+title = "Hooks"
+
+[["$defs".FrontmatterContext.properties.hooks.anyOf]]
+type = "array"
+
+["$defs".FrontmatterContext.properties.hooks.anyOf.items]
+"$ref" = "#/$defs/HookContext"
+
+[["$defs".FrontmatterContext.properties.hooks.anyOf]]
+type = "null"
+
+["$defs".FrontmatterContext.properties.model]
+title = "Model"
+type = "string"
+
+["$defs".FrontmatterContext.properties.name]
+title = "Name"
+type = "string"
+
+["$defs".FrontmatterContext.properties.permission_mode]
+title = "Permission Mode"
+type = "string"
+
+["$defs".FrontmatterContext.properties.tools]
+title = "Tools"
+type = "string"
+
+["$defs".HookContext]
+required = [
+    "matcher",
+    "command",
+]
+title = "HookContext"
+type = "object"
+
+["$defs".HookContext.properties.command]
+title = "Command"
+type = "string"
+
+["$defs".HookContext.properties.matcher]
+title = "Matcher"
+type = "string"
+
+["$defs".IdentityContext]
+required = [
+    "title",
+    "description",
+]
+title = "IdentityContext"
+type = "object"
+
+["$defs".IdentityContext.properties.description]
+title = "Description"
+type = "string"
+
+["$defs".IdentityContext.properties.role_description]
+title = "Role Description"
+
+[["$defs".IdentityContext.properties.role_description.anyOf]]
+type = "string"
+
+[["$defs".IdentityContext.properties.role_description.anyOf]]
+type = "null"
+
+["$defs".IdentityContext.properties.role_expertise]
+title = "Role Expertise"
+
+[["$defs".IdentityContext.properties.role_expertise.anyOf]]
+type = "array"
+
+["$defs".IdentityContext.properties.role_expertise.anyOf.items]
+type = "string"
+
+[["$defs".IdentityContext.properties.role_expertise.anyOf]]
+type = "null"
+
+["$defs".IdentityContext.properties.role_identity]
+title = "Role Identity"
+
+[["$defs".IdentityContext.properties.role_identity.anyOf]]
+type = "string"
+
+[["$defs".IdentityContext.properties.role_identity.anyOf]]
+type = "null"
+
+["$defs".IdentityContext.properties.role_responsibility]
+title = "Role Responsibility"
+
+[["$defs".IdentityContext.properties.role_responsibility.anyOf]]
+type = "string"
+
+[["$defs".IdentityContext.properties.role_responsibility.anyOf]]
+type = "null"
+
+["$defs".IdentityContext.properties.title]
+title = "Title"
+type = "string"
+
+["$defs".InputContext]
+required = [
+    "description",
+    "format",
+    "delivery",
+]
+title = "InputContext"
+type = "object"
+
+["$defs".InputContext.properties.context_available]
+title = "Context Available"
+
+[["$defs".InputContext.properties.context_available.anyOf]]
+type = "array"
+
+["$defs".InputContext.properties.context_available.anyOf.items]
+"$ref" = "#/$defs/ContextItemContext"
+
+[["$defs".InputContext.properties.context_available.anyOf]]
+type = "null"
+
+["$defs".InputContext.properties.context_required]
+title = "Context Required"
+
+[["$defs".InputContext.properties.context_required.anyOf]]
+type = "array"
+
+["$defs".InputContext.properties.context_required.anyOf.items]
+"$ref" = "#/$defs/ContextItemContext"
+
+[["$defs".InputContext.properties.context_required.anyOf]]
+type = "null"
+
+["$defs".InputContext.properties.delivery]
+title = "Delivery"
+type = "string"
+
+["$defs".InputContext.properties.description]
+title = "Description"
+type = "string"
+
+["$defs".InputContext.properties.format]
+title = "Format"
+type = "string"
+
+["$defs".InputContext.properties.input_schema]
+title = "Input Schema"
+
+[["$defs".InputContext.properties.input_schema.anyOf]]
+type = "string"
+
+[["$defs".InputContext.properties.input_schema.anyOf]]
+type = "null"
+
+["$defs".InputContext.properties.parameters]
+title = "Parameters"
+
+[["$defs".InputContext.properties.parameters.anyOf]]
+type = "array"
+
+["$defs".InputContext.properties.parameters.anyOf.items]
+"$ref" = "#/$defs/ParameterContext"
+
+[["$defs".InputContext.properties.parameters.anyOf]]
+type = "null"
+
+["$defs".InstructionStepContext]
+required = [
+    "mode",
+    "text",
+]
+title = "InstructionStepContext"
+type = "object"
+
+["$defs".InstructionStepContext.properties.mode]
+title = "Mode"
+type = "string"
+
+["$defs".InstructionStepContext.properties.text]
+title = "Text"
+type = "string"
+
+["$defs".InstructionsContext]
+required = ["steps"]
+title = "InstructionsContext"
+type = "object"
+
+["$defs".InstructionsContext.properties.steps]
+title = "Steps"
+type = "array"
+
+["$defs".InstructionsContext.properties.steps.items]
+"$ref" = "#/$defs/InstructionStepContext"
+
+["$defs".OutputContext]
+required = [
+    "description",
+    "format",
+]
+title = "OutputContext"
+type = "object"
+
+["$defs".OutputContext.properties.description]
+title = "Description"
+type = "string"
+
+["$defs".OutputContext.properties.directory_path]
+title = "Directory Path"
+
+[["$defs".OutputContext.properties.directory_path.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.directory_path.anyOf]]
+type = "null"
+
+["$defs".OutputContext.properties.file_path]
+title = "File Path"
+
+[["$defs".OutputContext.properties.file_path.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.file_path.anyOf]]
+type = "null"
+
+["$defs".OutputContext.properties.format]
+title = "Format"
+type = "string"
+
+["$defs".OutputContext.properties.name_instruction]
+title = "Name Instruction"
+
+[["$defs".OutputContext.properties.name_instruction.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.name_instruction.anyOf]]
+type = "null"
+
+["$defs".OutputContext.properties.name_known]
+title = "Name Known"
+
+[["$defs".OutputContext.properties.name_known.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.name_known.anyOf]]
+type = "null"
+
+["$defs".OutputContext.properties.output_directory]
+title = "Output Directory"
+
+[["$defs".OutputContext.properties.output_directory.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.output_directory.anyOf]]
+type = "null"
+
+["$defs".OutputContext.properties.schema_path]
+title = "Schema Path"
+
+[["$defs".OutputContext.properties.schema_path.anyOf]]
+type = "string"
+
+[["$defs".OutputContext.properties.schema_path.anyOf]]
+type = "null"
+
+["$defs".ParameterContext]
+required = ["name"]
+title = "ParameterContext"
+type = "object"
+
+["$defs".ParameterContext.properties.description]
+title = "Description"
+
+[["$defs".ParameterContext.properties.description.anyOf]]
+type = "string"
+
+[["$defs".ParameterContext.properties.description.anyOf]]
+type = "null"
+
+["$defs".ParameterContext.properties.name]
+title = "Name"
+type = "string"
+
+["$defs".ParameterContext.properties.required]
+default = true
+title = "Required"
+type = "boolean"
+
+["$defs".ParameterContext.properties.type]
+title = "Type"
+
+[["$defs".ParameterContext.properties.type.anyOf]]
+type = "string"
+
+[["$defs".ParameterContext.properties.type.anyOf]]
+type = "null"
+
+["$defs".ReturnFormatContext]
+required = ["mode"]
+title = "ReturnFormatContext"
+type = "object"
+
+["$defs".ReturnFormatContext.properties.failure_criteria]
+title = "Failure Criteria"
+
+[["$defs".ReturnFormatContext.properties.failure_criteria.anyOf]]
+type = "array"
+
+["$defs".ReturnFormatContext.properties.failure_criteria.anyOf.items]
+"$ref" = "#/$defs/FailureCriterionContext"
+
+[["$defs".ReturnFormatContext.properties.failure_criteria.anyOf]]
+type = "null"
+
+["$defs".ReturnFormatContext.properties.metrics_instruction]
+title = "Metrics Instruction"
+
+[["$defs".ReturnFormatContext.properties.metrics_instruction.anyOf]]
+type = "string"
+
+[["$defs".ReturnFormatContext.properties.metrics_instruction.anyOf]]
+type = "null"
+
+["$defs".ReturnFormatContext.properties.mode]
+title = "Mode"
+type = "string"
+
+["$defs".ReturnFormatContext.properties.output_instruction]
+title = "Output Instruction"
+
+[["$defs".ReturnFormatContext.properties.output_instruction.anyOf]]
+type = "string"
+
+[["$defs".ReturnFormatContext.properties.output_instruction.anyOf]]
+type = "null"
+
+["$defs".ReturnFormatContext.properties.status_instruction]
+title = "Status Instruction"
+
+[["$defs".ReturnFormatContext.properties.status_instruction.anyOf]]
+type = "string"
+
+[["$defs".ReturnFormatContext.properties.status_instruction.anyOf]]
+type = "null"
+
+["$defs".ReturnFormatContext.properties.success_criteria]
+title = "Success Criteria"
+
+[["$defs".ReturnFormatContext.properties.success_criteria.anyOf]]
+type = "array"
+
+["$defs".ReturnFormatContext.properties.success_criteria.anyOf.items]
+"$ref" = "#/$defs/SuccessCriterionContext"
+
+[["$defs".ReturnFormatContext.properties.success_criteria.anyOf]]
+type = "null"
+
+["$defs".SecurityBoundaryContext]
+required = [
+    "has_grants",
+    "display",
+]
+title = "SecurityBoundaryContext"
+type = "object"
+
+["$defs".SecurityBoundaryContext.properties.display]
+title = "Display"
+type = "array"
+
+["$defs".SecurityBoundaryContext.properties.display.items]
+"$ref" = "#/$defs/DisplayEntryContext"
+
+["$defs".SecurityBoundaryContext.properties.has_grants]
+title = "Has Grants"
+type = "boolean"
+
+["$defs".SuccessCriterionContext]
+required = [
+    "definition",
+    "evidence",
+]
+title = "SuccessCriterionContext"
+type = "object"
+
+["$defs".SuccessCriterionContext.properties.definition]
+title = "Definition"
+type = "string"
+
+["$defs".SuccessCriterionContext.properties.evidence]
+title = "Evidence"
+type = "array"
+
+["$defs".SuccessCriterionContext.properties.evidence.items]
+type = "string"
+
+["$defs".WritingOutputContext]
+required = ["invocation_display"]
+title = "WritingOutputContext"
+type = "object"
+
+["$defs".WritingOutputContext.properties.invocation_display]
+title = "Invocation Display"
+type = "string"
+
+[[properties.anti_patterns.anyOf]]
+"$ref" = "#/$defs/AntiPatternsContext"
+
+[[properties.anti_patterns.anyOf]]
+type = "null"
+
+[[properties.constraints.anyOf]]
+"$ref" = "#/$defs/ConstraintsContext"
+
+[[properties.constraints.anyOf]]
+type = "null"
+
+[[properties.critical_rules.anyOf]]
+"$ref" = "#/$defs/CriticalRulesContext"
+
+[[properties.critical_rules.anyOf]]
+type = "null"
+
+[[properties.dispatcher.anyOf]]
+"$ref" = "#/$defs/DispatcherContext"
+
+[[properties.dispatcher.anyOf]]
+type = "null"
+
+[[properties.examples.anyOf]]
+"$ref" = "#/$defs/ExamplesContext"
+
+[[properties.examples.anyOf]]
+type = "null"
+
+[properties.frontmatter]
+"$ref" = "#/$defs/FrontmatterContext"
+
+[properties.identity]
+"$ref" = "#/$defs/IdentityContext"
+
+[properties.input]
+"$ref" = "#/$defs/InputContext"
+
+[properties.instructions]
+"$ref" = "#/$defs/InstructionsContext"
+
+[properties.output]
+"$ref" = "#/$defs/OutputContext"
+
+[properties.return_format]
+"$ref" = "#/$defs/ReturnFormatContext"
+
+[[properties.security_boundary.anyOf]]
+"$ref" = "#/$defs/SecurityBoundaryContext"
+
+[[properties.security_boundary.anyOf]]
+type = "null"
+
+[[properties.writing_output.anyOf]]
+"$ref" = "#/$defs/WritingOutputContext"
+
+[[properties.writing_output.anyOf]]
+type = "null"

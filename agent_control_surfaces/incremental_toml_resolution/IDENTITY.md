@@ -6,7 +6,7 @@
 [identity]
 field_ordering = "identity_first"
 fuse_declaration_and_role_description = false
-expertise_is_strictly_limited_visible = true
+expertise_is_strictly_limited_postscript_visible = true
 closing_identity_reminder_visible = false
 bold_contrast_phrase_from_role_description_visible = false
 ```
@@ -14,7 +14,7 @@ bold_contrast_phrase_from_role_description_visible = false
 **Decisions:**
 
 - `field_ordering`: "identity_first" is converged default. "fused" is experimental. Each is a separate Pydantic layout model.
-- `expertise_is_strictly_limited_visible`: Implicit negation — safer than explicit negation which primes excluded domains.
+- `expertise_is_strictly_limited_postscript_visible`: Implicit negation — safer than explicit negation which primes excluded domains.
 - `closing_identity_reminder_visible`: Default false — bookend pattern may teach the agent the prompt repeats itself.
 - `bold_contrast_phrase_from_role_description_visible`: Default false — single-analysis origin, risk of teaching agent to downweight non-repeated content.
 
@@ -24,17 +24,17 @@ bold_contrast_phrase_from_role_description_visible = false
 [identity]
 heading = "AGENT: {{title}}"
 declaration = "You are a {{role_identity}}."
-declaration_decision_test_postscript = "This identity governs every decision you make — when in doubt, ask: what would a {{role_identity}} do?"
+declaration_heuristic_postscript = "This identity governs every decision you make — when in doubt, ask: what would a {{role_identity}} do?"
 responsibility_label = "**Scope:** {{role_responsibility}}"
 expertise_label = "**Your judgment is authoritative in:**"
-expertise_is_strictly_limited = "Your expertise is strictly limited to the areas listed above."
+expertise_is_strictly_limited_postscript = "Your expertise is strictly limited to the areas listed above."
 closing_identity_reminder = "Remember: you are a {{role_identity}}."
 ```
 
 **Decisions:**
 
 - `declaration`: Highest-leverage fragment. "You are a X" kept separate from decision test postscript for independent variation.
-- `declaration_decision_test_postscript`: Heuristic form ("what would a X do?") over negation form (which risks priming adjacent identities).
+- `declaration_heuristic_postscript`: Heuristic form ("what would a X do?") over negation form (which risks priming adjacent identities).
 - `responsibility_label`: "Scope:" is converged default. "Done when:" is alternative for mechanical agents (requires task_type).
 - `expertise_label`: Authority-grant framing ("Your judgment is authoritative in:") over passive "Expertise:" — reduces hedging. Alternative: "Pay special attention to:".
 - role_description and description are bare data — no templates. Labels ("Purpose:", "Mission:") convert immersive experience into specification-reading.

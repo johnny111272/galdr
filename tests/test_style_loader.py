@@ -35,7 +35,7 @@ def test_load_style_minimal(tmp_path):
     )
     style = load_style(path)
     assert style.name == "minimal"
-    assert style.sections["constraints"].heading == ""
+    assert style.sections["constraints"].heading == "Constraints"
     assert style.sections["constraints"].framing == ""
     assert style.sections["constraints"].warning == ""
 
@@ -66,18 +66,18 @@ def test_load_style_unknown_section(tmp_path):
         tmp_path,
         'name = "typo"\n\n[constrants]\nheading = "Rules"\n',
     )
-    with pytest.raises(StyleLoadError, match="Unknown section.*constrants"):
+    with pytest.raises(StyleLoadError, match="additional_property"):
         load_style(path)
 
 
 def test_load_style_file_not_found():
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(StyleLoadError, match="No such file or directory"):
         load_style("/nonexistent/style.toml")
 
 
 def test_load_style_invalid_toml(tmp_path):
     path = write_toml(tmp_path, "this is not = [valid toml")
-    with pytest.raises(StyleLoadError, match="Invalid TOML"):
+    with pytest.raises(StyleLoadError, match="TOML parse error"):
         load_style(path)
 
 

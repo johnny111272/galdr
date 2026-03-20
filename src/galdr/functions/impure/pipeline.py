@@ -25,7 +25,7 @@ def run_render(
     agent_path = write_agent_file(render_agent(context, recipe, style), agent_output)
     dispatcher_path = None
     if dispatcher_output is not None and context.dispatcher is not None:
-        dispatcher_path = write_dispatcher_file(render_dispatcher(context), dispatcher_output)
+        dispatcher_path = write_dispatcher_file(render_dispatcher(context, style), dispatcher_output)
     return agent_path, dispatcher_path
 
 
@@ -40,7 +40,7 @@ def run_check(
     agent_content = render_agent(context, recipe, style)
     dispatcher_content = None
     if context.dispatcher is not None:
-        dispatcher_content = render_dispatcher(context)
+        dispatcher_content = render_dispatcher(context, style)
     return agent_content, dispatcher_content
 
 
@@ -60,7 +60,7 @@ def run_batch(
         agent_content = render_agent(context, recipe, style)
         dispatcher_content = None
         if context.dispatcher is not None:
-            dispatcher_content = render_dispatcher(context)
+            dispatcher_content = render_dispatcher(context, style)
         results.append(
             BatchResult(
                 recipe_name=recipe.name,
