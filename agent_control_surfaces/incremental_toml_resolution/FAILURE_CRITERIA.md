@@ -11,16 +11,16 @@ section_visible = true
 max_entries_rendered = 0
 
 # Whether to render the behavioral preamble that reframes abort as correct action
-preamble_visible = true
+abort_stance_preamble_visible = true
 
 # Whether to include hierarchy framing connecting definition/evidence to return_format reporting
-cite_definition_and_evidence_visible = false
+cite_definition_and_evidence_postscript_visible = false
 
 # Whether to include the generic temporal instruction
 check_before_and_during_visible = false
 
 # Abort behavioral posture: "obligation" = MUST stop (batch/binary evidence), "permission" = correct action is to stop (creative/judgment evidence)
-abort_stance_variant = "obligation"
+abort_stance_variant = "obligation"  # governs: abort_stance_preamble_*, abort_stance_definition_label_*
 ```
 
 **Decisions:**

@@ -23,7 +23,7 @@ and were given identical instructions. Your job is to produce a single design
 document that captures the best of both while being SHORTER than either input.
 
 OUTPUT FILE: Write your synthesis to:
-/Users/johnny/.ai/spaces/bragi/tools/galdr/agent_control_surfaces/{SECTION_NAME}.md
+/Users/johnny/.ai/smidja/galdr/agent_control_surfaces/{SECTION_NAME}.md
 
 ---
 

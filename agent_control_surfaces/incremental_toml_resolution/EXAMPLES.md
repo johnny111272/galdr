@@ -7,7 +7,7 @@ section_preamble_visible = true
 
 # Group heading suppression for single-group agents
 # true = suppress group heading + promote entries; false = render full three-level hierarchy
-suppress_lone_group_heading_visible = true
+suppress_lone_group_heading = true
 
 # Override for per-group example_display_headings from data
 example_display_headings_override = false
@@ -20,12 +20,10 @@ examples_max_number = 0                            # 0 = no truncation, N = cap.
 # Whether a framing sentence renders between the group heading and first entry
 group_framing_sentence_visible = false
 
-# Multi-group transition mechanism (only activates when group_count > 1)
-multi_group_separator_visible = true
 ```
 **Decisions:**
 
-- `suppress_lone_group_heading_visible`: When only one example group exists, suppress the group heading and promote entries to H3. Avoids a single-child hierarchy.
+- `suppress_lone_group_heading`: When only one example group exists, suppress the group heading and promote entries to H3. Avoids a single-child hierarchy.
 - `example_display_headings_override` + `example_display_headings`: Override pattern. `_override = false` → use per-group data value. `_override = true` → use sibling value for all groups.
 - `examples_max_number_override` + `examples_max_number`: Same pattern. 0 = no truncation (render all). N = cap at N examples per group.
 - GOOD/BAD/WHY are handled by preamble text, not structural fields. Synthesis explicitly rejected structural promotion.
@@ -38,7 +36,10 @@ heading = "Worked Examples"
 
 # Preamble — installs interpretive framework + generalization instruction
 # Two jobs: (1) GOOD/BAD/WHY vocabulary, (2) generalize to novel inputs
-preamble = "Examples may show GOOD and BAD outputs with WHY reasoning. GOOD is correct judgment. BAD is the specific mistake you are most likely to make. WHY is the principle — learn the principle and apply it to inputs not shown here."
+section_preamble = "Examples may show GOOD and BAD outputs with WHY reasoning. GOOD is correct judgment. BAD is the specific mistake you are most likely to make. WHY is the principle — learn the principle and apply it to inputs not shown here."
+
+# Group framing sentence — transitional sentence between group heading and first entry (when enabled)
+group_framing_sentence = "The following examples demonstrate {{example_group_name}}:"
 
 # Entry heading template — renders per entry when display_headings = true
 entry_heading = "{{example_heading}}"
@@ -46,7 +47,7 @@ entry_heading = "{{example_heading}}"
 **Decisions:**
 
 - `heading`: "Worked Examples" primes active study over passive scanning. Experimental.
-- `preamble`: Highest-leverage prose fragment in section. Two jobs: (1) install GOOD/BAD/WHY vocabulary, (2) instruct generalization to novel inputs.
+- `section_preamble`: Highest-leverage prose fragment in section. Two jobs: (1) install GOOD/BAD/WHY vocabulary, (2) instruct generalization to novel inputs.
 
 ## display.toml
 ```toml
@@ -61,9 +62,8 @@ entry_body_container = "bare_with_endmarker"
 # Entry separator — what divides entries when headings are off (per-group data)
 entry_separator = "horizontal_rule"
 
-# Multi-group separator — visual break between groups
-# Only activates when group_count > 1
-multi_group_separator = "horizontal_rule"
+# Multi-group separator — visual break between groups (only when group_count > 1)
+multi_group_separator = "horizontal_rule"  # "horizontal_rule" | "none"
 ```
 **Decisions:**
 

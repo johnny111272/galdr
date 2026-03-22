@@ -2,7 +2,7 @@
 
 ## Purpose
 
-One agent definition produces many agents. The composition engine takes a single validated data structure and multiplies it across style variants, display variants, and model configurations to produce a matrix of benchmarkable agent prompts.
+One agent definition produces many agents. The composition engine takes a single validated data structure and multiplies it across content variants, display variants, and model configurations to produce a matrix of benchmarkable agent prompts.
 
 This enables:
 - Empirical optimization of prompt format through systematic benchmarking
@@ -21,21 +21,24 @@ Verdandi → Draupnir → Nornir → Regin → Galdr
 
 Everything upstream of Galdr exists to produce one clean, typed, gate-validated Pydantic model: the `anthropic_render` data structure. By the time data reaches Galdr, it has 14 top-level sections — each corresponding to one section of the final agent prompt.
 
-Galdr's job is simple: combine data with style and display choices to produce markdown.
+Galdr's job is simple: combine data with structure, content, and display choices to produce markdown.
 
 ---
 
-## Three Input Axes
+## Four Input Axes
 
-Every rendered agent prompt is the product of three independent inputs:
+Every rendered agent prompt is the product of four independent inputs:
 
 | Axis | Source | Controls |
 |------|--------|----------|
 | **Data** | `anthropic_render.toml` | What to say — field values, paths, parameters, instructions |
-| **Style** | `style/*.toml` | How to word it — labels, prose, templates, headings, framing |
-| **Display** | `display/*.toml` | How to format it — list types, separators, structural layout |
+| **Structure** | `structure.toml` | What to include — visibility toggles, variant selectors, section ordering |
+| **Content** | `content.toml` | How to word it — prose fragments, templates, headings, framing, variant alternatives |
+| **Display** | `display.toml` | How to format it — list types, thresholds, separators, visual containers |
 
-These axes are orthogonal. Any style works with any display. Any combination works with any data.
+Structure is stable across experiments. Content is the primary experimental surface — swap content files to test different prose framings. Display is orthogonal to both — any content works with any display.
+
+An optional **override.toml** applies deltas on top of the base three, allowing fine-grained experiments without copying entire files.
 
 ---
 
@@ -66,169 +69,117 @@ No reshaping. The gate-validated Pydantic model IS the data. Field names are use
 
 ---
 
-## Style Axis
+## Structure Axis
 
-A style TOML defines every piece of text that appears in the rendered output that is not data. This includes:
+Structure.toml controls what renders without affecting how it's worded or formatted:
 
-- **Headings** — section and subsection titles
-- **Labels** — field identifiers (`"Purpose"`, `"Schema"`, `"Evidence:"`)
-- **Templates** — f-string patterns interpolated with data values (`"You are a {role_identity}."`)
-- **Prose** — connective sentences that frame data (`"The dispatcher provides:"`)
-- **Rules** — behavioral instruction text (`"Fail fast — if something is wrong, FAILURE immediately."`)
-
-Each style TOML has the same 14 section names as the data model. The style for a section contains exactly the text fields needed to render that section.
+- **Visibility toggles** (`_visible` suffix) — show/hide prose fragments
+- **Variant selectors** (`_variant` suffix) — choose among content alternatives
+- **Override patterns** (`_override` suffix) — substitute data values at the rendering layer
+- **Section ordering** — `section_order` array controlling inter-section sequence
+- **Plain enums** — presentation paradigms, organizational modes
 
 ```toml
-# style/default.toml
-
 [identity]
-purpose_label = "Purpose"
-role_template = "You are a {role_identity}."
-responsibility_label = "Your responsibility"
-expertise_label = "Expertise"
+field_ordering = "identity_first"
+expertise_is_strictly_limited_postscript_visible = true
+closing_identity_reminder_visible = false
 
-[input]
-heading = "Input"
-parameters_intro = "The dispatcher provides:"
-schema_intro = "Input validates against:"
-optional_suffix = "(optional)"
-
-[security_boundary]
-heading = "Security Boundary"
-preamble = "This agent operates under `bypassPermissions` with hook-based restrictions."
-grants_intro = "The following operations are allowed — everything else is blocked by the system."
-boundary_warning = "Do not attempt operations outside this boundary."
+[constraints]
+section_visible = true
+max_entries_rendered = 0
+section_preamble_variant = "standalone"
 ```
 
-Multiple styles can exist: `default.toml`, `stern.toml`, `collaborative.toml`, `concise.toml`. Each is a complete set of text for all 14 sections.
+Structure is stable — it defines the shape of what renders. Experiments typically change content or display, not structure.
+
+---
+
+## Content Axis
+
+Content.toml defines every piece of text that appears in the rendered output that is not data:
+
+- **Headings** — section titles (`heading = "Instructions"`)
+- **Templates** — prose with `{{DATA}}` holes (`declaration = "You are a {{role_identity}}."`)
+- **Text blobs** — pure prose with no data references
+- **Variant sub-tables** — mutually exclusive prose alternatives selected by structure.toml
+
+```toml
+[identity]
+heading = "AGENT: {{title}}"
+declaration = "You are a {{role_identity}}."
+expertise_label = "**Your judgment is authoritative in:**"
+
+[constraints.section_preamble_variant]
+standalone = "These constraints govern your execution..."
+references_instructions = "While executing your instructions..."
+references_critical_rules = "These constraints are binding operational rules..."
+```
+
+Variant alternatives live in sub-tables named after their structure.toml selector. The sub-table keys ARE the allowed enum values — self-documenting, and the schema derives the enum directly from the keys.
+
+Multiple content files can exist: `default.toml`, `stern.toml`, `concise.toml`. Each is a complete set of text for all sections.
 
 ---
 
 ## Display Axis
 
-A display TOML defines how collections (arrays) are formatted. Scalar fields render as text — display choices only apply to arrays.
-
-Four display modes:
-
-| Mode | Format | Example |
-|------|--------|---------|
-| `bulleted` | `- {item}` | `- Validate input` |
-| `numbered` | `{i}. {item}` | `1. Validate input` |
-| `sequential` | `{item}\n\n{item}` | Paragraphs separated by blank lines |
-| `inline` | `{item}{separator}{item}` | `Python, schema design, testing` |
-
-Each display TOML has the same 14 section names. For each section, it specifies how each array field should render:
+Display.toml defines how data renders visually — list formats, thresholds, separators, containers:
 
 ```toml
-# display/standard.toml
-
 [identity]
-expertise = "inline"
-expertise_separator = ", "
+expertise_format = ["bulleted", "inline"]
+expertise_format_threshold = 3
 
 [instructions]
-steps = "numbered"
-
-[constraints]
-rules = "bulleted"
-
-[anti_patterns]
-patterns = "bulleted"
-
-[success_criteria]
-items = "sequential"
-evidence = "bulleted"
-
-[failure_criteria]
-items = "sequential"
-evidence = "bulleted"
-
-[input]
-parameters = "bulleted"
-context_required = "bulleted"
-context_available = "bulleted"
-
-[security_boundary]
-entries = "sequential"
-
-[critical_rules]
-rules = "numbered"
-
-[examples]
-groups = "sequential"
-entries = "sequential"
+step_header_format = "bold"
+step_body_container = "none"
+scaffolding_tier_lightweight_activation_threshold = 3
+scaffolding_tier_standard_activation_threshold = 7
 ```
 
-Multiple display variants can exist: `standard.toml`, `numbered.toml`, `compact.toml`, `prose.toml`.
+Format fields use a tuple convention for count-based switching: `["above_threshold", "at_or_below"]`. Plain strings mean "always this format."
 
----
-
-## Recipe
-
-A recipe TOML controls ordering, section inclusion, and per-section overrides:
-
-```toml
-name = "standard-v1"
-style = "default"
-display = "standard"
-
-[[modules]]
-section = "frontmatter"
-
-[[modules]]
-section = "identity"
-
-[[modules]]
-section = "instructions"
-
-[[modules]]
-section = "constraints"
-display = "numbered"      # override display for this section only
-
-[[modules]]
-section = "return_format"
-```
-
-Sections not listed in the recipe are dropped. Order in the recipe is order in the output. Per-module `style` or `display` overrides allow fine-grained mixing.
+Multiple display variants can exist: `standard.toml`, `compact.toml`, `dense.toml`.
 
 ---
 
 ## Section Containers
 
-Each section has a container that receives three typed inputs and produces markdown:
+Each section has a container that receives four typed inputs and produces markdown:
 
 ```python
 identity = Identity(
     data=data_model.identity,
-    style=style_model.identity,
+    structure=structure_model.identity,
+    content=content_model.identity,
     display=display_model.identity,
 )
 output = identity.render()
 ```
 
-The container's job is trivial:
-1. Interpolate style templates with data values
-2. Format arrays according to display settings
-3. Return a markdown string
-
-No reshaping. No variant branching. No lookup tables. The data is already typed, the style is already typed, the display is already typed. They click together by section name.
+The container's job:
+1. Check visibility toggles and data gates
+2. Select variant content based on structure selectors
+3. Interpolate content templates with data values
+4. Format arrays according to display settings
+5. Return a markdown string
 
 ---
 
 ## Composition
 
-The composition engine iterates through the recipe and assembles section outputs:
+The composition engine iterates through the section order and assembles section outputs:
 
 ```
-for each module in recipe.modules:
-    data    = data_model.{module.section}
-    style   = resolve_style(module, style_model)
-    display = resolve_display(module, display_model)
-    section = Container(data, style, display)
-    output.append(section.render())
+for each section in structure.section_order:
+    data      = data_model.{section}
+    structure = structure_model.{section}
+    content   = content_model.{section}
+    display   = display_model.{section}
+    container = Container(data, structure, content, display)
+    output.append(container.render())
 ```
-
-`resolve_style` and `resolve_display` check for per-module overrides in the recipe, falling back to the recipe-level defaults.
 
 ---
 
@@ -237,10 +188,10 @@ for each module in recipe.modules:
 The composition engine enables systematic benchmarking:
 
 ```
-agent_definitions  ×  llm_models  ×  display_variants  ×  style_variants  =  benchmark_matrix
+agent_definitions  ×  llm_models  ×  display_variants  ×  content_variants  =  benchmark_matrix
 ```
 
-One agent definition with 3 models, 4 display variants, and 3 style variants produces 36 agent prompts. Run them all against representative test data with known expected outputs.
+One agent definition with 3 models, 4 display variants, and 3 content variants produces 36 agent prompts. Run them all against representative test data with known expected outputs.
 
 Select the highest performers. Version the winning configuration. Re-run when models update.
 
@@ -251,7 +202,7 @@ Select the highest performers. Version the winning configuration. Re-run when mo
 Every input is a TOML file in git:
 
 ```
-definition v3 + style v2 + display v1 + recipe v1 + model claude-opus-4-6
+definition v3 + structure v1 + content v2 + display v1 + model claude-opus-4-6
 ```
 
 This fully specifies a reproducible agent configuration. No code changes to vary an agent. No hidden state. Change one file, re-run, diff the output.
@@ -279,7 +230,7 @@ For regulated industries with strict safety and audit requirements:
 - **Definition**: declarative TOML describing the agent's role, permissions, instructions
 - **Test data**: representative inputs with known correct outputs
 - **Benchmark results**: performance across N configurations
-- **Selected configuration**: which style, display, model, and why
+- **Selected configuration**: which content, display, model, and why
 - **Verification run**: results against held-out test data
 - **Regression history**: benchmark results across model versions
 

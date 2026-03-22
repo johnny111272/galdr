@@ -19,7 +19,7 @@ section_closing_visible = false
 tool_names_visible = true
 
 # Framing paradigm: selects which content posture the section uses
-framing_variant = "territory"  # "territory" | "environmental" | "cage"
+framing_variant = "territory"  # "territory" | "environmental" | "cage" — governs: heading_*, workspace_path_declaration_*, section_preamble_*
 ```
 **Decisions:**
 

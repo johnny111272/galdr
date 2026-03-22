@@ -9,7 +9,7 @@ heading_variant = "default"                   # "default" | "procedure" | "steps
 # Mode infrastructure
 exact_vs_judgment_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
 exact_vs_judgment_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
-signal_at_mode_change_boundaries_visible = false
+signal_at_mode_change_visible = false
 
 # Preamble components
 instructions_preamble_step_count_visible = true
@@ -19,11 +19,10 @@ instructions_preamble_no_extra_operations_visible = true
 
 # Step structure
 step_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
-step_body_container_visible = false
 step_done_when_suffix_visible = false
 
 # Closer
-section_closer_visible = true
+section_closer_guardrail_visible = true
 section_closer_exact_vs_judgment_recap_visible = false
 
 # Dependency and progress
@@ -35,7 +34,7 @@ structural_complexity_override = "auto"  # "auto" | "lightweight" | "standard" |
 ```
 **Decisions:**
 
-- `signal_at_mode_change_boundaries_visible`: Off by default — synthesis warns against combining all four mode layers simultaneously.
+- `signal_at_mode_change_visible`: Off by default — synthesis warns against combining all four mode layers simultaneously.
 - `step_done_when_suffix_visible`: Experimental. `{{completion_condition}}` is template-generated, not author data.
 - `cross_step_dependency_phrases_visible` and `halfway_point_reminder_visible`: Conditional on step count (7+). Lightweight agents don't need these.
 - `structural_complexity_override`: "auto" derives from step count. Override when auto-detection makes wrong choice.
@@ -57,7 +56,7 @@ exact_vs_judgment_explanation_uniform_judgment = "Every step below requires your
 instructions_preamble_step_count = "You will execute {{step_count}} steps."
 instructions_preamble_no_add_skip_reorder = "Do not add steps. Do not skip steps. Do not reorder steps."
 instructions_preamble_exact_vs_judgment_preview = "Steps marked (exact) leave no room for interpretation. Steps marked (judgment) are where your reasoning matters."
-instructions_preamble_no_extra_operations_postscript = "Each instruction step is a complete specification. Do not supplement steps with general knowledge or add operations not specified."
+instructions_preamble_no_extra_operations = "Each instruction step is a complete specification. Do not supplement steps with general knowledge or add operations not specified."
 
 # Step header
 step_header_exact = "**Step {{step_n}} of {{step_total}} (exact).**"
@@ -75,6 +74,9 @@ signal_at_mode_change_to_judgment = "The following step requires your judgment."
 
 # Step completion suffix (probabilistic steps only)
 step_done_when_suffix = "Done when: {{completion_condition}}"
+
+# Cross-step dependency annotation — rendered as step header suffix when enabled (7+ step agents)
+cross_step_dependency_phrases = "Uses output from: {{dependency_steps}}"
 
 # Progress anchor
 halfway_point_reminder = "You are past the halfway point. Steps 1-{{midpoint}} established the foundation. Steps {{midpoint_next}}-{{step_total}} build on that work."
@@ -95,9 +97,12 @@ section_closer_exact_vs_judgment_recap = "{{mode_recap_text}} There are no other
 # Step header formatting
 step_header_format = "bold"  # "bold" | "h3"
 
+# Step body visual container
+step_body_container = "none"  # "none" | "blockquote"
+
 # Scaffolding tier thresholds
-scaffolding_tier_boundary_lightweight = 3
-scaffolding_tier_boundary_standard = 7
+scaffolding_tier_lightweight_activation_threshold = 3
+scaffolding_tier_standard_activation_threshold = 7
 
 # Mode recap format in closer
 exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
@@ -105,7 +110,7 @@ exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
 **Decisions:**
 
 - `step_header_format`: Bold is lower visual weight; H3 is strongest structural signal.
-- Tier boundaries: ≤3 lightweight, 4-7 standard, 8+ heavy. Drive conditional rendering of preamble components, progress anchors, and dependency signaling.
+- Tier activation thresholds: ≤3 lightweight, 4-7 standard, 8+ heavy. Drive conditional rendering of preamble components, progress anchors, and dependency signaling.
 
 ## Excluded (invariant rules / bare data)
 

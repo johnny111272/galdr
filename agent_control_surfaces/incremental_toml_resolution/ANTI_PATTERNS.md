@@ -11,7 +11,7 @@ section_visible = true
 max_entries_rendered = 0
 
 # Whether to include a preamble line before the pattern list
-preamble_visible = true
+section_preamble_visible = true
 
 # Whether to include authority positioning prose distinguishing anti-patterns from constraints/critical_rules
 constraints_vs_anti_patterns_distinction_visible = true
@@ -19,7 +19,7 @@ constraints_vs_anti_patterns_distinction_visible = true
 
 **Decisions:**
 
-- `preamble_visible`: Code default is "omit for 1-2 patterns, include for 3+." This toggle overrides that default in either direction.
+- `section_preamble_visible`: Code default is "omit for 1-2 patterns, include for 3+." This toggle overrides that default in either direction.
 - `constraints_vs_anti_patterns_distinction_visible`: Code default is "include when constraints + critical_rules + anti_patterns all co-present." This toggle overrides.
 
 ## content.toml
@@ -30,7 +30,7 @@ constraints_vs_anti_patterns_distinction_visible = true
 heading = "Known Failure Modes"
 
 # One-line preamble rendered before the pattern list
-preamble = "These are specific failure modes for this task. Each names a mistake and provides the correction after the dash."
+section_preamble = "These are specific failure modes for this task. Each names a mistake and provides the correction after the dash."
 
 # Distinguishes anti-patterns from constraints when both sections co-exist
 constraints_vs_anti_patterns_distinction = "Constraints are your operating rules. Anti-patterns are your likely mistakes."

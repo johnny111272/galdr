@@ -28,8 +28,9 @@ The variant surface. This is what gets copied/overridden for behavioral experime
 Contains:
 - Text blobs — pure prose, no `{{DATA}}` references
 - Template blobs — prose with `{{DATA}}` holes
+- Variant sub-tables — `[section.{name}_variant]` tables whose keys are mutually exclusive prose alternatives selected by a structure.toml selector of the same name
 
-Every field is a string. Visibility is controlled by structure.toml toggles, not by empty strings in content.
+Scalar fields are strings. Variant sub-tables contain string values keyed by variant name. Visibility is controlled by structure.toml toggles, not by empty strings in content.
 
 ### display.toml
 
@@ -162,12 +163,18 @@ Controls whether a prose fragment renders. Two forms:
 preamble_visible = true
 ```
 
-**Auto with threshold** — renderer decides based on a computed condition:
+**Auto with count threshold** — renderer decides based on a count:
 ```toml
 rule_count_awareness_prelude_visible = "auto"   # "auto" | "always" | "never"
 rule_count_awareness_prelude_auto_threshold = 5
 ```
 `"auto"` applies the threshold. `"always"` and `"never"` override it.
+
+**Auto with data condition** — renderer decides based on a boolean data property, not a count:
+```toml
+exact_vs_judgment_explanation_visible = "auto"  # "auto" (render when mixed modes) | "always" | "never"
+```
+No `_auto_threshold` — the auto condition is binary (e.g., "are instruction modes mixed?"), not count-based. The field comment documents what "auto" means. When the auto condition is a data property rather than a count, a numeric threshold is semantically inappropriate and is omitted.
 
 ### 2. `_override` — Data Override
 
@@ -187,19 +194,47 @@ The sibling value matches the data's type. No mixed-type fields, no string senti
 
 ### 3. `_variant` — Content Variant Selection
 
-Selects among named prose alternatives in content.toml.
+Selects among named prose alternatives in content.toml. The alternatives live in a **sub-table** named after the variant selector. The sub-table's keys ARE the allowed enum values — self-documenting, no comments needed, and the schema derives the enum directly from the keys.
 
 ```toml
 # structure.toml
-preamble_variant = "standalone"   # "standalone" | "references_instructions" | "references_critical_rules"
+section_preamble_variant = "standalone"   # enum values derived from content sub-table keys
 
 # content.toml
-preamble_standalone = "These constraints govern your execution..."
-preamble_references_instructions = "While executing your instructions..."
-preamble_references_critical_rules = "These constraints are binding operational rules..."
+[constraints.section_preamble_variant]
+standalone = "These constraints govern your execution..."
+references_instructions = "While executing your instructions..."
+references_critical_rules = "These constraints are binding operational rules..."
 ```
 
-The enum value in structure matches a content field suffix.
+The structure selector name matches the content sub-table name. An LLM reading content.toml sees a table called `section_preamble_variant` and immediately knows these are mutually exclusive alternatives — the table structure makes it impossible to misread as separate fields that all render.
+
+#### Shared Variants
+
+A single variant selector may drive multiple content field families when those families always change together. The sub-table contains sub-sub-tables for each governed family:
+
+```toml
+# structure.toml
+framing_variant = "territory"
+
+# content.toml
+[security_boundary.framing_variant.heading]
+territory = "Your Workspace"
+environmental = "Operating Environment"
+cage = "Permitted Boundaries"
+
+[security_boundary.framing_variant.workspace_path_declaration]
+territory = "Your workspace is {{WORKSPACE_PATH}}..."
+environmental = "You operate within {{WORKSPACE_PATH}}..."
+cage = "You are confined to {{WORKSPACE_PATH}}..."
+
+[security_boundary.framing_variant.section_preamble]
+territory = "Within this workspace, you can access:"
+environmental = "The following paths are available to you:"
+cage = "You are permitted to access only the following paths:"
+```
+
+The variant value picks a key, looked up in every sub-table under the variant name. The sub-table names are the governed field families. All sub-tables must have the same keys.
 
 ### 4. `_format` + `_format_threshold` — Display Format
 
@@ -389,6 +424,12 @@ These are NOT redundant. A data gate says "this data doesn't exist, so there's n
 - When `has_output_tool = true`: data gate passes. Toggle controls whether the prose renders. You might want to test whether the exclusivity rule actually helps, or whether the tool enforcement (hooks) makes it unnecessary.
 
 **Rule**: If the ONLY scenario is "data present → always render," there's no toggle. But if there's a legitimate reason to suppress prose when data is present (testing, simplification, section is already covered elsewhere), the toggle is justified.
+
+### What Does NOT Need a `_visible` Toggle
+
+**Variant content fields** — when a `_variant` selector chooses between prose alternatives, the individual content fields for each variant value do not get independent `_visible` toggles. Selecting the variant selects its prose. If you don't want the prose, change the variant or toggle the parent concept's visibility. Example: CONSTRAINTS `section_preamble_variant = "references_critical_rules"` renders `section_preamble_references_critical_rules` along with `hierarchy_tier_comparison` and `hierarchy_three_tier_explanation`. These are part of the variant's prose package, not independently togglable.
+
+**Code-gated conditional content** — some content fields render only when a code-level data condition is met (e.g., task type, batch mode). The renderer decides inclusion based on the data, not a structure toggle. These fields note their condition in the decisions text. A `_visible` toggle is only needed if someone would want to suppress the field when the data condition IS met. If the only scenario is "condition met → render, condition not met → omit," no toggle.
 
 ---
 

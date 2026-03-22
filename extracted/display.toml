@@ -1,0 +1,105 @@
+[identity]
+expertise_format = ["bulleted", "inline"]
+expertise_format_threshold = 3
+responsibility_format = ["bulleted", "prose"]
+responsibility_format_threshold = 3
+
+[security_boundary]
+# Path style: "relative_dotslash" | "relative_bare" | "absolute"
+path_style = "relative_dotslash"
+
+# Entry format when tool sets are uniform across all entries: "grouped" | "per_entry"
+uniform_toolset_format = "grouped"
+
+# Entry format when tool sets differ across entries: "per_entry_list" | "per_entry_prose"
+heterogeneous_toolset_format = "per_entry_list"
+
+# Entry count threshold for switching from no-intro to intro-present
+filesystem_map_intro_visibility_threshold = 4
+
+# Entry list marker style (applied by display layer)
+entry_list_format = "bullet"
+
+[critical_rules]
+# Path display format: "backtick" wraps {{workspace_path}} in backticks, "plain" leaves as-is
+workspace_path_format = "backtick"
+
+# Tool name display format: "backtick" wraps {{tool_name}} in backticks, "plain" leaves as-is
+tool_name_format = "backtick"
+
+# Tool name repetition: "repeat" uses full name at every mention, "shorthand" defines once then uses "the tool"
+tool_name_repetition = "repeat"
+
+# Batch size display format: "bold" wraps in **, "metadata" renders as "Batch size = N", "plain" inline
+batch_size_format = "plain"
+
+# Rule separator: string inserted between rules. Newline for density, double-newline for visual separation
+rule_separator = "\n\n"
+
+[instructions]
+# Step header formatting
+step_header_format = "bold"  # "bold" | "h3"
+
+# Step body visual container
+step_body_container = "none"  # "none" | "blockquote"
+
+# Scaffolding tier thresholds
+scaffolding_tier_lightweight_activation_threshold = 3
+scaffolding_tier_standard_activation_threshold = 7
+
+# Mode recap format in closer
+exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
+
+[examples]
+# Entry heading format — bold text vs H4
+# Bold preserves boundaries without visual density for groups with 5+ entries
+entry_heading_format = "bold"
+
+# Entry body container — how entry content is visually contained
+entry_body_container = "bare_with_endmarker"
+
+# Entry separator — what divides entries when headings are off (per-group data)
+entry_separator = "horizontal_rule"
+
+# Multi-group separator — visual break between groups (only when group_count > 1)
+multi_group_separator = "horizontal_rule"  # "horizontal_rule" | "none"
+
+[constraints]
+# Enumeration format
+enumeration_format = ["bulleted", "numbered"]
+enumeration_format_threshold = 6
+
+# Closing reinforcement activation threshold
+closing_compliance_reminder_visibility_threshold = 6
+
+# Constraint count heading activation threshold
+constraint_count_heading_visibility_threshold = 6
+
+# MUST/MUST-NOT rendering treatment
+must_vs_must_not_normalization = "preserve_voice"  # "preserve_voice" | "normalize_outliers" | "prefix_tags"
+
+# Polarity grouping for long lists
+polarity_grouping_activation_threshold = 11
+
+[anti_patterns]
+# Format for rendering the pattern list
+# Options: "bare_bullets", "bold_prohibition"
+pattern_list_format = "bare_bullets"
+
+[success_criteria]
+# Evidence item format: threshold-based on evidence count
+evidence_format_threshold = 5
+evidence_format = ["bulleted", "numbered"]
+
+[failure_criteria]
+# Evidence item format
+evidence_format = "bare"
+
+[output]
+# No display knobs for this section.
+
+[writing_output]
+# No display knobs for this section.
+
+[return_format]
+# No display knobs for this section.

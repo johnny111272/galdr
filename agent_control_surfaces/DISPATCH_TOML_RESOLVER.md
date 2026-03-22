@@ -19,10 +19,10 @@ Do NOT explore directories. Do NOT use Glob or Grep tools.
 ---
 
 STEP 1: Read:
-/Users/johnny/.ai/spaces/bragi/tools/galdr/agent_control_surfaces/{SECTION_NAME}.md
+/Users/johnny/.ai/smidja/galdr/agent_control_surfaces/{SECTION_NAME}.md
 
 STEP 2: Write your extraction to:
-/Users/johnny/.ai/spaces/bragi/tools/galdr/agent_control_surfaces/incremental_toml_resolution/{SECTION_NAME}.md
+/Users/johnny/.ai/smidja/galdr/agent_control_surfaces/incremental_toml_resolution/{SECTION_NAME}.md
 
 ---
 

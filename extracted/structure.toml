@@ -1,0 +1,216 @@
+[identity]
+field_ordering = "identity_first"
+fuse_declaration_and_role_description = false
+expertise_is_strictly_limited_postscript_visible = true
+closing_identity_reminder_visible = false
+bold_contrast_phrase_from_role_description_visible = false
+
+[security_boundary]
+# Whether to fuse workspace_path with path-resolution instruction in a single sentence
+fuse_workspace_path_and_resolver = true
+
+# Whether to render an intro line before display entries
+filesystem_map_intro_visible = true
+
+# Whether to render a preamble between heading and entries
+section_preamble_visible = true
+
+# Whether to render a closing after entries
+section_closing_visible = false
+
+# Whether to show tool names alongside paths (hooks enforce regardless)
+tool_names_visible = true
+
+# Framing paradigm: selects which content posture the section uses
+framing_variant = "territory"  # "territory" | "environmental" | "cage" — governs: heading_*, workspace_path_declaration_*, section_preamble_*
+
+[critical_rules]
+# Prelude
+authority_preamble_visible = true
+rule_count_awareness_prelude_visible = "auto"       # "auto" | "always" | "never"
+rule_count_awareness_prelude_auto_threshold = 5
+
+# Universal rules
+workspace_confinement_visible = true
+fail_fast_visible = true
+input_is_your_only_source_visible = true
+no_invention_visible = true
+
+# Output tool rules (conditional on has_output_tool)
+output_tool_exclusivity_visible = true
+batch_discipline_visible = true                    # also requires batch_size
+# Experimental
+discipline_over_helpfulness_visible = false
+
+# Presentation
+rule_presentation = "single_sentence"  # "single_sentence" | "heading_plus_body"
+internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
+
+[instructions]
+# Heading
+heading_variant = "default"                   # "default" | "procedure" | "steps_with_count"
+
+# Mode infrastructure
+exact_vs_judgment_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
+exact_vs_judgment_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
+signal_at_mode_change_visible = false
+
+# Preamble components
+instructions_preamble_step_count_visible = true
+instructions_preamble_no_add_skip_reorder_visible = true
+instructions_preamble_exact_vs_judgment_preview_visible = true
+instructions_preamble_no_extra_operations_visible = true
+
+# Step structure
+step_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
+step_done_when_suffix_visible = false
+
+# Closer
+section_closer_guardrail_visible = true
+section_closer_exact_vs_judgment_recap_visible = false
+
+# Dependency and progress
+cross_step_dependency_phrases_visible = false
+halfway_point_reminder_visible = false
+
+# Scaffolding tier override (null = auto from step count)
+structural_complexity_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
+
+[examples]
+section_preamble_visible = true
+
+# Group heading suppression for single-group agents
+# true = suppress group heading + promote entries; false = render full three-level hierarchy
+suppress_lone_group_heading = true
+
+# Override for per-group example_display_headings from data
+example_display_headings_override = false
+example_display_headings = true                    # only when override = true
+
+# Override for per-group examples_max_number from data
+examples_max_number_override = false
+examples_max_number = 0                            # 0 = no truncation, N = cap. Only when override = true
+
+# Whether a framing sentence renders between the group heading and first entry
+group_framing_sentence_visible = false
+
+[constraints]
+# Visibility / activation
+section_visible = true
+
+# Maximum entries to render (0 = render all). Truncates from the end, preserving author priority order.
+max_entries_rendered = 0
+
+section_preamble_visible = true
+constraints_are_not_steps_visible = true
+no_inferred_constraints_visible = false
+closing_compliance_reminder_visible = true
+constraint_count_heading_visible = true
+
+# Variant selectors
+section_preamble_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
+closing_compliance_reminder_variant = "evaluation_warning"  # "evaluation_warning" | "simultaneity"
+no_inferred_constraints_variant = "light"  # "light" | "explicit"
+
+[anti_patterns]
+# Whether to render the section at all (false = omit even if patterns exist)
+section_visible = true
+
+# Maximum entries to render (0 = render all). Truncates from the end, preserving author priority order.
+max_entries_rendered = 0
+
+# Whether to include a preamble line before the pattern list
+section_preamble_visible = true
+
+# Whether to include authority positioning prose distinguishing anti-patterns from constraints/critical_rules
+constraints_vs_anti_patterns_distinction_visible = true
+
+[success_criteria]
+# Master visibility toggle
+section_visible = true
+
+# Maximum entries to render (0 = render all). Truncates from the end, preserving author priority order.
+max_entries_rendered = 0
+
+# Definition framing paradigm: "declarative_assertion" | "conditional_gate" | "completion_identity"
+definition_framing_variant = "declarative_assertion"
+
+# Evidence list framing paradigm: "properties" | "verification_checklist" | "quality_signals"
+evidence_framing_variant = "properties"
+
+# Hierarchy connector paradigm: "goal_then_criteria" | "proof" | "dual_presentation"
+definition_to_evidence_transition_variant = "goal_then_criteria"
+
+# Evidence type handling: "graduated_language" (per-item type markers) | "undifferentiated" (all items equal)
+evidence_type_handling = "undifferentiated"
+
+# Voice paradigm: "output_centric" | "agent_centric"
+output_vs_agent_voice = "output_centric"
+
+# Whether to include explicit statement that success != not-failing
+success_failure_independence_statement_visible = true
+
+# Whether to include verification guidance suffix for mixed evidence lists
+verification_guidance_suffix_visible = false
+
+# Multi-criteria relationship paradigm (only applies when criteria_count > 1): "independent_blocks" | "numbered_dimensions"
+multi_criteria_relationship = "independent_blocks"
+
+[failure_criteria]
+# Master visibility toggle
+section_visible = true
+
+# Maximum entries to render (0 = render all). Truncates from the end, preserving author priority order.
+max_entries_rendered = 0
+
+# Whether to render the behavioral preamble that reframes abort as correct action
+abort_stance_preamble_visible = true
+
+# Whether to include hierarchy framing connecting definition/evidence to return_format reporting
+cite_definition_and_evidence_postscript_visible = false
+
+# Whether to include the generic temporal instruction
+check_before_and_during_visible = false
+
+# Abort behavioral posture: "obligation" = MUST stop (batch/binary evidence), "permission" = correct action is to stop (creative/judgment evidence)
+abort_stance_variant = "obligation"  # governs: abort_stance_preamble_*, abort_stance_definition_label_*
+
+[output]
+# Variant selectors
+schema_embed = false                       # true = inline schema content; false = path reference only
+directory_location_variant = "standard"    # "standard" | "with_boundary"
+
+[writing_output]
+# Transition sentence connecting from instructions to this section
+transition_preamble_visible = true
+
+# Tool exclusivity mandate prose
+tool_mandate_visible = true
+
+# Heredoc syntax explanation (off by default — only if agents mangle heredoc)
+heredoc_explanation_visible = false
+
+[return_format]
+# Two-channel model: output goes to files, return carries status signal
+files_vs_status_explanation_preamble_visible = true
+
+# Protocol preamble: tokens are machine-parsed, first-position requirement
+token_must_be_first_word_preamble_visible = true
+
+# Metrics obligation: agents must report all specified metrics
+report_all_metrics_postscript_visible = true
+
+# ABORT vs FAILURE semantic distinction (conditional on ABORT in status_instruction)
+abort_vs_failure_distinction_preamble_visible = true
+
+# Failure honesty: explicit permission to return clean FAILURE
+honest_failure_over_dubious_success_preamble_visible = true
+
+# Retroactive orientation: return requirements imply tracking requirements
+track_metrics_as_you_work_postscript_visible = true
+
+# Accuracy clause: report actual metrics, do not fabricate
+do_not_fabricate_metrics_postscript_visible = true
+
+# Cross-reference to failure_criteria section
+failure_cross_reference_preamble_visible = false

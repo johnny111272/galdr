@@ -26,7 +26,7 @@ You are analyzing the `{section}` section of an agent prompt composition system.
 
 **Your task:** Decompose this section into its constituent template fragments — every piece of text that must surround the raw data fields to make them meaningful to an agent. Write your analysis to:
 
-`/Users/johnny/.ai/spaces/bragi/tools/galdr/agent_control_surfaces/agent_outputs/{SECTION}_{A or B}.md`
+`/Users/johnny/.ai/smidja/galdr/agent_control_surfaces/agent_outputs/{SECTION}_{A or B}.md`
 
 Return only SUCCESS or FAILURE to the dispatcher.
 

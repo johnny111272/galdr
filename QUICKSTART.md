@@ -14,7 +14,7 @@ For the full design rationale, see `AGENT_BUILD_SYSTEM.md`.
 ## How to Run
 
 ```bash
-cd /Users/johnny/.ai/spaces/bragi/tools/galdr
+cd /Users/johnny/.ai/smidja/galdr
 
 # Render agent + dispatcher to definitions/staging/
 uv run galdr path/to/anthropic_render.toml
@@ -52,11 +52,11 @@ uv run pytest tests/test_guardrails.py   # Gleipnir structural checks — run FR
 
 ```bash
 # Step 1: Run the agent through regin
-cd /Users/johnny/.ai/spaces/bragi/tools/regin
+cd /Users/johnny/.ai/smidja/regin
 uv run regin /Users/johnny/.ai/spaces/bragi/definitions/agents/agent-builder.toml
 
 # Step 2: Render with galdr
-cd /Users/johnny/.ai/spaces/bragi/tools/galdr
+cd /Users/johnny/.ai/smidja/galdr
 uv run galdr /Users/johnny/.ai/spaces/bragi/definitions/agents/agent-builder/anthropic_render.toml
 ```
 

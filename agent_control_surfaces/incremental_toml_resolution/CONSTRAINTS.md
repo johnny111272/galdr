@@ -10,24 +10,23 @@ section_visible = true
 # Maximum entries to render (0 = render all). Truncates from the end, preserving author priority order.
 max_entries_rendered = 0
 
-preamble_visible = true
+section_preamble_visible = true
 constraints_are_not_steps_visible = true
 no_inferred_constraints_visible = false
 closing_compliance_reminder_visible = true
 constraint_count_heading_visible = true
 
 # Variant selectors
-preamble_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
-closing_compliance_reminder_variant = "evaluation_warning"  # "evaluation_warning" | "simultaneity_reminder"
+section_preamble_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
+closing_compliance_reminder_variant = "evaluation_warning"  # "evaluation_warning" | "simultaneity"
 no_inferred_constraints_variant = "light"  # "light" | "explicit"
-must_vs_must_not_normalization = "preserve_voice"  # "preserve_voice" | "normalize_outliers" | "prefix_tags"
 ```
 
 **Decisions:**
 
 - `no_inferred_constraints_visible`: Default false. Only enable when agents invent phantom constraints not in the list.
 - `closing_compliance_reminder_visible` and `constraint_count_heading_visible`: Controlled by display.toml visibility thresholds (default 6).
-- `preamble_variant`: "standalone" for solo sections. "references_critical_rules" when critical_rules co-exists — hierarchy framing is implicit in this variant.
+- `section_preamble_variant`: "standalone" for solo sections. "references_critical_rules" when critical_rules co-exists — hierarchy framing is implicit in this variant.
 
 ## content.toml
 
@@ -36,9 +35,9 @@ must_vs_must_not_normalization = "preserve_voice"  # "preserve_voice" | "normali
 heading = "Constraints"
 
 # Preamble variants
-preamble_standalone = "These constraints govern your execution. They are not sequenced — all are in force at all times. Each is a compliance standard your output will be measured against."
-preamble_references_instructions = "While executing your instructions, these rules remain in effect."
-preamble_references_critical_rules = "These constraints are binding operational rules — less absolute than critical rules, but more enforceable than general quality guidance. Violating a constraint means your output is defective."
+section_preamble_standalone = "These constraints govern your execution. They are not sequenced — all are in force at all times. Each is a compliance standard your output will be measured against."
+section_preamble_references_instructions = "While executing your instructions, these rules remain in effect."
+section_preamble_references_critical_rules = "These constraints are binding operational rules — less absolute than critical rules, but more enforceable than general quality guidance. Violating a constraint means your output is defective."
 
 # "Not steps" distinction
 constraints_are_not_steps = "Constraints are not steps — they are conditions that must hold true at all times, not at specific points in your workflow."
@@ -77,6 +76,9 @@ closing_compliance_reminder_visibility_threshold = 6
 
 # Constraint count heading activation threshold
 constraint_count_heading_visibility_threshold = 6
+
+# MUST/MUST-NOT rendering treatment
+must_vs_must_not_normalization = "preserve_voice"  # "preserve_voice" | "normalize_outliers" | "prefix_tags"
 
 # Polarity grouping for long lists
 polarity_grouping_activation_threshold = 11

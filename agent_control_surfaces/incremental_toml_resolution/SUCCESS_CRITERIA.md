@@ -20,10 +20,10 @@ evidence_framing_variant = "properties"
 definition_to_evidence_transition_variant = "goal_then_criteria"
 
 # Evidence type handling: "graduated_language" (per-item type markers) | "undifferentiated" (all items equal)
-evidence_type_handling_variant = "undifferentiated"
+evidence_type_handling = "undifferentiated"
 
 # Voice paradigm: "output_centric" | "agent_centric"
-output_vs_agent_voice_variant = "output_centric"
+output_vs_agent_voice = "output_centric"
 
 # Whether to include explicit statement that success != not-failing
 success_failure_independence_statement_visible = true
@@ -39,7 +39,7 @@ multi_criteria_relationship = "independent_blocks"
 
 - `definition_framing_variant`: Declarative assertion (safest). Conditional gate (batch agents). Completion identity (creative agents).
 - `evidence_framing_variant`: Properties (general). Verification checklist (mechanical). Quality signals (judgment).
-- `output_vs_agent_voice_variant`: Output-centric promotes objective evaluation. Agent-centric pairs with strong role identity.
+- `output_vs_agent_voice`: Output-centric promotes objective evaluation. Agent-centric pairs with strong role identity.
 - `multi_criteria_relationship`: "independent_blocks" is the only tested approach; "numbered_dimensions" is speculative.
 
 ## content.toml

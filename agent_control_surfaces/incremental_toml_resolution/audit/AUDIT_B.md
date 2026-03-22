@@ -2,84 +2,104 @@
 
 ## Summary
 
-The 13 extractions are largely well-structured with consistent use of the guardrails family pattern (`section_visible` + `max_entries_rendered`) and correct threshold suffix usage in display.toml. However, there are systematic naming mismatches in the `_variant` pattern -- several selectors use root names that do not match their content field roots, and two variant selectors have no content fields at all. The `_visible` / content field name-matching convention is violated in a few places. These issues would force special-casing in any schema that tries to mechanically validate structure-to-content cross-references.
+Most sections follow the architecture doc conventions correctly. The primary issues are naming mismatches between structure `_visible` toggles and their corresponding content fields, variant selectors that don't follow the documented `{concept}_variant` -> `{concept}_{value}` mapping pattern, phantom fields (variant selectors with no content entries, visible toggles with no content fields), and one threshold naming violation.
 
 ## Findings
 
-### [CONVENTION]: IDENTITY content field missing `_postscript` position suffix
-- **Where**: IDENTITY content.toml, `expertise_is_strictly_limited`
-- **Convention violated**: Position signifier naming (architecture doc: field names MUST encode position relative to data they reference)
-- **Specific**: The architecture doc's own worked example uses `expertise_is_strictly_limited_postscript` for this field. The extraction drops the suffix to just `expertise_is_strictly_limited`. This text renders AFTER the expertise list ("the areas listed above"), making `_postscript` the correct position signifier.
-- **Fix**: Rename to `expertise_is_strictly_limited_postscript`. Structure toggle becomes `expertise_is_strictly_limited_postscript_visible` (or keep current structure name and accept a root-name mismatch, which is worse).
+### [MISMATCH]: INSTRUCTIONS `section_closer_visible` does not match content field `section_closer_guardrail`
 
-### [MISMATCH]: INPUT `input_completeness_assertion_visible` does not share root with content field
-- **Where**: INPUT structure.toml `input_completeness_assertion_visible`, content.toml `input_completeness_postscript`
-- **Convention violated**: Shared root name creates obvious cross-reference (architecture doc visibility toggle section)
-- **Specific**: Structure root is `input_completeness_assertion`. Content root is `input_completeness` (with `_postscript` suffix). The word `assertion` exists only in structure and cannot be found in content.
-- **Fix**: Either rename structure field to `input_completeness_postscript_visible` or rename content field to `input_completeness_assertion_postscript`. The former is simpler.
+- **Where**: INSTRUCTIONS section, structure.toml `section_closer_visible`, content.toml `section_closer_guardrail`
+- **Convention violated**: "The shared root name creates obvious cross-reference" (Naming Conventions, Visibility Toggles Use `_visible` Suffix). Structure field `section_closer_visible` implies content field `section_closer`. Content field is `section_closer_guardrail`.
+- **Specific**: Structure has `section_closer_visible`, content has `section_closer_guardrail`. Root names differ: `section_closer` vs `section_closer_guardrail`.
+- **Fix**: Either rename structure to `section_closer_guardrail_visible` or rename content to `section_closer`.
 
-### [CONVENTION]: INSTRUCTIONS `heading_variant = "default"` has no matching `heading_default` content field
-- **Where**: INSTRUCTIONS structure.toml `heading_variant`, content.toml `heading`
-- **Convention violated**: Variant pattern -- "the enum value in structure matches a content field suffix" (architecture doc)
-- **Specific**: Variant values are `"default"`, `"procedure"`, `"steps_with_count"`. Content fields are `heading` (bare), `heading_procedure`, `heading_steps_with_count`. The value `"default"` should map to `heading_default`, but maps to the unsuffixed `heading`. The other two values correctly map to suffixed fields.
-- **Fix**: Rename `heading` to `heading_default` in content.toml.
+### [MISMATCH]: INSTRUCTIONS `instructions_preamble_no_extra_operations_visible` does not match content field `instructions_preamble_no_extra_operations_postscript`
 
-### [MISMATCH]: SUCCESS_CRITERIA content fields include `_variant` in name, breaking root-name convention
-- **Where**: SUCCESS_CRITERIA content.toml `definition_framing_variant_declarative_assertion`, `definition_framing_variant_conditional_gate`, `definition_framing_variant_completion_identity`
-- **Convention violated**: Variant pattern -- structure has `{concept}_variant`, content has `{concept}_{value}` (not `{concept}_variant_{value}`)
-- **Specific**: Architecture doc example: structure `preamble_variant = "standalone"`, content `preamble_standalone`. Here: structure `definition_framing_variant = "declarative_assertion"`, content `definition_framing_variant_declarative_assertion`. The `_variant` suffix leaked into the content field name.
-- **Fix**: Rename to `definition_framing_declarative_assertion`, `definition_framing_conditional_gate`, `definition_framing_completion_identity`.
+- **Where**: INSTRUCTIONS section, structure.toml `instructions_preamble_no_extra_operations_visible`, content.toml `instructions_preamble_no_extra_operations_postscript`
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- "The structure field is `closing_identity_reminder_visible` (boolean). The content field is `closing_identity_reminder` (string)." The content field root must match the structure field root (before `_visible`).
+- **Specific**: Stripping `_visible` from structure gives `instructions_preamble_no_extra_operations`. Content field is `instructions_preamble_no_extra_operations_postscript`. The `_postscript` position signifier is in content but absent from structure.
+- **Fix**: Rename structure to `instructions_preamble_no_extra_operations_postscript_visible`, or rename content to `instructions_preamble_no_extra_operations`.
 
-### [MISMATCH]: SUCCESS_CRITERIA `evidence_framing_variant` root does not match content field root `evidence_preamble`
-- **Where**: SUCCESS_CRITERIA structure.toml `evidence_framing_variant`, content.toml `evidence_preamble_properties` / `evidence_preamble_verification_checklist` / `evidence_preamble_quality_signals`
-- **Convention violated**: Variant pattern -- structure selector root and content field root must match
-- **Specific**: Structure selector root is `evidence_framing`. Content field root is `evidence_preamble`. A naive reader sees `evidence_framing_variant = "properties"` and looks for `evidence_framing_properties` in content -- it does not exist.
-- **Fix**: Either rename structure to `evidence_preamble_variant` or rename content fields to `evidence_framing_properties`, etc.
+### [MISMATCH]: INSTRUCTIONS `signal_at_mode_change_boundaries_visible` does not match content fields `signal_at_mode_change_to_exact` / `signal_at_mode_change_to_judgment`
 
-### [MISMATCH]: FAILURE_CRITERIA `abort_stance_variant` root does not match any content field root
-- **Where**: FAILURE_CRITERIA structure.toml `abort_stance_variant = "obligation"`, content.toml `preamble_obligation`, `preamble_permission`, `definition_label_obligation`, `definition_label_permission`
-- **Convention violated**: Variant pattern -- structure selector root and content field root must match
-- **Specific**: The selector `abort_stance_variant` drives two independent content field pairs: `preamble_{value}` and `definition_label_{value}`. Neither root matches `abort_stance`. A reader cannot find the content fields from the selector name.
-- **Fix**: Split into two selectors (`preamble_variant` and `definition_label_variant`) whose roots match their content fields, or rename the content fields to use `abort_stance` as root (e.g., `abort_stance_preamble_obligation`). The former is more consistent with the one-selector-one-content-set pattern.
+- **Where**: INSTRUCTIONS section, structure.toml `signal_at_mode_change_boundaries_visible`, content.toml `signal_at_mode_change_to_exact` and `signal_at_mode_change_to_judgment`
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- shared root name must create obvious cross-reference. Also, the two content fields imply a variant pattern (keyed by mode type), but there is no `_variant` selector in structure.toml.
+- **Specific**: Structure root is `signal_at_mode_change_boundaries`. Content roots are `signal_at_mode_change_to_exact` and `signal_at_mode_change_to_judgment`. No shared root name. No variant selector governs which content field is used.
+- **Fix**: Either (a) add a variant selector and rename, e.g., structure gets `signal_at_mode_change_variant = "..."` with content fields `signal_at_mode_change_exact` / `signal_at_mode_change_judgment`, or (b) the toggle controls both fields as a pair (renderer emits both when visible), in which case the structure toggle should use a root that encompasses both, and the content fields should share that root with distinguishing suffixes.
 
-### [CONVENTION]: SUCCESS_CRITERIA `evidence_type_handling_variant` and `output_vs_agent_voice_variant` have no content fields
-- **Where**: SUCCESS_CRITERIA structure.toml
-- **Convention violated**: Variant pattern -- "selects among named prose alternatives in content.toml" (architecture doc)
-- **Specific**: `evidence_type_handling_variant = "undifferentiated"` and `output_vs_agent_voice_variant = "output_centric"` are labeled `_variant` but select renderer behavior, not content fields. No content.toml fields are keyed to these selectors.
-- **Fix**: These are plain enums controlling renderer behavior, not content variant selectors. Drop the `_variant` suffix: `evidence_type_handling = "undifferentiated"`, `output_vs_agent_voice = "output_centric"`.
+### [MISMATCH]: EXAMPLES `section_preamble_visible` does not match content field `preamble`
 
-### [MISMATCH]: CONSTRAINTS `closing_compliance_reminder_variant` value does not match content suffix
-- **Where**: CONSTRAINTS structure.toml `closing_compliance_reminder_variant = "evaluation_warning" | "simultaneity_reminder"`, content.toml `closing_compliance_reminder_simultaneity`
-- **Convention violated**: Variant enum value matches content field suffix
-- **Specific**: Variant value `"simultaneity_reminder"` should map to content field `closing_compliance_reminder_simultaneity_reminder`. The actual content field is `closing_compliance_reminder_simultaneity` -- the `_reminder` suffix is missing. The other variant value `"evaluation_warning"` correctly maps to `closing_compliance_reminder_evaluation_warning`.
-- **Fix**: Either rename the content field to `closing_compliance_reminder_simultaneity_reminder` or change the variant value to `"simultaneity"`.
+- **Where**: EXAMPLES section, structure.toml `section_preamble_visible`, content.toml `preamble`
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- shared root name creates obvious cross-reference.
+- **Specific**: Structure root is `section_preamble`. Content field is `preamble`. Reader of structure.toml looking for the content match would search for `section_preamble` and not find it.
+- **Fix**: Either rename structure to `preamble_visible` or rename content to `section_preamble`. Note: CONSTRAINTS and ANTI_PATTERNS both use `preamble_visible`/`preamble` consistently, while INPUT and SECURITY_BOUNDARY use `section_preamble_visible`/`section_preamble` consistently. EXAMPLES mixes the two patterns.
 
-### [MISPLACED]: OUTPUT `schema_embed` is a variant selector disguised as a boolean
-- **Where**: OUTPUT structure.toml `schema_embed = false`
-- **Convention violated**: Variant selection uses `_variant` suffix with named values (architecture doc interface patterns)
-- **Specific**: `schema_embed = false` selects between two content fields: `schema_embedded_preamble` (when true) and `schema_reference` (when false). This is functionally a variant selector with two modes, not a visibility toggle. A boolean in structure.toml that isn't a `_visible` toggle breaks the convention that booleans mean visibility.
-- **Fix**: Rename to `schema_presentation_variant = "reference"` with values `"reference"` and `"embedded"`. Content fields become `schema_presentation_reference` and `schema_presentation_embedded` (or keep current content names and just fix the selector naming).
+### [MISMATCH]: FAILURE_CRITERIA `preamble_visible` does not match content fields `abort_stance_preamble_obligation` / `abort_stance_preamble_permission`
 
-### [CONVENTION]: INSTRUCTIONS `section_closer_visible` does not cleanly map to content fields
-- **Where**: INSTRUCTIONS structure.toml `section_closer_visible`, content.toml `section_closer_guardrail` and `section_closer_exact_vs_judgment_recap`
-- **Convention violated**: `_visible` toggle shares root name with content field (architecture doc)
-- **Specific**: Structure has `section_closer_visible` (root: `section_closer`). Content has `section_closer_guardrail` and `section_closer_exact_vs_judgment_recap`. Neither content field uses the bare root `section_closer`. The guardrail variant always renders when visible; the recap is independently toggled by `section_closer_exact_vs_judgment_recap_visible`. This means `section_closer_visible` is a master toggle for a sub-block, not a single-field visibility toggle -- but the naming makes it look like a single-field toggle with a phantom content field.
-- **Fix**: Either add a bare `section_closer` content field that `section_closer_visible` directly controls, or rename to `section_closer_block_visible` to signal it's a block-level toggle.
+- **Where**: FAILURE_CRITERIA section, structure.toml `preamble_visible`, content.toml `abort_stance_preamble_obligation` and `abort_stance_preamble_permission`
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- shared root name. Also, `_variant` pattern (Field Interface Patterns, section 3).
+- **Specific**: Structure toggle is `preamble_visible` (root: `preamble`). Content fields are `abort_stance_preamble_obligation` and `abort_stance_preamble_permission` (root: `abort_stance_preamble`). The `abort_stance_variant` selects between them, but the visible toggle name doesn't reflect the actual content field name it governs. Stripping `_visible` from `preamble_visible` gives `preamble`, not `abort_stance_preamble`.
+- **Fix**: Rename structure toggle to `abort_stance_preamble_visible` to match the content field root.
 
-### [CONVENTION]: EXAMPLES `group_framing_sentence_visible` has no content field
-- **Where**: EXAMPLES structure.toml `group_framing_sentence_visible = false`
-- **Convention violated**: `_visible` toggle should have a matching content field
-- **Specific**: No `group_framing_sentence` field exists in content.toml. The toggle exists but there is nothing to toggle.
-- **Fix**: Either add `group_framing_sentence` to content.toml or remove the toggle from structure.toml.
+### [MISMATCH]: FAILURE_CRITERIA `cite_definition_and_evidence_visible` does not match content field `cite_definition_and_evidence_postscript`
 
-### [CONVENTION]: RETURN_FORMAT `track_metrics_as_you_work_antidrift` has no structure toggle
-- **Where**: RETURN_FORMAT content.toml `track_metrics_as_you_work_antidrift`
-- **Convention violated**: Content fields that are optional should have `_visible` toggles in structure (phantom content)
-- **Specific**: `track_metrics_as_you_work_postscript` has a toggle (`track_metrics_as_you_work_postscript_visible`). Its sibling `track_metrics_as_you_work_antidrift` has no toggle. If antidrift always renders when postscript is visible, this should be documented as a coupled pair. If it can be independently suppressed, it needs its own toggle.
-- **Fix**: Either add `track_metrics_as_you_work_antidrift_visible` to structure.toml, or document that antidrift renders whenever the postscript toggle is on.
+- **Where**: FAILURE_CRITERIA section, structure.toml `cite_definition_and_evidence_visible`, content.toml `cite_definition_and_evidence_postscript`
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- content field root must match structure field root.
+- **Specific**: Structure root is `cite_definition_and_evidence`. Content field is `cite_definition_and_evidence_postscript`. The `_postscript` position signifier is in content but absent from structure.
+- **Fix**: Rename structure to `cite_definition_and_evidence_postscript_visible`.
 
-### [INCONSISTENCY]: Single-selector multi-content-set pattern vs one-selector-one-set
-- **Where**: SECURITY_BOUNDARY `framing_paradigm` drives heading + workspace_path_declaration + section_preamble. FAILURE_CRITERIA `abort_stance_variant` drives preamble + definition_label. CONSTRAINTS `preamble_variant` drives only preamble.
-- **Convention violated**: Cross-section consistency in variant selector scope
-- **Specific**: SECURITY_BOUNDARY uses one selector (`framing_paradigm`) to drive three content field sets -- heading, workspace_path_declaration, and section_preamble all have `_territory`/`_environmental`/`_cage` suffixes. FAILURE_CRITERIA uses one selector (`abort_stance_variant`) for two content field sets. CONSTRAINTS uses one selector per content field set. There is no documented convention for when a single selector should drive multiple content sets vs separate selectors per set.
-- **Fix**: Establish a convention: either one-selector-multi-set is the standard (document it) or one-selector-one-set is the standard (split SECURITY_BOUNDARY and FAILURE_CRITERIA selectors). The former is more practical for paradigm-level shifts like framing.
+### [MISMATCH]: CONSTRAINTS `closing_compliance_reminder_variant` value `"simultaneity_reminder"` does not match content field suffix `_simultaneity`
+
+- **Where**: CONSTRAINTS section, structure.toml `closing_compliance_reminder_variant = "evaluation_warning" | "simultaneity_reminder"`, content.toml `closing_compliance_reminder_simultaneity`
+- **Convention violated**: `_variant` Content Variant Selection (Field Interface Patterns, section 3) -- "The enum value in structure matches a content field suffix."
+- **Specific**: Variant value is `"simultaneity_reminder"`. Expected content field: `closing_compliance_reminder_simultaneity_reminder`. Actual content field: `closing_compliance_reminder_simultaneity`. The `_evaluation_warning` variant matches correctly (`closing_compliance_reminder_evaluation_warning`), but `_simultaneity_reminder` does not match `_simultaneity`.
+- **Fix**: Either rename content field to `closing_compliance_reminder_simultaneity_reminder`, or rename the variant value to `"simultaneity"`.
+
+### [CONVENTION]: SECURITY_BOUNDARY `framing_variant` is a cross-cutting variant that doesn't follow the `{concept}_variant` -> `{concept}_{value}` convention
+
+- **Where**: SECURITY_BOUNDARY section, structure.toml `framing_variant`, content.toml `heading_territory`, `workspace_path_declaration_territory`, `section_preamble_territory` (and other variant suffixes)
+- **Convention violated**: `_variant` Content Variant Selection (Field Interface Patterns, section 3) -- "The enum value in structure matches a content field suffix." Convention shows `preamble_variant = "standalone"` mapping to `preamble_standalone`. The concept name in the variant selector should be the prefix of the content fields.
+- **Specific**: `framing_variant = "territory"` controls three different content field families: `heading_*`, `workspace_path_declaration_*`, `section_preamble_*`. None of these share the prefix `framing_`. A reader of structure.toml seeing `framing_variant` cannot predict which content fields it governs.
+- **Fix**: Either (a) split into per-field variants: `heading_variant`, `workspace_path_declaration_variant`, `section_preamble_variant` (all set to the same value by default, independently overridable), or (b) document the cross-cutting variant as a named exception to the convention with a comment naming all governed fields.
+
+### [CONVENTION]: FAILURE_CRITERIA `abort_stance_variant` governs multiple content field families without following `{concept}_variant` -> `{concept}_{value}`
+
+- **Where**: FAILURE_CRITERIA section, structure.toml `abort_stance_variant`, content.toml `abort_stance_preamble_obligation`, `abort_stance_preamble_permission`, `abort_stance_definition_label_obligation`, `abort_stance_definition_label_permission`
+- **Convention violated**: Same as SECURITY_BOUNDARY above. `abort_stance_variant = "obligation"` maps to `abort_stance_preamble_obligation` and `abort_stance_definition_label_obligation` -- not `abort_stance_obligation`.
+- **Specific**: The variant controls two distinct content field families: `abort_stance_preamble_*` and `abort_stance_definition_label_*`. The convention expects `abort_stance_obligation` as the content field name.
+- **Fix**: Same options as SECURITY_BOUNDARY -- split into per-field variants or document as named exception.
+
+### [CONVENTION]: INSTRUCTIONS display.toml threshold fields `scaffolding_tier_boundary_lightweight` and `scaffolding_tier_boundary_standard` do not use any documented threshold suffix
+
+- **Where**: INSTRUCTIONS display.toml, fields `scaffolding_tier_boundary_lightweight` and `scaffolding_tier_boundary_standard`
+- **Convention violated**: Threshold Types section -- four documented suffixes: `_format_threshold`, `_visibility_threshold`, `_activation_threshold`, `_auto_threshold`. The `_boundary_` naming follows none of them.
+- **Specific**: These fields define the step-count boundaries between scaffolding tiers (lightweight/standard/heavy). They are activation thresholds -- they trigger behavioral features at certain counts.
+- **Fix**: Rename to `scaffolding_tier_lightweight_activation_threshold = 3` and `scaffolding_tier_standard_activation_threshold = 7`, or document `_boundary_` as a fifth threshold type.
+
+### [INCONSISTENCY]: Preamble naming convention inconsistent across sections
+
+- **Where**: CONSTRAINTS, ANTI_PATTERNS use `preamble_visible` / `preamble`. INPUT, SECURITY_BOUNDARY use `section_preamble_visible` / `section_preamble`. EXAMPLES uses `section_preamble_visible` / `preamble` (the mismatch noted above).
+- **Convention violated**: Descriptive Over Convenient (Naming Conventions) -- "Each file is read in isolation. Field names must be self-documenting without context from other files."
+- **Specific**: Two naming patterns for the same concept across sections: `preamble` and `section_preamble`. Both refer to the introductory prose block at the top of a section. The inconsistency prevents a schema from defining a single pattern for preamble fields.
+- **Fix**: Converge on one pattern. `preamble` is shorter and already scoped by the TOML table name. `section_preamble` is redundant when inside `[constraints]` -- the section context is the table name.
+
+### [PHANTOM]: SUCCESS_CRITERIA `evidence_type_handling_variant` and `output_vs_agent_voice_variant` have no corresponding content fields
+
+- **Where**: SUCCESS_CRITERIA structure.toml, `evidence_type_handling_variant` and `output_vs_agent_voice_variant`
+- **Convention violated**: `_variant` Content Variant Selection (Field Interface Patterns, section 3) -- variant selectors select among named prose alternatives in content.toml. These selectors have no content fields to select among.
+- **Specific**: `evidence_type_handling_variant = "graduated_language" | "undifferentiated"` -- no content fields `evidence_type_handling_graduated_language` or `evidence_type_handling_undifferentiated` exist. Same for `output_vs_agent_voice_variant`.
+- **Fix**: Either add the corresponding content fields, or if these are code-only behavioral switches (not selecting prose), remove the `_variant` suffix and use plain enums as documented in Field Interface Patterns section 5.
+
+### [PHANTOM]: EXAMPLES `group_framing_sentence_visible` has no corresponding content field
+
+- **Where**: EXAMPLES structure.toml `group_framing_sentence_visible`, no matching content field
+- **Convention violated**: Visibility Toggles Use `_visible` Suffix -- structure toggle controls whether a prose fragment renders. The prose fragment must exist in content.toml.
+- **Specific**: `group_framing_sentence_visible = false` in structure, but no `group_framing_sentence` in content.toml.
+- **Fix**: Add `group_framing_sentence = "..."` to content.toml, or remove the structure toggle if the fragment doesn't exist yet.
+
+### [PHANTOM]: INSTRUCTIONS `cross_step_dependency_phrases_visible` has no corresponding content field
+
+- **Where**: INSTRUCTIONS structure.toml `cross_step_dependency_phrases_visible`, no matching content field
+- **Convention violated**: Same as above -- visibility toggle with no content field.
+- **Specific**: `cross_step_dependency_phrases_visible = false` in structure, but no `cross_step_dependency_phrases` in content.toml. The decisions text says this is "conditional on step count (7+)" but no content defines what these phrases actually say.
+- **Fix**: Add content field(s), or remove the toggle if the feature is deferred.
