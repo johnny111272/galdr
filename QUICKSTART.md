@@ -117,16 +117,16 @@ Plus `dispatcher` which feeds the skill generation path.
 
 | Resource | Path |
 |----------|------|
-| Galdr source | `tools/galdr/src/galdr/` |
+| Galdr source | `smidja/galdr/src/galdr/` |
 | Agent definitions (input) | `definitions/agents/{name}/anthropic_render.toml` |
 | Rendered output (staging) | `definitions/staging/` |
-| Recipes | `tools/galdr/recipes/` |
-| Styles | `tools/galdr/styles/` |
-| Display variants | `tools/galdr/display/` |
-| Schemas | `tools/galdr/schemas/` |
-| Design spec | `tools/galdr/AGENT_BUILD_SYSTEM.md` |
-| Dispatcher guide | `tools/galdr/BUILDING_A_DISPATCHER.md` |
-| Custom write tools | `tools/galdr/CUSTOM_WRITE_TOOL.md` |
+| Recipes | `smidja/galdr/recipes/` |
+| Styles | `smidja/galdr/styles/` |
+| Display variants | `smidja/galdr/display/` |
+| Schemas | `smidja/galdr/schemas/` |
+| Design spec | `smidja/galdr/AGENT_BUILD_SYSTEM.md` |
+| Dispatcher guide | `smidja/galdr/BUILDING_A_DISPATCHER.md` |
+| Custom write tools | `smidja/galdr/CUSTOM_WRITE_TOOL.md` |
 
 ---
 
