@@ -34,7 +34,7 @@ tool_name_repetition = "repeat"
 batch_size_format = "plain"
 
 # Rule separator: string inserted between rules. Newline for density, double-newline for visual separation
-rule_separator = "\n\n"
+rule_separator = "double_newline"
 
 [instructions]
 # Step header formatting
