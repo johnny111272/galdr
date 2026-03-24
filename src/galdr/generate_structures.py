@@ -23,7 +23,10 @@ from galdr.functions.pure.codegen_transforms import apply_all_transforms
 PACKAGE_ROOT = Path(__file__).resolve().parent
 WORKSPACE = PACKAGE_ROOT.parents[3]
 SMIDJA = Path.home() / ".ai" / "smidja"
-SCHEMAS_DIR = SMIDJA / "verdandi" / "agent-builder" / "output"
+SCHEMA_DIRS = [
+    SMIDJA / "verdandi" / "agent-output" / "output",
+    SMIDJA / "verdandi" / "agent-builder" / "output",
+]
 STRUCTURES_DIR = PACKAGE_ROOT / "structures"
 CONFIG_PATH = PACKAGE_ROOT / "codegen_schemas.toml"
 
@@ -36,8 +39,13 @@ def main() -> int:
     success = 0
     failed = 0
     for schema_name, module_name in all_schemas.items():
-        schema_path = SCHEMAS_DIR / f"{schema_name}.schema.json"
-        if not schema_path.exists():
+        schema_path = None
+        for schema_dir in SCHEMA_DIRS:
+            candidate = schema_dir / f"{schema_name}.schema.json"
+            if candidate.exists():
+                schema_path = candidate
+                break
+        if schema_path is None:
             sys.stdout.write(f"  SKIP: {schema_name} (schema not found)\n")
             continue
 

@@ -3,3 +3,6 @@
 
 [checkpoint]
 agent-anthropic-render = "anthropic_render"
+agent-output-structure = "output_structure"
+agent-output-content = "output_content"
+agent-output-display = "output_display"
