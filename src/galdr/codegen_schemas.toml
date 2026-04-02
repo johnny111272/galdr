@@ -1,8 +1,11 @@
 # Schema-to-module mappings for generate_structures.py
-# Galdr only consumes the final anthropic render schema produced by regin.
+# Galdr consumes the final anthropic render schema (from regin)
+# plus the three output control surface schemas (from verdandi agent-output).
 
 [checkpoint]
-agent-anthropic-render = "anthropic_render"
-agent-output-structure = "output_structure"
-agent-output-content = "output_content"
-agent-output-display = "output_display"
+agent-anthropic-render = "gen/anthropic_render"
+
+[output]
+agent-output-structure = "gen/output_structure"
+agent-output-content = "gen/output_content"
+agent-output-display = "gen/output_display"

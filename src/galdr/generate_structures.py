@@ -8,7 +8,11 @@
 """Generate Pydantic models from JSON Schema files.
 
 Reads schema mappings from codegen_schemas.toml, fetches schemas from
-smidja/verdandi/agent-builder/output/, and writes model modules to structures/.
+verdandi output directories, and writes model modules to structure/gen/.
+
+Two schema sources:
+  - agent-builder/output/ — checkpoint schemas (anthropic_render)
+  - agent-output/output/  — output control surface schemas (content, structure, display)
 
 Run after Draupnir regenerates schemas to keep models in sync.
 """
@@ -18,51 +22,53 @@ import sys
 import tomllib
 from pathlib import Path
 
-from galdr.functions.pure.codegen_transforms import apply_all_transforms
+from galdr.logic.transform.codegen_clean.composed import strip_redundant_constraints
+from galdr.logic.transform.codegen_clean.primitive import strip_future_annotations
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
-WORKSPACE = PACKAGE_ROOT.parents[3]
 SMIDJA = Path.home() / ".ai" / "smidja"
 SCHEMA_DIRS = [
-    SMIDJA / "verdandi" / "agent-output" / "output",
     SMIDJA / "verdandi" / "agent-builder" / "output",
+    SMIDJA / "verdandi" / "agent-output" / "output",
 ]
-STRUCTURES_DIR = PACKAGE_ROOT / "structures"
+STRUCTURE_DIR = PACKAGE_ROOT / "structure"
 CONFIG_PATH = PACKAGE_ROOT / "codegen_schemas.toml"
+
+
+def find_schema(schema_name: str) -> Path | None:
+    """Locate a schema file across known source directories."""
+    for schema_dir in SCHEMA_DIRS:
+        candidate = schema_dir / f"{schema_name}.schema.json"
+        if candidate.exists():
+            return candidate
+    return None
 
 
 def main() -> int:
     """Generate all Pydantic model modules from JSON Schemas."""
     config = tomllib.loads(CONFIG_PATH.read_text())
-    all_schemas = {**config["checkpoint"], **config.get("include", {})}
+    all_schemas: dict[str, str] = {}
+    for section in config.values():
+        all_schemas.update(section)
 
     success = 0
     failed = 0
-    for schema_name, module_name in all_schemas.items():
-        schema_path = None
-        for schema_dir in SCHEMA_DIRS:
-            candidate = schema_dir / f"{schema_name}.schema.json"
-            if candidate.exists():
-                schema_path = candidate
-                break
+    for schema_name, module_path in all_schemas.items():
+        schema_path = find_schema(schema_name)
         if schema_path is None:
             sys.stdout.write(f"  SKIP: {schema_name} (schema not found)\n")
             continue
 
-        output_path = STRUCTURES_DIR / f"{module_name}.py"
+        output_path = STRUCTURE_DIR / f"{module_path}.py"
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
-                "datamodel_code_generator",
-                "--input",
-                str(schema_path),
-                "--input-file-type",
-                "jsonschema",
-                "--output",
-                str(output_path),
-                "--output-model-type",
-                "pydantic_v2.BaseModel",
+                sys.executable, "-m", "datamodel_code_generator",
+                "--input", str(schema_path),
+                "--input-file-type", "jsonschema",
+                "--output", str(output_path),
+                "--output-model-type", "pydantic_v2.BaseModel",
                 "--use-standard-collections",
                 "--use-annotated",
                 "--use-title-as-name",
@@ -77,8 +83,10 @@ def main() -> int:
             continue
 
         content = output_path.read_text()
-        output_path.write_text(apply_all_transforms(content))
-        sys.stdout.write(f"  {schema_name} -> {module_name}.py\n")
+        content = strip_future_annotations(content)
+        content = strip_redundant_constraints(content)
+        output_path.write_text(content)
+        sys.stdout.write(f"  {schema_name} -> {module_path}.py\n")
         success += 1
 
     sys.stdout.write(f"\nGenerated: {success}/{len(all_schemas)}\n")
