@@ -47,10 +47,25 @@ None of them felt uncertain while doing it.
 **Why it's wrong:** The gravity rule: code must live at the LOWEST level it legally can. `primitive.py` = CC=1, `simple.py` = CC=1-3, `dispatch.py` = CC=1-2, `composed.py` = CC=4-8, `assembled.py` = CC=1-2. Floating everything to `composed/` where constraints are loosest is the default LLM behavior. Gleipnir enforces gravity — CC below the level's minimum is a violation.
 **Recovery:** Read V2_ZONE_ARCHITECTURE.md "Cyclomatic Complexity Enforcement" and "The Gravity Rule."
 
-### Building Monolithic Render Functions
-**Detection:** If a single function checks visibility, selects variants, interpolates templates, formats lists, AND assembles markdown...
-**Why it's wrong:** Each of those is a separate concern at a different level. Visibility checking is a primitive (CC=1). Variant selection is simple (CC=2-3). Template interpolation is a primitive. List formatting is simple. Assembly is composed. A monolith that does all of them will exceed CC limits and violate level placement. Find the functional primitive — what is the ONE thing?
-**Recovery:** Read `~/.ai/phoenix/coding_reference/AI_BREAKTHROUGHS_HEMINGWAY_CODING.md` — the "Break It Down" section.
+### Building Monolithic Functions (CC=49 Happened)
+**Detection:** If a single function checks visibility, selects variants, interpolates templates, formats lists, classifies types, AND assembles markdown... if gleipnir reports CC anywhere near double digits...
+**Why it's wrong:** Composed level is CC=4-8. A CC=49 monolith was actually written in this project by a session that had just read all the coding reference docs and studied the reference implementations. Training data patterns WILL produce monoliths. Each concern (visibility, variant selection, type classification, decoration lookup, list rendering) is a separate function at the appropriate CC level. The assembled level wires them together with CC=1-2.
+**Recovery:** Study `regin/logic/transform/section_regroup/assembled.py` — the `regroup()` function is CC=1, calls 12 functions, zero decisions. Study `draupnir/logic/transform/schema_build/` — primitives construct, simples dispatch, composed walks, assembled wires. Read `~/.ai/phoenix/coding_reference/AI_BREAKTHROUGHS_HEMINGWAY_CODING.md`.
+
+### Writing Code From Training Data Instead of Reference Implementations
+**Detection:** If you're writing code without first re-reading the specific draupnir/regin pattern for what you're building... if the solution "feels natural" and you haven't verified it against a working reference...
+**Why it's wrong:** Your training data patterns WILL violate gleipnir v2. Every time. The CC bands, zone isolation, gravity rule, and same-level import ban create constraints that don't exist in normal Python. The only source of correct patterns is the reference implementations. Writing from training data then adapting when gleipnir rejects is an 8-hour failure loop.
+**Recovery:** Before writing ANY module, find the equivalent pattern in draupnir or regin. Read it. Match it. The pattern catalog is in `analysis/CONTEXT_COHERENCY_AUDIT.md` and the agent's reference implementation study.
+
+### Passing Callables to Bypass Import Constraints
+**Detection:** If you're passing a function as a parameter to avoid a cross-module import... if you're defining `type XFn = Callable[...]` type aliases...
+**Why it's wrong:** Callable passing bypasses the dependency graph that makes the system auditable. The import graph IS the architecture. If you can't import something, restructure so you can — move code to the right level, or have orchestrate do the wiring. There is a gap in gleipnir that doesn't catch this pattern (yet).
+**Recovery:** Use normal imports following zone/level rules. Impure can import from pure. Composed imports simple/primitive. Orchestrate imports from all zones.
+
+### Using isinstance for Type Safety in the Pure Zone
+**Detection:** If you're writing `isinstance(field_value, RootModel)` or `isinstance(x, str)` to determine what type a value is...
+**Why it's wrong:** Inside the sandbox, all types are known by construction. Gates validated everything. The schema metadata (`model_fields[name].annotation`) tells you the type without runtime checks. Runtime isinstance for type safety is re-securing an already-secured boundary.
+**Recovery:** Use Pydantic model introspection (field annotations) for type information. Write specific functions for known types instead of generic dispatchers.
 
 ### Modifying Generated Files
 **Detection:** If you open any file in `structure/gen/` to edit it...

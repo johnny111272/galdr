@@ -148,20 +148,25 @@ src/galdr/
 ├── codegen_schemas.toml            # Schema-to-module mappings for generator
 ├── structure/
 │   ├── gen/                        # GENERATED — do not edit
-│   │   ├── anthropic_render.py     # AgentAnthropicRender (14 sections + dispatcher)
-│   │   ├── output_content.py       # AgentOutputContent (12 section content blocks)
-│   │   ├── output_display.py       # AgentOutputDisplay (9 section display blocks)
-│   │   └── output_structure.py     # AgentOutputStructure (12 section structure blocks)
+│   │   ├── anthropic_render.py     # AgentAnthropicRender (13 body sections + frontmatter + dispatcher)
+│   │   ├── output_content.py       # AgentOutputContent (13 section content blocks)
+│   │   ├── output_display.py       # AgentOutputDisplay (10 section display blocks)
+│   │   └── output_structure.py     # AgentOutputStructure (section_order + 13 section structure blocks)
 │   ├── model/
 │   │   ├── errors.py               # Error types (GateValidationError, etc.)
 │   │   └── gate_types.py           # GateResult, GateError
 │   └── config/                     # Empty — old recipe.py, style.py deleted (were junk)
 ├── logic/
-│   ├── orchestrate/                # Empty — wiring to be built
-│   ├── impure/                     # Empty — gate calls to be built
-│   ├── pure/                       # Empty — business logic to be built
+│   ├── orchestrate/                # Not yet built — pipeline wiring
+│   ├── impure/
+│   │   └── gates/                  # BUILT: ffi.py (FFI boundary), simple.py (validation)
+│   ├── pure/
+│   │   ├── template/primitive.py   # BUILT: {{key}} interpolation
+│   │   ├── render/                 # BUILT: primitive (markdown atoms), simple (list renderers), composed (format resolution)
+│   │   └── compose/                # WIP: primitive (trunk ops), simple (visibility/variant/decoration), composed (CC=49 MONOLITH — needs decomposition)
 │   └── transform/
-│       └── codegen_clean/          # Post-codegen transforms (primitive/simple/composed)
+│       ├── codegen_clean/          # BUILT: post-codegen transforms (primitive/simple/composed)
+│       └── data_unwrap/            # BUILT: simple (per-shape unwrap), composed (section data collection)
 ```
 
 ### Key Files Outside Source
@@ -169,7 +174,6 @@ src/galdr/
 | Path | Purpose |
 |------|---------|
 | ~~`recipes/`~~ | **DELETED** — recipe concept absorbed into structure axis |
-| ~~`styles/`~~ | **DELETED** — old pre-split format, replaced by extracted/ TOMLs |
 | `extracted/content.toml` | New-format content axis TOML (169 lines) |
 | `extracted/structure.toml` | New-format structure axis TOML (216 lines) |
 | `extracted/display.toml` | New-format display axis TOML (105 lines) |
@@ -264,5 +268,11 @@ Gate modules for galdr's input validation need to be identified or built. At min
 ### Gleipnir V2 Migration
 Galdr is being migrated to gleipnir v2 zone architecture (in progress). The `logic/` zone skeleton exists with `pure/`, `impure/`, `transform/`, `orchestrate/`. First real module: `logic/transform/codegen_clean/` (primitive/simple/composed). All new code must follow v2 conventions.
 
-### The Composition Engine Itself
-The actual section renderers, template interpolation, variant selection, and markdown assembly — the core of what galdr does — have not yet been built in the new architecture. The control surface analysis (16 sections) is complete. The generated Pydantic models for all four axes exist. The v2 zone skeleton is in place. The next phase is building the composition logic.
+### The Composition Engine — Partially Built, Needs Decomposition
+The core engine modules exist but `compose/composed.py` is a CC=49 monolith that must be decomposed. Working parts: `compose/primitive.py` (trunk ops, gleipnir clean), `compose/simple.py` (visibility, variant, decoration, gleipnir clean), `transform/data_unwrap/` (gleipnir clean, tested). The monolith `compose_section()` needs to be split into multiple composed-level functions (CC=4-8 each) wired by an assembled-level function (CC=1-2). Study draupnir/regin reference implementations before rewriting. See build plan v3 in the plan file.
+
+### AGENT_BUILD_SYSTEM.md Shows Old OOP Design
+The "Section Containers" and "Composition" sections still show per-section class patterns with `.render()` methods. This contradicts the generic engine design and is listed as an anti-pattern in CLAUDE.md. Needs rewriting to match `COMPOSITION_ENGINE_DESIGN.md`.
+
+### Uncommitted Changes in Draupnir and Nornir
+Draupnir has 30+ uncommitted files. Nornir has 20+ uncommitted files. These are likely from the naming alignment cascade and other work. Need committing to prevent data loss.

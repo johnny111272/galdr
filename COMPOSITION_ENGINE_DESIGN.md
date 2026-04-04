@@ -257,23 +257,25 @@ The engine is a small set of functions:
 
 ## What's Already Built
 
-| Module | Level | What |
-|--------|-------|------|
-| `logic/impure/gates/ffi.py` | ffi | `call_input_gate` — FFI boundary for Rust gates |
-| `logic/impure/gates/simple.py` | simple | `validate_input` — gate call + ok-check |
-| `logic/pure/template/primitive.py` | primitive | `interpolate` — `{{key}}` replacement |
-| `logic/pure/render/primitive.py` | primitive | `heading`, `bold`, `backtick`, `bullet_item`, `numbered_item` |
-| `logic/pure/render/simple.py` | simple | List renderers, `format_inline`, `format_heading` |
-| `logic/pure/render/composed.py` | composed | `resolve_format`, `render_list` — threshold-based format dispatch |
-| `logic/transform/codegen_clean/` | all | Post-codegen transforms for model generator |
+| Module | Level | What | Status |
+|--------|-------|------|--------|
+| `logic/impure/gates/ffi.py` | ffi | `call_input_gate` — FFI boundary | ✅ clean |
+| `logic/impure/gates/simple.py` | simple | `validate_input` — gate + ok-check | ✅ clean |
+| `logic/pure/template/primitive.py` | primitive | `interpolate` — `{{key}}` replacement | ✅ clean |
+| `logic/pure/render/primitive.py` | primitive | `heading`, `bold`, `backtick`, etc. | ✅ clean |
+| `logic/pure/render/simple.py` | simple | List renderers, format_inline, format_heading | ✅ clean |
+| `logic/pure/render/composed.py` | composed | `resolve_format`, `render_list` | ✅ clean |
+| `logic/transform/codegen_clean/` | all | Post-codegen transforms | ✅ clean |
+| `logic/transform/data_unwrap/simple.py` | simple | Per-shape RootModel unwrappers | ✅ clean |
+| `logic/transform/data_unwrap/composed.py` | composed | `unwrap_section_data` — collect scalars | ✅ clean |
+| `logic/pure/compose/primitive.py` | primitive | Trunk extraction, suffix ops | ✅ clean |
+| `logic/pure/compose/simple.py` | simple | Visibility, variant, decoration, format | ✅ clean |
+| `logic/pure/compose/composed.py` | composed | `compose_section` — THE WALKER | ⚠️ CC=49 MONOLITH — needs decomposition |
 
 **What's NOT built:**
-- Data field classifier
-- Content matcher
-- Override resolver
-- Visibility checker
-- Variant selector
-- Data unwrapper (RootModel `.root` → plain values)
-- Section walker (the core loop)
-- Pipeline orchestrator
-- CLI
+- Section walker decomposition (compose/composed.py is CC=49, needs split into multiple CC=4-8 functions + assembled wiring)
+- Pipeline orchestrator (`orchestrate/compose/orchestrate.py`)
+- CLI (`cli.py`)
+
+**What needs rewriting:**
+- `compose/composed.py` — the monolith must be decomposed. Study draupnir/regin patterns first. See build plan v3.
