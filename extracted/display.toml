@@ -1,8 +1,6 @@
 [identity]
 role_expertise_format = ["bulleted", "inline"]
 role_expertise_format_threshold = 3
-role_responsibility_format = ["bulleted", "prose"]
-role_responsibility_format_threshold = 3
 
 [security_boundary]
 # Path style: "relative_dotslash" | "relative_bare" | "absolute"
