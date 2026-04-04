@@ -62,6 +62,11 @@ None of them felt uncertain while doing it.
 **Why it's wrong:** Scattered errors = architectural problem, not syntax problems. Error clusters by type reveal WHAT is broken. Error clusters by location reveal WHERE. STOP. Read ALL errors. Find the pattern. Secure the boundary. Errors disappear.
 **Recovery:** Read `~/.ai/phoenix/coding_reference/AI_BREAKTHROUGHS_REFACTORING_DISCIPLINE.md`.
 
+### Writing Per-Section Code
+**Detection:** If you're creating `compose_identity()`, `render_constraints()`, or ANY function named after a specific section...
+**Why it's wrong:** The engine is GENERIC. One `compose_section()` processes all sections. Section-specific knowledge lives in the models and TOML, not in code. The field name suffixes (`_heading`, `_preamble`, `_label`, `_postscript`) encode position. The five operations (visibility gate, text passthrough, template interpolation, variant selection, list formatting) handle every field type. There is no per-section code. This mistake has been made twice before — once with OOP classes, once with per-section composer functions.
+**Recovery:** Read `COMPOSITION_ENGINE_DESIGN.md` — especially "Core Principle" and "What the Engine Code Looks Like."
+
 ### Using the Old Code as Reference
 **Detection:** If you're looking at git history for the deleted `functions/` directory, or referencing `styles/default.toml` as a current format...
 **Why it's wrong:** The old renderer was OOP disguised as functional code — it was scrapped entirely. `styles/default.toml` is the OLD pre-split format (combined content/structure/display). The current architecture uses three separate TOML files. Nothing in the old code is normative.

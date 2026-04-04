@@ -26,6 +26,7 @@ Galdr is the composition engine — the final stage of the agent build pipeline 
 | Document | Path | Relevance | Freshness |
 |----------|------|-----------|-----------|
 | Agent Build System | `smidja/galdr/AGENT_BUILD_SYSTEM.md` | Canonical design spec: four axes, section inventory, composition, matrix | **Current** |
+| Composition Engine Design | `smidja/galdr/COMPOSITION_ENGINE_DESIGN.md` | Generic engine spec: five operations, assembly order, fragment processing, what's built vs not | **Current** |
 | Quickstart | `smidja/galdr/QUICKSTART.md` | CLI, pipeline, IO contract, section table | **Mostly current.** Says "Three Input Axes" — should be four (data + structure + content + display). Style references are pre-split. |
 | Custom Write Tool | `smidja/galdr/CUSTOM_WRITE_TOOL.md` | How enforcement output tools work end-to-end | Current |
 | TOML Architecture | `smidja/galdr/agent_control_surfaces/TOML_ARCHITECTURE.md` | Design of the three control surface TOML files | Current |
@@ -218,8 +219,11 @@ The first agents that need to go through the full pipeline:
 | If you need to understand... | Read |
 |------------------------------|------|
 | **What galdr does and the four axes** | `AGENT_BUILD_SYSTEM.md` — the canonical design spec |
+| **How the generic composition engine works** | `COMPOSITION_ENGINE_DESIGN.md` — five operations, assembly order, no per-section code |
 | **How to run galdr** | `QUICKSTART.md` — CLI, pipeline, IO paths |
 | **The v2 zone architecture (imports, levels, CC)** | `~/.ai/smidja/nornir/core/gleipnir_core/V2_ZONE_ARCHITECTURE.md` |
+| **The TOML field patterns and naming conventions** | `agent_control_surfaces/TOML_ARCHITECTURE.md` — field interface patterns, assembly order, naming rules |
+| **Cross-section rendering patterns** | `agent_control_surfaces/CROSS_SECTION_PATTERNS.md` — format knobs vs structural variants, rendering conditionals, data gates |
 | **What each section's control surfaces do** | `agent_control_surfaces/{SECTION}.md` (16 files) |
 | **Cross-section patterns (visibility cascades, co-selection)** | `agent_control_surfaces/CROSS_SECTION_PATTERNS.md` |
 | **How the three TOML files are structured** | `agent_control_surfaces/TOML_ARCHITECTURE.md` |
@@ -244,6 +248,9 @@ The first agents that need to go through the full pipeline:
 
 ### Tests Are Broken
 All 7 test files in `tests/` import from `galdr.structures.*` and `galdr.functions.*` — both paths no longer exist after the v2 restructure. Tests need rewriting against new import paths (`galdr.structure.*`, `galdr.logic.*`). The old tests tested the old OOP renderer which has been scrapped.
+
+### Naming Alignment — In Progress
+Cross-axis field names must be mechanically matchable for the composition engine. Full analysis in `analysis/NAMING_CONVENTION_ANALYSIS.md` and `analysis/CROSS_AXIS_NAMING_INVENTORY.md`. Comprehensive rename plan in `analysis/NAMING_ALIGNMENT_PLAN.md`. Seven specific renames needed across verdandi agent-builder and agent-output YAML sources, plus one enum value change (instruction_mode deterministic/probabilistic → exact/judgment). Changes cascade through the full pipeline.
 
 ### Old Artifacts Cleaned (2026-04-02)
 Deleted: `styles/default.toml` (pre-split), `recipes/standard-v1.toml` (absorbed into structure), `schemas/galdr-*.schema.json` (4 stale), `structure/config/style.py` (OOP hierarchy), `structure/config/recipe.py` (old format), `structure/model/template_context.py` (manual duplication). Canonical control surface TOMLs live in `extracted/`.

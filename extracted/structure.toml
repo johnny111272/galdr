@@ -1,3 +1,20 @@
+[section_order]
+order = [
+    "identity",
+    "security_boundary",
+    "critical_rules",
+    "input",
+    "instructions",
+    "examples",
+    "output",
+    "writing_output",
+    "constraints",
+    "anti_patterns",
+    "success_criteria",
+    "failure_criteria",
+    "return_format",
+]
+
 [identity]
 field_ordering = "identity_first"
 fuse_declaration_and_role_description = false
@@ -85,11 +102,9 @@ suppress_lone_group_heading = true
 
 # Override for per-group example_display_headings from data
 example_display_headings_override = false
-example_display_headings = true                    # only when override = true
 
 # Override for per-group examples_max_number from data
 examples_max_number_override = false
-examples_max_number = 0                            # 0 = no truncation, N = cap. Only when override = true
 
 # Whether a framing sentence renders between the group heading and first entry
 group_framing_sentence_visible = false
@@ -110,7 +125,6 @@ constraint_count_heading_visible = true
 # Variant selectors
 section_preamble_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
 closing_compliance_reminder_variant = "evaluation_warning"  # "evaluation_warning" | "simultaneity"
-no_inferred_constraints_variant = "light"  # "light" | "explicit"
 
 [anti_patterns]
 # Whether to render the section at all (false = omit even if patterns exist)
