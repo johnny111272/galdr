@@ -96,7 +96,38 @@ Example:
 Data provides a list of items. Display provides a format enum (or threshold pair). The engine resolves the format, then renders the list.
 
 - Plain format: `evidence_format = "bare"` → always this format
-- Threshold pair: `expertise_format = ["bulleted", "inline"]` + `threshold = 3` → bulleted above 3, inline at or below
+- Threshold pair: `role_expertise_format = ["bulleted", "inline"]` + `threshold = 3` → bulleted above 3, inline at or below
+
+---
+
+## Trunk Matching: How the Engine Finds Data for Content Fields
+
+The naming alignment enables mechanical matching across axes. The engine never needs a mapping table.
+
+**The `_label` suffix signals that data entries follow.** When the engine encounters a content field ending in `_label`:
+
+1. Render the label text (or interpolate if it's a template)
+2. Strip `_label` to get the **trunk** → e.g., `role_expertise_label` → trunk = `role_expertise`
+3. Look up `data.{trunk}` → the data list (e.g., `data.role_expertise`)
+4. Look up `display.{trunk}_format` → the format (e.g., `display.role_expertise_format`)
+5. Look up `display.{trunk}_format_threshold` → threshold if format is a pair
+6. Render the list using the resolved format
+7. Continue to the next content field (typically `{trunk}_postscript`)
+
+**Template placeholders use direct name lookup.** `{{role_identity}}` matches `data.role_identity` exactly. No trunk derivation needed.
+
+**Visibility toggles use the full content field name.** `declaration_heuristic_postscript` → check `structure.declaration_heuristic_postscript_visible`.
+
+**Variant selectors use the content sub-table name.** Content field is a BaseModel subclass (not a string type) → it's a variant sub-table. Look up the matching selector in structure by the same field name.
+
+These four lookup mechanisms cover every cross-axis connection:
+
+| Content field type | Mechanism | Example |
+|-------------------|-----------|---------|
+| StringTemplate | Direct placeholder lookup in data | `{{role_identity}}` → `data.role_identity` |
+| StringText/StringProse | Check `_visible` in structure | `closing_identity_reminder` → `structure.closing_identity_reminder_visible` |
+| `*_label` suffix | Strip suffix → trunk → `data.{trunk}` + `display.{trunk}_format` | `role_expertise_label` → `data.role_expertise` + `display.role_expertise_format` |
+| BaseModel subclass | Variant sub-table → selector in structure by same name | `framing_variant` (content) → `structure.framing_variant` |
 
 ---
 
@@ -164,26 +195,61 @@ The other sections do NOT get these. They either render (data present) or don't 
 
 ---
 
-## Processing Order
+## Processing Order: Data Drives, Content Decorates
 
-The engine processes content fields in **declaration order** — the order they appear in the Pydantic model. This is the model's field sequence, which was generated from the schema, which was generated from the verdandi YAML. The order in the model IS the render order.
+**The data model field order IS the rendering order.** The engine walks DATA fields in declaration order, not content fields. Content fields are decorations that attach to data fields via trunk naming. This is the fundamental architecture — getting it backwards (walking content, inserting data) was the mistake of two previous attempts.
 
-This means: to change the rendering order of fragments within a section, you change the verdandi YAML field order. You do not write reordering code.
+For each section, the flow is:
+
+```
+1. SECTION DECORATION (top)
+   - heading (from content — the one field named just "heading")
+   - section-level preamble, explanatory prose, variant selections
+   - (content fields whose trunk does NOT match any data field name)
+
+2. DATA WALK (in data field declaration order)
+   For each data field:
+   a. Resolve overrides: check structure for {field}_override → if true, substitute
+   b. Classify: gate (boolean/enum for branching) | scalar | list
+   c. If gate → process logic, skip rendering
+   d. Check visibility: structure.{trunk}_visible → skip if hidden
+   e. Prepend decoration: content.{trunk}_heading, _preamble, _label → render before
+   f. Render data:
+      - Scalar in template → find content template with {{field_name}}, interpolate
+      - Scalar no template → render as-is
+      - List → find display.{trunk}_format (+threshold), format and render
+   g. Append decoration: content.{trunk}_postscript → render after
+
+3. SECTION DECORATION (bottom)
+   - section-level closing prose, postscripts
+   - (content fields whose trunk does NOT match any data field, with closing suffixes)
+```
+
+**How to tell section-level content from field-level content:** If a content field's trunk matches a data field name → field-level (attaches to that data field). If it doesn't match → section-level (renders before or after the data walk based on its suffix).
+
+**Override resolution:** Structure can override data values via the `_override` pattern. When `structure.{field}_override = true`, the sibling value `structure.{field}` replaces `data.{field}`. This fires BEFORE classification and rendering.
+
+**Guardrails family:** Four sections (constraints, anti_patterns, success_criteria, failure_criteria) have `section_visible` and `max_entries_rendered` in structure. These are section-level gates — check before any field processing. `section_visible = false` → skip entire section. `max_entries_rendered > 0` → truncate the data list before rendering.
+
+To change the rendering order of data within a section, change the verdandi YAML field order in the data model. To change which prose decorates which field, change the content field's trunk name. No reordering code.
 
 ---
 
 ## What the Engine Code Looks Like
 
-The engine is a small set of pure functions:
+The engine is a small set of functions:
 
-1. **Fragment classifier** — reads a content field's name and type, determines which operation to apply (text, template, variant selection)
-2. **Visibility checker** — given a content field name, looks up the corresponding `_visible` toggle in structure
-3. **Template interpolator** — `{{key}}` replacement (already built: `logic/pure/template/primitive.py`)
-4. **List formatter** — resolve format from display, render items (already built: `logic/pure/render/`)
-5. **Section walker** — iterates content fields in declaration order, applies the right operation for each, joins results
-6. **Pipeline orchestrator** — loads all four inputs through gates, iterates section_order, calls section walker, joins sections with dividers, writes output
-
-Items 1-4 are pure. Item 5 is pure (or transform if it does model-to-model conversion). Item 6 is orchestrate (it does IO via gates).
+1. **Data field classifier** — given a data field's type, determines: gate | scalar | list (pure, primitive)
+2. **Content matcher** — given a data field trunk, finds associated content decoration: heading, preamble, label, postscript. Also identifies section-level content (no data field match). (pure, simple)
+3. **Override resolver** — checks structure for `_override` flags, substitutes values (pure, simple)
+4. **Visibility checker** — looks up `_visible` toggle in structure (pure, primitive)
+5. **Variant selector** — given a variant sub-table in content + selector in structure, picks the prose (pure, simple)
+6. **Template interpolator** — `{{key}}` replacement (already built: `logic/pure/template/primitive.py`)
+7. **List formatter** — resolve format from display, render items (already built: `logic/pure/render/`)
+8. **Data unwrapper** — RootModel `.root` → plain values for template interpolation (transform, simple)
+9. **Section walker** — the main loop: section decoration → data walk → section closing (pure, composed)
+10. **Pipeline orchestrator** — loads all four inputs through gates, iterates section_order, calls section walker, joins sections with dividers, writes output (orchestrate)
+11. **CLI** — thin typer wrapper (entry point)
 
 **There is no per-section code.** There is no `compose_identity()` or `compose_constraints()`. There is one `compose_section()` that works for any section.
 
@@ -202,10 +268,12 @@ Items 1-4 are pure. Item 5 is pure (or transform if it does model-to-model conve
 | `logic/transform/codegen_clean/` | all | Post-codegen transforms for model generator |
 
 **What's NOT built:**
-- Fragment classifier
+- Data field classifier
+- Content matcher
+- Override resolver
 - Visibility checker
 - Variant selector
 - Data unwrapper (RootModel `.root` → plain values)
-- Section walker
+- Section walker (the core loop)
 - Pipeline orchestrator
 - CLI
