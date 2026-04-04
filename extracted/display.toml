@@ -1,8 +1,8 @@
 [identity]
-expertise_format = ["bulleted", "inline"]
-expertise_format_threshold = 3
-responsibility_format = ["bulleted", "prose"]
-responsibility_format_threshold = 3
+role_expertise_format = ["bulleted", "inline"]
+role_expertise_format_threshold = 3
+role_responsibility_format = ["bulleted", "prose"]
+role_responsibility_format_threshold = 3
 
 [security_boundary]
 # Path style: "relative_dotslash" | "relative_bare" | "absolute"
@@ -48,26 +48,26 @@ scaffolding_tier_lightweight_activation_threshold = 3
 scaffolding_tier_standard_activation_threshold = 7
 
 # Mode recap format in closer
-exact_vs_judgment_recap_format = "prose"  # "prose" | "tabular"
+instruction_mode_recap_format = "prose"  # "prose" | "tabular"
 
 [examples]
 # Entry heading format — bold text vs H4
 # Bold preserves boundaries without visual density for groups with 5+ entries
-entry_heading_format = "bold"
+example_heading_format = "bold"
 
 # Entry body container — how entry content is visually contained
-entry_body_container = "bare_with_endmarker"
+example_body_container = "bare_with_endmarker"
 
 # Entry separator — what divides entries when headings are off (per-group data)
-entry_separator = "horizontal_rule"
+example_separator = "horizontal_rule"
 
 # Multi-group separator — visual break between groups (only when group_count > 1)
 multi_group_separator = "horizontal_rule"  # "horizontal_rule" | "none"
 
 [constraints]
 # Enumeration format
-enumeration_format = ["bulleted", "numbered"]
-enumeration_format_threshold = 6
+rules_format = ["bulleted", "numbered"]
+rules_format_threshold = 6
 
 # Closing reinforcement activation threshold
 closing_compliance_reminder_visibility_threshold = 6
@@ -84,7 +84,7 @@ polarity_grouping_activation_threshold = 11
 [anti_patterns]
 # Format for rendering the pattern list
 # Options: "bare_bullets", "bold_prohibition"
-pattern_list_format = "bare_bullets"
+patterns_format = "bare_bullets"
 
 [success_criteria]
 # Evidence item format: threshold-based on evidence count
@@ -95,11 +95,9 @@ evidence_format = ["bulleted", "numbered"]
 # Evidence item format
 evidence_format = "bare"
 
-[output]
-# No display knobs for this section.
+[input]
+context_required_format = "numbered"
+context_available_format = "bulleted"
+parameters_format = ["bulleted", "prose"]
+parameters_format_threshold = 2
 
-[writing_output]
-# No display knobs for this section.
-
-[return_format]
-# No display knobs for this section.

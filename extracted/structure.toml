@@ -18,7 +18,8 @@ order = [
 [identity]
 field_ordering = "identity_first"
 fuse_declaration_and_role_description = false
-expertise_is_strictly_limited_postscript_visible = true
+declaration_heuristic_postscript_visible = true
+role_expertise_is_strictly_limited_postscript_visible = true
 closing_identity_reminder_visible = false
 bold_contrast_phrase_from_role_description_visible = false
 
@@ -68,14 +69,14 @@ internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
 heading_variant = "default"                   # "default" | "procedure" | "steps_with_count"
 
 # Mode infrastructure
-exact_vs_judgment_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
-exact_vs_judgment_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
+instruction_mode_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
+instruction_mode_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
 signal_at_mode_change_visible = false
 
 # Preamble components
 instructions_preamble_step_count_visible = true
 instructions_preamble_no_add_skip_reorder_visible = true
-instructions_preamble_exact_vs_judgment_preview_visible = true
+instructions_preamble_instruction_mode_preview_visible = true
 instructions_preamble_no_extra_operations_visible = true
 
 # Step structure
@@ -84,14 +85,14 @@ step_done_when_suffix_visible = false
 
 # Closer
 section_closer_guardrail_visible = true
-section_closer_exact_vs_judgment_recap_visible = false
+section_closer_instruction_mode_recap_visible = false
 
 # Dependency and progress
 cross_step_dependency_phrases_visible = false
 halfway_point_reminder_visible = false
 
 # Scaffolding tier override (null = auto from step count)
-structural_complexity_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
+scaffolding_tier_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
 
 [examples]
 section_preamble_visible = true
@@ -121,6 +122,8 @@ constraints_are_not_steps_visible = true
 no_inferred_constraints_visible = false
 closing_compliance_reminder_visible = true
 constraint_count_heading_visible = true
+hierarchy_tier_comparison_visible = true
+hierarchy_three_tier_explanation_visible = true
 
 # Variant selectors
 section_preamble_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
@@ -188,6 +191,15 @@ check_before_and_during_visible = false
 
 # Abort behavioral posture: "obligation" = MUST stop (batch/binary evidence), "permission" = correct action is to stop (creative/judgment evidence)
 abort_stance_variant = "obligation"  # governs: abort_stance_preamble_*, abort_stance_definition_label_*
+
+[input]
+section_preamble_visible = true
+context_required_preamble_visible = true
+knowledge_data_transition_visible = true
+input_completeness_postscript_visible = false
+schema_intro_visible = true
+parameters_heading_visible = "auto"
+parameters_heading_auto_threshold = 2
 
 [output]
 # Variant selectors
