@@ -20,22 +20,26 @@ Strip the positional suffix from a content field name → get the trunk → trun
 
 ## Required Changes
 
-### Group 1: Identity Data — Drop `role_` Prefix
+### Group 1: Identity Content/Display — Add `role_` Prefix to Match Data
 
-The `role_` prefix on identity data fields breaks trunk matching against content/display.
+Data model uses `role_expertise` and `role_responsibility`. Content and display drop the `role_` prefix. Fix: add `role_` to content and display fields so the trunk matches data. The data model is the source of truth (comes from the pipeline) — other axes align to it.
 
-**Verdandi source:** agent-builder YAML, identity section fields
+**Verdandi source:** agent-output YAML, identity content and display fields
 
-| Current | Rename To | Connects To |
-|---------|-----------|-------------|
-| `role_expertise` | `expertise` | content: `expertise_label`, display: `expertise_format` |
-| `role_responsibility` | `responsibility` | content: `responsibility_label`, display: `responsibility_format` |
+| Axis | Current | Rename To | Trunk |
+|------|---------|-----------|-------|
+| content | `expertise_label` | `role_expertise_label` | `role_expertise` |
+| content | `expertise_is_strictly_limited_postscript` | `role_expertise_is_strictly_limited_postscript` | `role_expertise` |
+| structure | `expertise_is_strictly_limited_postscript_visible` | `role_expertise_is_strictly_limited_postscript_visible` | `role_expertise` |
+| display | `expertise_format` | `role_expertise_format` | `role_expertise` |
+| display | `expertise_format_threshold` | `role_expertise_format_threshold` | `role_expertise` |
+| content | `responsibility_label` | `role_responsibility_label` | `role_responsibility` |
+| display | `responsibility_format` | `role_responsibility_format` | `role_responsibility` |
+| display | `responsibility_format_threshold` | `role_responsibility_format_threshold` | `role_responsibility` |
 
-**Note on `role_identity` and `role_description`:** These are scalar template placeholders (`{{role_identity}}`, `{{role_description}}`) resolved by direct name lookup. Renaming them would require updating all content templates that reference them. Recommendation: **keep as-is** — they don't participate in trunk matching, only template interpolation. The `role_` prefix is acceptable for scalars used in templates since the template names the field explicitly.
+**Data model stays unchanged.** No pipeline cascade. No agent definition TOML changes.
 
-**Cascade:** Verdandi YAML → Draupnir schemas → Nornir gates (agent-builder gates) → Regin generated models + pipeline code + all agent definition TOML files → Galdr generated models
-
-**Agent definition impact:** Every agent definition TOML that has `[identity]` with `role_expertise` and `role_responsibility` fields needs updating. Check `~/.ai/spaces/bragi/definitions/agents/` for all `.toml` files.
+**Cascade:** Verdandi agent-output YAML → Draupnir schemas → Nornir output gates → Galdr generated models + `extracted/content.toml` + `extracted/display.toml`
 
 ---
 
@@ -85,21 +89,37 @@ Data calls the field `example_heading`. Content calls it `entry_heading`. Displa
 
 ---
 
-### Group 5: Instructions Vocabulary — Align Terminology
+### Group 5: Instructions Vocabulary — Align Content/Structure/Display to Data Trunk
 
-Data uses `instruction_mode` with values `deterministic`/`probabilistic`. Content/structure/display all use `exact_vs_judgment` / `exact`/`judgment` terminology.
+Data uses `instruction_mode` with values `deterministic`/`probabilistic`. Content/structure/display wholesale renamed this to `exact_vs_judgment`/`exact`/`judgment` — a divergence that breaks trunk matching. Field names are flags that connect axes, not rendering vocabulary.
 
-This is different from the other mismatches — the data field name and content field names serve different purposes. Data carries the semantic classification. Content carries the rendering terminology. But the vocabulary divergence means the engine can't derive one from the other.
+**Principle:** Data model is source of truth. Content/structure/display field names align to it. The rendered prose INSIDE the content fields can say "exact"/"judgment" — that's a content authoring choice, not a naming concern.
 
-**Two options:**
+**Verdandi source:** agent-output YAML, instructions content/structure/display fields
 
-**Option A — Rename data enum values:** Change `deterministic` → `exact`, `probabilistic` → `judgment` in the verdandi `instruction_mode` enum. This makes the data vocabulary match content/structure/display. The data field stays `instruction_mode`, the values change.
+| Axis | Current | Rename To |
+|------|---------|-----------|
+| content | `step_header_exact` | `step_header_deterministic` |
+| content | `step_header_judgment` | `step_header_probabilistic` |
+| content | `step_header_exact_n_only` | `step_header_deterministic_n_only` |
+| content | `step_header_judgment_n_only` | `step_header_probabilistic_n_only` |
+| content | `exact_vs_judgment_body_prefix_exact` | `instruction_mode_body_prefix_deterministic` |
+| content | `exact_vs_judgment_body_prefix_judgment` | `instruction_mode_body_prefix_probabilistic` |
+| content | `exact_vs_judgment_explanation_mixed` | `instruction_mode_explanation_mixed` |
+| content | `exact_vs_judgment_explanation_uniform_exact` | `instruction_mode_explanation_uniform_deterministic` |
+| content | `exact_vs_judgment_explanation_uniform_judgment` | `instruction_mode_explanation_uniform_probabilistic` |
+| content | `signal_at_mode_change_to_exact` | `signal_at_mode_change_to_deterministic` |
+| content | `signal_at_mode_change_to_judgment` | `signal_at_mode_change_to_probabilistic` |
+| content | `section_closer_exact_vs_judgment_recap` | `section_closer_instruction_mode_recap` |
+| structure | `exact_vs_judgment_explanation_visible` | `instruction_mode_explanation_visible` |
+| structure | `exact_vs_judgment_marker_placement` | `instruction_mode_marker_placement` |
+| structure | `instructions_preamble_exact_vs_judgment_preview_visible` | `instructions_preamble_instruction_mode_preview_visible` |
+| structure | `section_closer_exact_vs_judgment_recap_visible` | `section_closer_instruction_mode_recap_visible` |
+| display | `exact_vs_judgment_recap_format` | `instruction_mode_recap_format` |
 
-**Option B — Rename content/structure/display fields:** Change all `exact_vs_judgment_*` fields to `deterministic_vs_probabilistic_*`. Longer but semantically precise.
+**Data model stays unchanged.** No pipeline cascade. No agent definition TOML changes.
 
-**Recommendation:** Option A. The content/structure/display terminology (`exact`/`judgment`) is more intuitive for the agent reading the prompt. Making the data values match is the smaller change. The `instruction_mode` field name stays — only the enum values change.
-
-**Cascade:** Verdandi YAML → all schemas → all gates → Regin models + pipeline code (any code that checks `InstructionMode.deterministic` or `.probabilistic`) → all agent definition TOMLs that declare instruction modes → Galdr content
+**Cascade:** Verdandi agent-output YAML → Draupnir schemas → Nornir output gates → Galdr generated models + `extracted/content.toml` + `extracted/structure.toml`
 
 ---
 
@@ -169,16 +189,11 @@ The `input` section exists in the data model but has no content, structure, or d
 
 ## Implementation Order
 
-1. **Group 1** (identity data renames) — highest impact, touches verdandi agent-builder + all agent definitions
-2. **Group 2** (constraints display) — verdandi agent-output only
-3. **Group 3** (anti-patterns display) — verdandi agent-output only  
-4. **Group 4** (examples content/display) — verdandi agent-output only
-5. **Group 5** (instruction_mode enum values) — touches everything, do last
-6. **Group 6** (scaffolding terminology) — small, structure + display
+**All groups are verdandi agent-output only.** No agent-builder changes. No pipeline cascade. No agent definition TOML changes.
 
-Groups 2-4 are all in agent-output and can be done together.
+Groups 1-6 can be done in any order or all at once — they're all in the same verdandi project (agent-output YAML sources).
 
-After all verdandi changes: full cascade — Draupnir → Nornir gates → Regin generate_structures → Galdr generate_structures → update `extracted/*.toml` files.
+After all verdandi changes: Draupnir (agent-output schemas) → Nornir output gates → Galdr `generate_structures.py` → update `extracted/*.toml` files.
 
 ---
 
