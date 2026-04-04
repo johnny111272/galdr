@@ -191,17 +191,17 @@ Data uses `instruction_mode` with values `deterministic`/`probabilistic`. Conten
 
 ### Content Fields Missing `_visible` Toggles
 
-Add structure `_visible` toggles for content fields that currently always render:
+Add structure `_visible` toggles for 3 content fields that have legitimate suppression scenarios:
 
-| Section | Content Field | Toggle to Add |
-|---------|--------------|---------------|
-| identity | `declaration_heuristic_postscript` | `declaration_heuristic_postscript_visible` |
-| constraints | `hierarchy_tier_comparison` | `hierarchy_tier_comparison_visible` |
-| constraints | `hierarchy_three_tier_explanation` | `hierarchy_three_tier_explanation_visible` |
-| failure_criteria | `any_one_triggers_abort` | `any_one_triggers_abort_visible` |
-| return_format | `report_completion_label` | `report_completion_label_visible` |
+| Section | Content Field | Toggle to Add | Why |
+|---------|--------------|---------------|-----|
+| identity | `declaration_heuristic_postscript` | `declaration_heuristic_postscript_visible` | Experimental reinforcement — test whether heuristic helps |
+| constraints | `hierarchy_tier_comparison` | `hierarchy_tier_comparison_visible` | Cross-references critical_rules — confusing if that section is absent |
+| constraints | `hierarchy_three_tier_explanation` | `hierarchy_three_tier_explanation_visible` | Same — references three-tier hierarchy that may not be fully rendered |
 
-The token fields (`token_must_be_first_word_tokens_three/two`) are data-gated (mutually exclusive based on ABORT token availability), not visibility-toggled. No toggle needed.
+Two content fields intentionally always render (no toggle needed):
+- `any_one_triggers_abort` (failure_criteria) — integral to section meaning, no suppression scenario
+- `report_completion_label` (return_format) — introduces the return template, always needed
 
 ---
 
