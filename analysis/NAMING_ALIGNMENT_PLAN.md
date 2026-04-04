@@ -123,77 +123,104 @@ Data uses `instruction_mode` with values `deterministic`/`probabilistic`. Conten
 
 ---
 
-### Group 6: Instructions Display — Align Scaffolding Terminology
+### ~~Group 6: Scaffolding Terminology~~ — NOT A MISMATCH
 
-Structure uses `structural_complexity_override`. Display uses `scaffolding_tier_*_activation_threshold`.
-
-| Current | Rename To | Connects To |
-|---------|-----------|-------------|
-| structure: `structural_complexity_override` | `scaffolding_tier` | display: `scaffolding_tier_*_activation_threshold` |
-
-OR:
-
-| Current | Rename To | Connects To |
-|---------|-----------|-------------|
-| display: `scaffolding_tier_lightweight_activation_threshold` | `structural_complexity_lightweight_threshold` | structure: `structural_complexity_override` |
-| display: `scaffolding_tier_standard_activation_threshold` | `structural_complexity_standard_threshold` | structure: `structural_complexity_override` |
-
-**Recommendation:** Rename structure field to `scaffolding_tier` — shorter, and `scaffolding_tier` is the more descriptive name for what it does.
-
-**Cascade:** Verdandi YAML → schemas → gates → Galdr models + `extracted/structure.toml`
+`structural_complexity_override` (structure) and `scaffolding_tier_*_activation_threshold` (display) are different concepts in different axes. Structure says WHICH tier. Display says WHAT COUNTS trigger each tier in auto mode. Names are correct for what they describe. No rename needed.
 
 ---
 
-## Issues to Decide (Not Renames)
+## Additional Schema Changes
 
-### `role_responsibility` Scalar-vs-List Anomaly
+### `role_responsibility` — Change from Scalar to List
 
-`role_responsibility` is typed as a single `RoleResponsibility` (StringProse) — a scalar. But display has `responsibility_format` with threshold-based switching, which only makes sense for lists.
+**DECIDED:** `role_responsibility` becomes a list type in the data model. Currently typed as single `RoleResponsibility` (StringProse) but display already has `role_responsibility_format` with threshold-based switching, which only makes sense for lists. Current usage confirms agents can have multiple responsibility statements.
 
-**Options:**
-1. Make `responsibility` a list type in verdandi (allows multiple responsibility statements)
-2. Remove `responsibility_format` and `responsibility_format_threshold` from display (accept it's always scalar)
-3. Keep both — the engine renders a single-item list using the format (works but odd)
+**Verdandi source:** agent-builder YAML, identity section — change `role_responsibility` from atom to array type.
 
-**Recommendation:** Decide based on whether agents will ever have multiple responsibility statements. If yes, make it a list. If no, remove the display format fields.
+**Cascade:** This one touches the data model → full pipeline cascade: Verdandi agent-builder → Draupnir → Nornir gates → Regin models + pipeline code → all agent definition TOMLs → Galdr models.
 
-### Input Section — No Content/Structure/Display Models
+---
 
-The `input` section exists in the data model but has no content, structure, or display counterpart. It doesn't participate in the composition pipeline.
+### Input Section — Add to All Three Output Schemas
 
-**Options:**
-1. Add input to all three output schemas (full composition pipeline participation)
-2. Keep input as a data-only section with hardcoded rendering (simpler but inconsistent)
-3. Defer — handle after the engine works for the other 12 sections
+**DECIDED:** The input section exists in the data model but was never extracted to the output schemas during the three-axis split. Must be added to content, structure, and display.
 
-**Recommendation:** Option 3. Get the engine working first. Input can be added later.
+**Verdandi source:** agent-output YAML — add `input` section to all three output schemas.
+
+#### Content fields to add (`InputContent`):
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `heading` | StringText | Default: "Input" |
+| `section_preamble` | StringProse | Conditional on context_required presence. "Before processing your input, you must read and internalize several reference documents." |
+| `description_format_template` | StringTemplate | `"Your input is a {{format}} file containing {{description}}."` — integrated presentation |
+| `context_required_heading` | StringText | "Required Reading" — sub-block heading |
+| `context_required_preamble` | StringProse | "These are not reference materials to consult during work. They are foundational knowledge you must absorb before starting." |
+| `context_entry_template` | StringTemplate | `"**{{context_label}}**: Read {{context_path}}"` |
+| `context_available_heading` | StringText | Sub-block heading for optional context |
+| `knowledge_data_transition` | StringProse | "With this knowledge internalized, here is your input data:" |
+| `parameters_heading` | StringText | "Parameters" |
+| `parameter_entry_template` | StringTemplate | `` "`{{param_name}}` ({{param_type}}): {{param_description}}" `` |
+| `input_completeness_postscript` | StringProse | "Your input and required reading together constitute your complete input. Do not seek additional sources." |
+| `schema_intro` | StringTemplate | `"Input validates against: {{input_schema}}"` |
+
+#### Structure fields to add (`InputStructure`):
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `section_preamble_visible` | Boolean | true | Conditional — only renders when context_required present |
+| `context_required_preamble_visible` | Boolean | true | |
+| `knowledge_data_transition_visible` | Boolean | true | Only when context_required present |
+| `input_completeness_postscript_visible` | Boolean | false | Experimental — off by default |
+| `schema_intro_visible` | Boolean | true | Only when input_schema present |
+| `parameters_heading_visible` | VisibilityMode | "auto" | Auto based on param count |
+| `parameters_heading_auto_threshold` | Integer | 2 | Show heading when 3+ params |
+
+#### Display fields to add (`InputDisplay`):
+
+| Field | Type | Default | Notes |
+|-------|------|---------|-------|
+| `context_required_format` | ListFormat | "numbered" | Numbered implies reading order |
+| `context_available_format` | ListFormat | "bulleted" | |
+| `parameters_format` | UnionFormatOrPair | ["bulleted", "prose"] | Prose for 1-2, bullets for 3+ |
+| `parameters_format_threshold` | Integer | 2 | |
+
+**Cascade:** Verdandi agent-output YAML → Draupnir → Nornir output gates → Galdr generated models + new `[input]` sections in `extracted/content.toml`, `extracted/structure.toml`, `extracted/display.toml`.
+
+---
 
 ### Content Fields Missing `_visible` Toggles
 
-8 content fields have no corresponding structure `_visible` toggle:
+Add structure `_visible` toggles for content fields that currently always render:
 
-| Section | Content Field | Always Renders? |
-|---------|--------------|----------------|
-| identity | `declaration_heuristic_postscript` | Currently yes |
-| constraints | `hierarchy_tier_comparison` | Currently yes |
-| constraints | `hierarchy_three_tier_explanation` | Currently yes |
-| failure_criteria | `any_one_triggers_abort` | Currently yes |
-| return_format | `report_completion_label` | Currently yes |
-| return_format | `token_must_be_first_word_tokens_three` | Data-gated (3 tokens) |
-| return_format | `token_must_be_first_word_tokens_two` | Data-gated (2 tokens) |
-| examples | `group_framing_sentence` | Has toggle ✓ (was missing from count) |
+| Section | Content Field | Toggle to Add |
+|---------|--------------|---------------|
+| identity | `declaration_heuristic_postscript` | `declaration_heuristic_postscript_visible` |
+| constraints | `hierarchy_tier_comparison` | `hierarchy_tier_comparison_visible` |
+| constraints | `hierarchy_three_tier_explanation` | `hierarchy_three_tier_explanation_visible` |
+| failure_criteria | `any_one_triggers_abort` | `any_one_triggers_abort_visible` |
+| return_format | `report_completion_label` | `report_completion_label_visible` |
 
-**Recommendation:** Add `_visible` toggles for the first 5. The token fields are data-gated (mutually exclusive based on whether ABORT is a valid token), not visibility-toggled. Defer or handle as part of the input section work.
+The token fields (`token_must_be_first_word_tokens_three/two`) are data-gated (mutually exclusive based on ABORT token availability), not visibility-toggled. No toggle needed.
 
 ---
 
 ## Implementation Order
 
-**All groups are verdandi agent-output only.** No agent-builder changes. No pipeline cascade. No agent definition TOML changes.
+**Two cascades:**
 
-Groups 1-6 can be done in any order or all at once — they're all in the same verdandi project (agent-output YAML sources).
+**Cascade A — agent-output (Groups 1-5 renames + input section + missing toggles):**
+All in verdandi agent-output YAML. No pipeline impact. No agent definition changes.
+- Do all renames + input section addition + missing toggles in one pass
+- Draupnir (agent-output schemas) → Nornir output gates → Galdr `generate_structures.py`
+- Update `extracted/content.toml`, `extracted/structure.toml`, `extracted/display.toml`
 
-After all verdandi changes: Draupnir (agent-output schemas) → Nornir output gates → Galdr `generate_structures.py` → update `extracted/*.toml` files.
+**Cascade B — agent-builder (`role_responsibility` scalar→list):**
+Touches the data model → full pipeline cascade.
+- Verdandi agent-builder YAML → Draupnir → Nornir gates → Regin models + code → Agent definition TOMLs → Galdr models
+- Can be done separately, before or after Cascade A
+
+**Recommendation:** Do Cascade A first (all output-side changes in one pass). Then Cascade B (the one data model change).
 
 ---
 
