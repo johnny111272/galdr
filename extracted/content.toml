@@ -102,7 +102,7 @@ constraints_vs_anti_patterns_distinction = "Constraints are your operating rules
 heading = "Success Criteria"
 verification_guidance_suffix = "Some conditions above are mechanically verifiable; others require your judgment. Apply appropriate rigor to each."
 success_failure_independence_statement = "Success criteria define quality. Failure criteria define breakage. These are independent evaluations."
-multi_criteria_transition = "Additionally:"
+multi_criteria_transition = "Additionally"
 
 [success_criteria.definition_framing_variant]
 declarative_assertion = "{{DEFINITION}}"
