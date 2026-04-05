@@ -195,6 +195,35 @@ def unwrap_scalar_field(field_value: BaseModel, annotation: type) -> str | None:
     return None
 
 
+def is_role_alternative(role_name: str, earlier_roles: list[str]) -> bool:
+    """True if role_name is an alternative of an earlier role (shared prefix + underscore)."""
+    for earlier in earlier_roles:
+        if role_name.startswith(earlier + "_"):
+            return True
+    return False
+
+
+def select_active_roles(mode_content: BaseModel) -> list[str]:
+    """Select non-alternative roles from a D1 template table.
+
+    Roles sharing a prefix with an earlier role are alternatives (e.g.,
+    header_n_only is an alternative of header). Only the first is active.
+    """
+    active: list[str] = []
+    for role_name in mode_content.model_fields:
+        if not is_role_alternative(role_name, active):
+            active.append(role_name)
+    return active
+
+
+def find_enum_field_name(item_type: type[BaseModel]) -> str | None:
+    """Find the name of the first Enum field on a BaseModel type. None if no Enum field."""
+    for field_name, field_info in item_type.model_fields.items():
+        if is_enum_annotation(field_info.annotation):
+            return field_name
+    return None
+
+
 def has_enum_discriminator(item_type: type[BaseModel]) -> bool:
     """True if a BaseModel type has an Enum field (mode discriminator).
 

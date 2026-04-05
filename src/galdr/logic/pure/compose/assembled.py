@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from galdr.logic.pure.compose.composed import (
     populate_section_buffer,
-    process_data_fields,
+    resolve_all_trunks,
 )
 from galdr.logic.pure.compose.simple import (
     check_section_gate,
@@ -37,6 +37,6 @@ def compose_section(
         return None
     data_field_names = frozenset(data_section.model_fields.keys())
     buffer, consumed_variants = populate_section_buffer(content_section, data_field_names, structure_section, data_values)
-    body = process_data_fields(data_section, content_section, structure_section, data_values)
+    body = resolve_all_trunks(data_section, content_section, structure_section, display_section, data_values, consumed_variants)
     filled = buffer.model_copy(update={"body": tuple(body)})
     return render_buffer(filled)

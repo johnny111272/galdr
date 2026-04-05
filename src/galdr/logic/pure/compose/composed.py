@@ -21,6 +21,7 @@ from galdr.logic.pure.compose.simple import (
     assemble_buffer,
     buffer_slot_for_field,
     find_decoration,
+    find_enum_field_name,
     get_visibility_toggle,
     has_enum_discriminator,
     has_scalar_list_field,
@@ -38,6 +39,7 @@ from galdr.logic.pure.compose.simple import (
     render_item_scalar_field,
     resolve_format_pair,
     resolve_section_variant,
+    select_active_roles,
     strip_optional_annotation,
     unwrap_scalar_field,
 )
@@ -109,19 +111,22 @@ def collect_list_format(
 
     Returns resolved format string ('bulleted', 'numbered', etc.).
     Falls back to 'bulleted' if no display section or no format field.
+    Format fields are either FormatPair (RootModel[tuple]) for threshold-based
+    switching, or ListFormat (RootModel[str]) for fixed format.
     """
     if display_section is None:
         return "bulleted"
-    format_value = getattr(display_section, trunk + "_format", None)
-    if format_value is None:
+    format_field = getattr(display_section, trunk + "_format", None)
+    if format_field is None:
         return "bulleted"
-    threshold = getattr(display_section, trunk + "_format_threshold", None)
-    if threshold is not None and hasattr(format_value, "root"):
-        pair = format_value.root
-        return resolve_format_pair(pair[0], pair[1], item_count, threshold.root)
-    if hasattr(format_value, "root"):
-        return str(format_value.root)
-    return str(format_value)
+    if hasattr(format_field, "root"):
+        threshold_field = getattr(display_section, trunk + "_format_threshold", None)
+        if threshold_field is not None and isinstance(format_field.root, tuple):
+            above, at_or_below = format_field.root
+            return resolve_format_pair(above, at_or_below, item_count, threshold_field.root)
+        format_value = format_field.root
+        return format_value.value if hasattr(format_value, "value") else str(format_value)
+    return format_field.value if hasattr(format_field, "value") else str(format_field)
 
 
 def classify_compound_list_shape(
@@ -369,6 +374,55 @@ def render_instruction_steps(
     return rendered
 
 
+def resolve_role_templates(
+    mode_content: BaseModel,
+    active_roles: list[str],
+    enum_value: str,
+    render_values: dict[str, str],
+) -> list[str]:
+    """Look up enum value in each active role sub-table, interpolate templates."""
+    parts: list[str] = []
+    for role_name in active_roles:
+        role_table = getattr(mode_content, role_name)
+        template_field = getattr(role_table, enum_value, None)
+        if template_field is not None:
+            text = template_field.root if hasattr(template_field, "root") else str(template_field)
+            parts.append(interpolate(text, render_values))
+    return parts
+
+
+def render_enum_discriminated_items(
+    items: list[BaseModel],
+    enum_field_name: str,
+    mode_content: BaseModel,
+    active_roles: list[str],
+    section_data_values: dict[str, str],
+) -> list[str]:
+    """Generic D1 renderer — render items with enum-keyed role templates.
+
+    For each item: extracts enum value, resolves role templates,
+    extracts body text from non-enum fields, joins.
+    """
+    item_total = str(len(items))
+    rendered: list[str] = []
+    for index, item in enumerate(items):
+        item_values = unwrap_item_fields(item)
+        enum_value = item_values.get(enum_field_name, "")
+        render_values = {
+            **section_data_values,
+            **item_values,
+            "item_n": str(index + 1),
+            "item_total": item_total,
+            "step_n": str(index + 1),
+            "step_total": item_total,
+        }
+        parts = resolve_role_templates(mode_content, active_roles, enum_value, render_values)
+        parts.extend(text for fname, text in item_values.items() if fname != enum_field_name and text)
+        if parts:
+            rendered.append("\n\n".join(parts))
+    return rendered
+
+
 def render_compound_list_field(
     items: list[BaseModel],
     content_section: BaseModel,
@@ -468,4 +522,70 @@ def render_decoration_after(
             if is_toggle_visible(toggle):
                 text = decoration[suffix]
                 fragments.append(interpolate(text, data_values) if "{{" in text else text)
+    return fragments
+
+
+def find_d1_content_table(
+    enum_field_name: str,
+    content_section: BaseModel,
+) -> BaseModel | None:
+    """Find a D1 template table on the content section matching the enum field name.
+
+    D1 tables are non-RootModel BaseModel fields without _variant suffix,
+    named after the data item's enum field.
+    """
+    content_value = getattr(content_section, enum_field_name, None)
+    if content_value is not None and is_variant_annotation(type(content_value)):
+        return content_value
+    return None
+
+
+def resolve_all_trunks(
+    data_section: BaseModel,
+    content_section: BaseModel,
+    structure_section: BaseModel,
+    display_section: BaseModel | None,
+    data_values: dict[str, str],
+    consumed_variants: frozenset[str],
+) -> list[str]:
+    """Walk data fields in declaration order, render each by shape.
+
+    Replaces process_data_fields with shape-aware rendering.
+    Each trunk is classified, decorated, and rendered by its shape.
+    """
+    fragments: list[str] = []
+    for field_name, field_info in data_section.model_fields.items():
+        field_value = getattr(data_section, field_name)
+        if field_value is None:
+            continue
+        shape = classify_trunk_shape(field_info.annotation, content_section)
+        if shape in ("gate", "nested"):
+            continue
+        decoration = find_decoration(field_name, content_section)
+        fragments.extend(render_decoration_before(decoration, data_values))
+        if shape == "scalar":
+            fragments.append(render_scalar_value(field_name, field_value, content_section, data_values))
+        elif shape == "simple_list":
+            items = field_value.root
+            fmt = collect_list_format(field_name, display_section, len(items))
+            fragments.append(render_bulleted([list_item_to_string(item) for item in items]))
+        elif shape == "templated_list":
+            entry_template = find_entry_template(content_section)
+            items = field_value.root
+            item_dicts = [unwrap_item_fields(item) for item in items]
+            fragments.append(render_bulleted(render_entries_from_dicts(item_dicts, entry_template, data_values)))
+        elif shape == "enum_list":
+            items = field_value.root
+            enum_fname = find_enum_field_name(type(items[0]))
+            mode_table = find_d1_content_table(enum_fname, content_section) if enum_fname else None
+            if mode_table is not None:
+                active_roles = select_active_roles(mode_table)
+                fragments.extend(render_enum_discriminated_items(items, enum_fname, mode_table, active_roles, data_values))
+            else:
+                fragments.extend([render_structured_item(item, data_values) for item in items])
+        elif shape == "nested_list":
+            fragments.extend([render_structured_item(item, data_values) for item in field_value.root])
+        elif shape == "framed_list":
+            fragments.extend([render_structured_item(item, data_values) for item in field_value.root])
+        fragments.extend(render_decoration_after(field_name, decoration, structure_section, data_values))
     return fragments
