@@ -13,7 +13,7 @@ uniform_toolset_format = "grouped"
 heterogeneous_toolset_format = "per_entry_list"
 
 # Entry count threshold for switching from no-intro to intro-present
-filesystem_map_intro_visibility_threshold = 4
+filesystem_map_label_visibility_threshold = 4
 
 # Entry list marker style (applied by display layer)
 entry_list_format = "bullet"
