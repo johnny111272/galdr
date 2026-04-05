@@ -17,7 +17,7 @@ from typing import Annotated, get_args, get_origin
 
 from pydantic import BaseModel, RootModel
 
-from galdr.logic.pure.compose.primitive import has_closing_suffix, has_preamble_suffix, strip_suffix
+from galdr.logic.pure.compose.primitive import has_closing_suffix, has_preamble_suffix
 from galdr.logic.pure.render.primitive import heading
 from galdr.logic.pure.template.primitive import interpolate
 from galdr.structure.gen.output_content import StringTemplate
@@ -131,10 +131,11 @@ def is_rootmodel_annotation(annotation: type) -> bool:
     return isinstance(annotation, type) and issubclass(annotation, RootModel)
 
 
-def is_nested_annotation(annotation: type) -> bool:
-    """True if the annotation is a non-RootModel BaseModel (nested section).
+def is_basemodel_annotation(annotation: type) -> bool:
+    """True if the annotation is a non-RootModel BaseModel.
 
-    Nested models are skipped by the walker — handled by orchestrate.
+    Used for two purposes: detecting nested data sections (skipped by walker)
+    and detecting content variant/D1 sub-tables (BaseModel with fields).
     """
     return isinstance(annotation, type) and issubclass(annotation, BaseModel) and not issubclass(annotation, RootModel)
 
@@ -171,7 +172,7 @@ def is_compound_list_annotation(annotation: type) -> bool:
     if not is_rootmodel_annotation(annotation):
         return False
     item_t = list_item_type(annotation)
-    return item_t is not None and is_nested_annotation(item_t)
+    return item_t is not None and is_basemodel_annotation(item_t)
 
 
 def unwrap_rootmodel_field(field_value: RootModel, annotation: type) -> str:
@@ -226,7 +227,7 @@ def find_d1_content_table(
     named after the data item's enum field.
     """
     content_value = getattr(content_section, enum_field_name, None)
-    if content_value is not None and is_variant_annotation(type(content_value)):
+    if content_value is not None and is_basemodel_annotation(type(content_value)):
         return content_value
     return None
 
@@ -403,11 +404,6 @@ def extract_field_value(field_value: BaseModel | Enum) -> str | bool:
     return field_value.root
 
 
-def join_fragments(fragments: list[str]) -> str | None:
-    """Join rendered fragments with double newlines. None if empty."""
-    return "\n\n".join(fragments) if fragments else None
-
-
 def extract_section_visible(structure_section: BaseModel) -> bool:
     """Get the section_visible toggle from structure, defaulting to True.
 
@@ -419,16 +415,6 @@ def extract_section_visible(structure_section: BaseModel) -> bool:
         return True
     return bool(toggle.root)
 
-
-def render_section_heading(content_section: BaseModel, data_values: dict[str, str]) -> list[str]:
-    """Render the section heading from content if present. Returns [] or [heading_str].
-
-    Returning a list instead of Optional avoids a branch in the assembled wiring.
-    """
-    content_heading = getattr(content_section, "heading", None)
-    if content_heading is None:
-        return []
-    return [heading(render_content_text(content_heading, data_values), 2)]
 
 
 
@@ -460,14 +446,6 @@ def is_toggle_visible(toggle_value: str | bool | None) -> bool:
         return is_visible_by_mode(toggle_value)
     return bool(toggle_value)
 
-
-def is_variant_annotation(annotation: type) -> bool:
-    """True if a content field annotation is a variant sub-table type.
-
-    Variant sub-tables are BaseModel subclasses that are NOT RootModel.
-    Uses annotation inspection, not isinstance on values.
-    """
-    return isinstance(annotation, type) and issubclass(annotation, BaseModel) and not issubclass(annotation, RootModel)
 
 
 def render_buffer(buffer: BaseModel) -> str | None:

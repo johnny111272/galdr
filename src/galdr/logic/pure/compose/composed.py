@@ -13,9 +13,7 @@ format resolution happens at assembled level via render/composed.
 from pydantic import BaseModel
 
 from galdr.logic.pure.compose.primitive import (
-    has_closing_suffix,
     has_heading_suffix,
-    has_preamble_suffix,
 )
 from galdr.logic.pure.compose.simple import (
     assemble_buffer,
@@ -29,10 +27,9 @@ from galdr.logic.pure.compose.simple import (
     is_compound_list_annotation,
     is_gate_annotation,
     is_list_rootmodel,
-    is_nested_annotation,
+    is_basemodel_annotation,
     is_rootmodel_annotation,
     is_toggle_visible,
-    is_variant_annotation,
     list_item_to_string,
     list_item_type,
     render_content_text,
@@ -98,7 +95,7 @@ def has_nested_list_field(item_type: type[BaseModel]) -> bool:
         if not is_list_rootmodel(annotation):
             continue
         nested_item = list_item_type(annotation)
-        if nested_item is not None and is_nested_annotation(nested_item):
+        if nested_item is not None and is_basemodel_annotation(nested_item):
             return True
     return False
 
@@ -178,7 +175,7 @@ def classify_data_annotation(annotation: type) -> str:
     annotation = strip_optional_annotation(annotation)
     if is_gate_annotation(annotation):
         return "gate"
-    if is_nested_annotation(annotation):
+    if is_basemodel_annotation(annotation):
         return "nested"
     if is_rootmodel_annotation(annotation):
         return "list" if is_list_rootmodel(annotation) else "scalar"
@@ -232,7 +229,7 @@ def resolve_heading_text(
         content_value = getattr(content_section, content_name)
         if content_value is None:
             continue
-        if is_variant_annotation(content_field_info.annotation):
+        if is_basemodel_annotation(content_field_info.annotation):
             resolved = resolve_section_variant(content_name, content_value, structure_section, data_values)
             if resolved:
                 result = resolved
@@ -269,7 +266,7 @@ def populate_section_buffer(
         slot = buffer_slot_for_field(content_name)
         if slot is None:
             continue
-        if is_variant_annotation(content_field_info.annotation):
+        if is_basemodel_annotation(content_field_info.annotation):
             rendered = resolve_section_variant(content_name, content_value, structure_section, data_values)
             if rendered:
                 items.append((slot, rendered))
@@ -306,7 +303,7 @@ def render_item_list_field(field_value: BaseModel, annotation: type) -> list[str
     if not sub_items:
         return []
     nested_type = list_item_type(annotation)
-    if nested_type is not None and is_nested_annotation(nested_type):
+    if nested_type is not None and is_basemodel_annotation(nested_type):
         fragments: list[str] = []
         for sub_item in sub_items:
             fragments.extend(render_sub_item_fields(sub_item))
@@ -449,7 +446,7 @@ def render_trunk_body(
         return [render_scalar_value(field_name, field_value, content_section, data_values)]
     if shape == "simple_list":
         items = field_value.root
-        collect_list_format(field_name, display_section, len(items))
+        resolved_format = collect_list_format(field_name, display_section, len(items))
         return [render_bulleted([list_item_to_string(item) for item in items])]
     if shape == "templated_list":
         entry_template = find_entry_template(content_section)

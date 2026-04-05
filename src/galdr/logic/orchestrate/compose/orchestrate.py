@@ -17,7 +17,6 @@ import gate_output_structure_input
 
 from galdr.logic.impure.gates.simple import validate_input
 from galdr.logic.pure.compose.assembled import compose_section
-from galdr.logic.pure.compose.simple import join_fragments
 from galdr.logic.transform.data_unwrap.composed import unwrap_section_data
 from galdr.structure.gen.anthropic_render import AgentAnthropicRender
 from galdr.structure.gen.output_content import AgentOutputContent
