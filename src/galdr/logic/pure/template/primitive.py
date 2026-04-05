@@ -11,4 +11,4 @@ import re
 
 def interpolate(template: str, values: dict[str, str]) -> str:
     """Replace {{key}} placeholders with values from the dict."""
-    return re.sub(r"\{\{(\w+)\}\}", lambda m: values.get(m.group(1), m.group(0)), template)
+    return re.sub(r"\{\{(\w+)\}\}", lambda m: values.get(m.group(1).lower(), m.group(0)), template)
