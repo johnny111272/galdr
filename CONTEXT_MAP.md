@@ -1,6 +1,6 @@
 # CONTEXT_MAP — Galdr
 
-**Last updated:** 2026-04-02
+**Last updated:** 2026-04-04
 
 ## 1. Purpose Statement
 
@@ -26,11 +26,12 @@ Galdr is the composition engine — the final stage of the agent build pipeline 
 | Document | Path | Relevance | Freshness |
 |----------|------|-----------|-----------|
 | Agent Build System | `smidja/galdr/AGENT_BUILD_SYSTEM.md` | Canonical design spec: four axes, section inventory, composition, matrix | **Current** |
-| Composition Engine Design | `smidja/galdr/COMPOSITION_ENGINE_DESIGN.md` | Generic engine spec: five operations, assembly order, fragment processing, what's built vs not | **Current** |
+| Composition Engine Design | `smidja/galdr/COMPOSITION_ENGINE_DESIGN.md` | Generic engine spec: five operations, assembly order, fragment processing, what's built vs not | **Mostly current.** D1 shape now uses sub-table pattern, not flat fields. |
+| Trunk Resolver Design | `smidja/galdr/TRUNK_RESOLVER_DESIGN.md` | Funnel design, five shapes, shape detection, D1 sub-table pattern, co-occurrence matrix | **Current** |
 | Quickstart | `smidja/galdr/QUICKSTART.md` | CLI, pipeline, IO contract, section table | **Mostly current.** Says "Three Input Axes" — should be four (data + structure + content + display). Style references are pre-split. |
 | Custom Write Tool | `smidja/galdr/CUSTOM_WRITE_TOOL.md` | How enforcement output tools work end-to-end | Current |
-| TOML Architecture | `smidja/galdr/agent_control_surfaces/TOML_ARCHITECTURE.md` | Design of the three control surface TOML files | Current |
-| Cross Section Patterns | `smidja/galdr/agent_control_surfaces/CROSS_SECTION_PATTERNS.md` | Patterns that span multiple sections (visibility cascades, variant co-selection) | Current |
+| TOML Architecture | `smidja/galdr/agent_control_surfaces/TOML_ARCHITECTURE.md` | Design of the three control surface TOML files | **Needs update.** Positional suffix convention expanded. Shared variants eliminated. `_x_variant` slot letters added. `_intro`, `_separator` suffixes added. |
+| Cross Section Patterns | `smidja/galdr/agent_control_surfaces/CROSS_SECTION_PATTERNS.md` | Patterns that span multiple sections (visibility cascades, variant co-selection) | **Needs update.** Shared variant concept no longer exists — all variants are per-slot simple variants. |
 
 ### Control Surface Analysis (per-section)
 
@@ -156,14 +157,16 @@ src/galdr/
 │   │   ├── errors.py               # Error types (GateValidationError, etc.)
 │   │   └── gate_types.py           # GateResult, GateError
 │   └── config/                     # Empty — old recipe.py, style.py deleted (were junk)
+├── cli.py                              # BUILT: thin typer wrapper
 ├── logic/
-│   ├── orchestrate/                # Not yet built — pipeline wiring
+│   ├── orchestrate/
+│   │   └── compose/orchestrate.py  # BUILT: pipeline wiring (load inputs, compose sections, write output)
 │   ├── impure/
 │   │   └── gates/                  # BUILT: ffi.py (FFI boundary), simple.py (validation)
 │   ├── pure/
-│   │   ├── template/primitive.py   # BUILT: {{key}} interpolation
+│   │   ├── template/primitive.py   # BUILT: {{key}} interpolation (case-insensitive)
 │   │   ├── render/                 # BUILT: primitive (markdown atoms), simple (list renderers), composed (format resolution)
-│   │   └── compose/                # WIP: primitive (trunk ops), simple (visibility/variant/decoration), composed (CC=49 MONOLITH — needs decomposition)
+│   │   └── compose/                # WIP: primitive (trunk ops), simple (visibility/variant/decoration), composed (section processors), assembled (wiring)
 │   └── transform/
 │       ├── codegen_clean/          # BUILT: post-codegen transforms (primitive/simple/composed)
 │       └── data_unwrap/            # BUILT: simple (per-shape unwrap), composed (section data collection)
@@ -224,6 +227,8 @@ The first agents that need to go through the full pipeline:
 |------------------------------|------|
 | **What galdr does and the four axes** | `AGENT_BUILD_SYSTEM.md` — the canonical design spec |
 | **How the generic composition engine works** | `COMPOSITION_ENGINE_DESIGN.md` — five operations, assembly order, no per-section code |
+| **How the trunk resolver works (shapes, D1 sub-tables)** | `TRUNK_RESOLVER_DESIGN.md` — funnel design, five shapes, co-occurrence matrix, renderer signatures |
+| **Positional suffix convention** | This CONTEXT_MAP §7 "Positional Suffix Convention" — suffix-to-slot mapping, variant slot letters |
 | **How to run galdr** | `QUICKSTART.md` — CLI, pipeline, IO paths |
 | **The v2 zone architecture (imports, levels, CC)** | `~/.ai/smidja/nornir/core/gleipnir_core/V2_ZONE_ARCHITECTURE.md` |
 | **The TOML field patterns and naming conventions** | `agent_control_surfaces/TOML_ARCHITECTURE.md` — field interface patterns, assembly order, naming rules |
@@ -253,26 +258,34 @@ The first agents that need to go through the full pipeline:
 ### Tests Are Broken
 All 7 test files in `tests/` import from `galdr.structures.*` and `galdr.functions.*` — both paths no longer exist after the v2 restructure. Tests need rewriting against new import paths (`galdr.structure.*`, `galdr.logic.*`). The old tests tested the old OOP renderer which has been scrapped.
 
-### Naming Alignment — In Progress
-Cross-axis field names must be mechanically matchable for the composition engine. Full analysis in `analysis/NAMING_CONVENTION_ANALYSIS.md` and `analysis/CROSS_AXIS_NAMING_INVENTORY.md`. Comprehensive rename plan in `analysis/NAMING_ALIGNMENT_PLAN.md`. Seven specific renames needed across verdandi agent-builder and agent-output YAML sources, plus one enum value change (instruction_mode deterministic/probabilistic → exact/judgment). Changes cascade through the full pipeline.
+### Naming Alignment — Completed (2026-04-04)
+Cross-axis trunk alignment completed in earlier sessions. Positional suffix alignment completed in Session 3: all content fields now have terminal positional suffixes. Shared variants split into per-slot simple variants. `_x_variant` slot letters added. Analysis docs in `analysis/` are now outdated — they reference pre-rename field names.
 
-### Old Artifacts Cleaned (2026-04-02)
-Deleted: `styles/default.toml` (pre-split), `recipes/standard-v1.toml` (absorbed into structure), `schemas/galdr-*.schema.json` (4 stale), `structure/config/style.py` (OOP hierarchy), `structure/config/recipe.py` (old format), `structure/model/template_context.py` (manual duplication). Canonical control surface TOMLs live in `extracted/`.
+### Positional Suffix Convention — Established (2026-04-04)
+Every content field declares its buffer slot via terminal suffix:
+- `_heading` → heading slot. `_preamble` → preamble slot. `_closing` → postscript slot.
+- `_label`, `_intro`, `_declaration`, `_entry_template`, `_postscript`, `_transition`, `_separator` → body slot.
+- `_x_variant` (h/p/b/c) → slot determined by letter. Plain `_variant` no longer used.
+- D1 template tables (e.g., `instruction_mode`) have no `_variant` suffix — body by default.
+- Unsuffixed fields (e.g., CriticalRules rule items) are body content by default.
+The engine code (`compose/simple.py`) still uses old heuristic-based classification — needs updating to use suffix-based classification. This is Phase 2 of the plan.
 
-### No CLI Yet
-`cli.py` was deleted with the old code. Needs rebuilding as a thin typer wrapper following regin/draupnir pattern — parse args, call orchestrate, return exit code.
+### Schema Changes — Completed (2026-04-04)
+- `role_responsibility_label` → `role_responsibility_declaration`
+- Instruction mode flat fields → `instruction_mode` sub-table (group with role sub-tables: header, header_n_only, body_prefix, signal_at_mode_change)
+- `instruction_mode_explanation` flat fields → `instruction_mode_explanation_p_variant` simplegroup
+- `framing_variant` shared variant → 3 per-slot simple variants
+- `abort_stance_variant` shared variant → 2 per-slot simple variants
+- `declaration` → `role_identity_declaration` with companions
+- ~35 content fields renamed with correct positional suffixes
 
-### No Gate Integration Yet
-Gate modules for galdr's input validation need to be identified or built. At minimum: an input gate validating `anthropic_render.toml` against the schema. Content/structure/display TOML validation gates may also be needed.
+### The Composition Engine — Buffer Works, Trunk Resolver Next
+SectionBuffer model works (heading/preamble/body/postscript). `populate_section_buffer` fills heading/preamble/postscript from content walk. `process_data_fields` fills body. Engine produces 308 lines for agent-builder with gate validation passing.
 
-### Gleipnir V2 Migration
-Galdr is being migrated to gleipnir v2 zone architecture (in progress). The `logic/` zone skeleton exists with `pure/`, `impure/`, `transform/`, `orchestrate/`. First real module: `logic/transform/codegen_clean/` (primitive/simple/composed). All new code must follow v2 conventions.
+**Next:** Phase 2 (engine code: replace heuristic classification with suffix-based) then trunk resolver (replace `process_data_fields` with generic shape-based resolver). Design in `TRUNK_RESOLVER_DESIGN.md`. Plan in `.claude/plans/`.
 
-### The Composition Engine — Partially Built, Needs Decomposition
-The core engine modules exist but `compose/composed.py` is a CC=49 monolith that must be decomposed. Working parts: `compose/primitive.py` (trunk ops, gleipnir clean), `compose/simple.py` (visibility, variant, decoration, gleipnir clean), `transform/data_unwrap/` (gleipnir clean, tested). The monolith `compose_section()` needs to be split into multiple composed-level functions (CC=4-8 each) wired by an assembled-level function (CC=1-2). Study draupnir/regin reference implementations before rewriting. See build plan v3 in the plan file.
+### TOML_ARCHITECTURE.md Needs Update
+The position suffixes section needs expanding to include `_intro`, `_separator`, `_closing` vs `_postscript` distinction, `_x_variant` slot letters, and the D1 template table pattern. The shared variant documentation needs removal.
 
 ### AGENT_BUILD_SYSTEM.md Shows Old OOP Design
 The "Section Containers" and "Composition" sections still show per-section class patterns with `.render()` methods. This contradicts the generic engine design and is listed as an anti-pattern in CLAUDE.md. Needs rewriting to match `COMPOSITION_ENGINE_DESIGN.md`.
-
-### Uncommitted Changes in Draupnir and Nornir
-Draupnir has 30+ uncommitted files. Nornir has 20+ uncommitted files. These are likely from the naming alignment cascade and other work. Need committing to prevent data loss.
