@@ -43,6 +43,8 @@ def resolve_format_pair(
     return above if count > threshold else at_or_below
 
 
+
+
 def select_variant(variant_model: BaseModel, selector_value: str) -> str:
     """Look up selector value as attribute on a variant sub-table model.
 
@@ -201,6 +203,24 @@ def has_enum_discriminator(item_type: type[BaseModel]) -> bool:
     """
     for field_info in item_type.model_fields.values():
         if is_enum_annotation(field_info.annotation):
+            return True
+    return False
+
+
+def is_scalar_list_annotation(annotation: type) -> bool:
+    """True if annotation is a RootModel list of scalar (non-BaseModel) items."""
+    if not is_rootmodel_annotation(annotation):
+        return False
+    return is_list_rootmodel(annotation) and not is_compound_list_annotation(annotation)
+
+
+def has_scalar_list_field(item_type: type[BaseModel]) -> bool:
+    """True if a BaseModel type has a list field of scalar RootModels.
+
+    Detects SuccessItem/FailureItem (evidence is list of StringProse).
+    """
+    for field_info in item_type.model_fields.values():
+        if is_scalar_list_annotation(strip_optional_annotation(field_info.annotation)):
             return True
     return False
 

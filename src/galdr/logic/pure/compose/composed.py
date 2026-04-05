@@ -23,6 +23,7 @@ from galdr.logic.pure.compose.simple import (
     find_decoration,
     get_visibility_toggle,
     has_enum_discriminator,
+    has_scalar_list_field,
     is_compound_list_annotation,
     is_gate_annotation,
     is_list_rootmodel,
@@ -35,6 +36,7 @@ from galdr.logic.pure.compose.simple import (
     render_content_text,
     render_entries_from_dicts,
     render_item_scalar_field,
+    resolve_format_pair,
     resolve_section_variant,
     strip_optional_annotation,
     unwrap_scalar_field,
@@ -96,6 +98,70 @@ def has_nested_list_field(item_type: type[BaseModel]) -> bool:
         if nested_item is not None and is_nested_annotation(nested_item):
             return True
     return False
+
+
+def collect_list_format(
+    trunk: str,
+    display_section: BaseModel | None,
+    item_count: int,
+) -> str:
+    """Look up display format for a list trunk, resolve threshold if needed.
+
+    Returns resolved format string ('bulleted', 'numbered', etc.).
+    Falls back to 'bulleted' if no display section or no format field.
+    """
+    if display_section is None:
+        return "bulleted"
+    format_value = getattr(display_section, trunk + "_format", None)
+    if format_value is None:
+        return "bulleted"
+    threshold = getattr(display_section, trunk + "_format_threshold", None)
+    if threshold is not None and hasattr(format_value, "root"):
+        pair = format_value.root
+        return resolve_format_pair(pair[0], pair[1], item_count, threshold.root)
+    if hasattr(format_value, "root"):
+        return str(format_value.root)
+    return str(format_value)
+
+
+def classify_compound_list_shape(
+    item_type: type[BaseModel],
+    content_section: BaseModel,
+) -> str:
+    """Classify a compound list (BaseModel items) into D1/D2/E shape.
+
+    One content lookup (entry_template). Item type introspection for the rest.
+    """
+    if find_entry_template(content_section) is not None:
+        return "templated_list"
+    if has_enum_discriminator(item_type):
+        return "enum_list"
+    if has_nested_list_field(item_type):
+        return "nested_list"
+    if has_scalar_list_field(item_type):
+        return "framed_list"
+    return "nested_list"
+
+
+def classify_trunk_shape(
+    annotation: type,
+    content_section: BaseModel,
+) -> str:
+    """Classify a data field into a rendering shape.
+
+    Returns: 'gate', 'nested', 'scalar', 'simple_list',
+    'templated_list', 'enum_list', 'nested_list', 'framed_list'.
+    """
+    base = classify_data_annotation(annotation)
+    if base != "list":
+        return base
+    cleaned = strip_optional_annotation(annotation)
+    if not is_compound_list_annotation(cleaned):
+        return "simple_list"
+    item_type = list_item_type(cleaned)
+    if item_type is None:
+        return "simple_list"
+    return classify_compound_list_shape(item_type, content_section)
 
 
 def classify_data_annotation(annotation: type) -> str:
