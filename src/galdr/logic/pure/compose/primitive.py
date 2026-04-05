@@ -9,6 +9,21 @@ These support the trunk-matching mechanism: content field names like
 display field 'role_expertise_format' via the shared trunk.
 """
 
+def has_heading_suffix(name: str) -> bool:
+    """True if name ends with a heading-slot suffix (_heading, _h_variant, or bare 'heading')."""
+    return name.endswith(("heading", "_h_variant"))
+
+
+def has_preamble_suffix(name: str) -> bool:
+    """True if name ends with a preamble-slot suffix (_preamble, _p_variant)."""
+    return name.endswith(("_preamble", "_p_variant"))
+
+
+def has_closing_suffix(name: str) -> bool:
+    """True if name ends with a closing-slot suffix (_closing, _c_variant)."""
+    return name.endswith(("_closing", "_c_variant"))
+
+
 def strip_suffix(name: str, suffix: str) -> str:
     """Remove a known suffix from a field name to get the trunk."""
     return name[: -len(suffix)]

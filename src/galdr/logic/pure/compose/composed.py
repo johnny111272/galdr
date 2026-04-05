@@ -12,18 +12,21 @@ format resolution happens at assembled level via render/composed.
 
 from pydantic import BaseModel
 
+from galdr.logic.pure.compose.primitive import (
+    has_closing_suffix,
+    has_heading_suffix,
+    has_preamble_suffix,
+)
 from galdr.logic.pure.compose.simple import (
     assemble_buffer,
+    buffer_slot_for_field,
     find_decoration,
     get_visibility_toggle,
     has_enum_discriminator,
-    is_body_consumed_content,
     is_compound_list_annotation,
     is_gate_annotation,
     is_list_rootmodel,
     is_nested_annotation,
-    process_variant_field,
-    slot_for_prose,
     is_rootmodel_annotation,
     is_toggle_visible,
     is_variant_annotation,
@@ -34,7 +37,6 @@ from galdr.logic.pure.compose.simple import (
     render_item_scalar_field,
     resolve_section_variant,
     strip_optional_annotation,
-    template_references_data,
     unwrap_scalar_field,
 )
 from galdr.logic.pure.render.primitive import heading as render_heading_md
@@ -138,59 +140,34 @@ def render_scalar_value(
     return str(value)
 
 
-def find_data_driven_templates(
-    content_section: BaseModel,
-    data_field_names: frozenset[str],
-) -> frozenset[str]:
-    """Identify content fields that are StringTemplates consumed by the data walk.
-
-    render_scalar_value scans StringTemplate content fields for {{field_name}}.
-    This replicates that scan so slot assignment can skip them.
-    """
-    driven: set[str] = set()
-    for content_name, content_field_info in content_section.model_fields.items():
-        if content_field_info.annotation is not StringTemplate:
-            continue
-        content_value = getattr(content_section, content_name)
-        if content_value is not None and template_references_data(content_value.root, data_field_names):
-            driven.add(content_name)
-    return frozenset(driven)
-
 
 
 def resolve_heading_text(
     content_section: BaseModel,
     structure_section: BaseModel,
     data_values: dict[str, str],
-) -> str | None:
-    """Resolve the section heading from content heading field or heading_variant.
+) -> tuple[str | None, frozenset[str]]:
+    """Resolve the section heading and track consumed heading variants.
 
-    heading_variant (if present and resolvable) overrides the plain heading.
+    Scans for heading_h_variant (overrides plain heading if present).
+    Falls back to bare 'heading' field. Returns (heading_text, consumed_names).
     """
-    heading_field = getattr(content_section, "heading", None)
-    result = render_content_text(heading_field, data_values) if heading_field is not None else None
-    heading_variant = getattr(content_section, "heading_variant", None)
-    if heading_variant is not None and is_variant_annotation(type(heading_variant)):
-        resolved = resolve_section_variant("heading_variant", heading_variant, structure_section, data_values)
-        if resolved:
-            result = resolved
-    return result
-
-
-def classify_buffer_field(
-    content_name: str,
-    annotation: type,
-    data_field_names: frozenset[str],
-    data_driven: frozenset[str],
-) -> str:
-    """Classify a content field for buffer population: 'skip', 'variant', or 'prose'."""
-    if content_name in ("heading", "heading_variant"):
-        return "skip"
-    if is_variant_annotation(annotation):
-        return "variant"
-    if is_body_consumed_content(content_name, data_field_names, data_driven):
-        return "skip"
-    return "prose"
+    result: str | None = None
+    consumed: set[str] = set()
+    for content_name, content_field_info in content_section.model_fields.items():
+        if not has_heading_suffix(content_name):
+            continue
+        content_value = getattr(content_section, content_name)
+        if content_value is None:
+            continue
+        if is_variant_annotation(content_field_info.annotation):
+            resolved = resolve_section_variant(content_name, content_value, structure_section, data_values)
+            if resolved:
+                result = resolved
+                consumed.add(content_name)
+        else:
+            result = render_content_text(content_value, data_values)
+    return result, frozenset(consumed)
 
 
 def populate_section_buffer(
@@ -198,33 +175,37 @@ def populate_section_buffer(
     data_field_names: frozenset[str],
     structure_section: BaseModel,
     data_values: dict[str, str],
-) -> SectionBuffer:
-    """Populate heading, preamble, and postscript slots from content fields.
+) -> tuple[SectionBuffer, frozenset[str]]:
+    """Populate heading, preamble, and closing slots from content fields.
 
-    Single pass. Classifies each field, collects (slot, text) tuples for
-    variants and prose, then assembles into a SectionBuffer.
-    Body-consumed fields (decoration, entry templates, step headers,
-    data-driven templates) are skipped — consumed by the data walk.
+    Single pass using terminal suffix classification. Each content field's
+    suffix determines its buffer slot:
+    - _heading / _h_variant → heading (handled by resolve_heading_text)
+    - _preamble / _p_variant → preamble slot
+    - _closing / _c_variant → closing (postscript) slot
+    - Everything else → body (skipped, left for data walk)
+
+    Returns the buffer AND consumed variant names (for body walk).
     """
-    data_driven = find_data_driven_templates(content_section, data_field_names)
-    heading_text = resolve_heading_text(content_section, structure_section, data_values)
+    heading_text, heading_consumed = resolve_heading_text(content_section, structure_section, data_values)
     items: list[tuple[str, str]] = []
+    consumed_variants: set[str] = set(heading_consumed)
     for content_name, content_field_info in content_section.model_fields.items():
         content_value = getattr(content_section, content_name)
         if content_value is None:
             continue
-        kind = classify_buffer_field(content_name, content_field_info.annotation, data_field_names, data_driven)
-        if kind == "skip":
+        slot = buffer_slot_for_field(content_name)
+        if slot is None:
             continue
-        if kind == "variant":
-            result = process_variant_field(content_name, content_value, structure_section, data_values, data_field_names)
-            if result:
-                items.append(result)
-            continue
-        if not is_toggle_visible(get_visibility_toggle(content_name, structure_section)):
-            continue
-        items.append((slot_for_prose(content_name, data_field_names), render_content_text(content_value, data_values)))
-    return assemble_buffer(heading_text, items)
+        if is_variant_annotation(content_field_info.annotation):
+            rendered = resolve_section_variant(content_name, content_value, structure_section, data_values)
+            if rendered:
+                items.append((slot, rendered))
+                consumed_variants.add(content_name)
+        else:
+            if is_toggle_visible(get_visibility_toggle(content_name, structure_section)):
+                items.append((slot, render_content_text(content_value, data_values)))
+    return assemble_buffer(heading_text, items), frozenset(consumed_variants)
 
 
 def render_sub_item_fields(sub_item: BaseModel) -> list[str]:

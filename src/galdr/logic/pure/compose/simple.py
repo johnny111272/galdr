@@ -17,7 +17,7 @@ from typing import Annotated, get_args, get_origin
 
 from pydantic import BaseModel, RootModel
 
-from galdr.logic.pure.compose.primitive import strip_suffix
+from galdr.logic.pure.compose.primitive import has_closing_suffix, has_preamble_suffix, strip_suffix
 from galdr.logic.pure.render.primitive import heading
 from galdr.logic.pure.template.primitive import interpolate
 from galdr.structure.gen.output_content import StringTemplate
@@ -264,87 +264,6 @@ def render_variant(
     return interpolate(selected, data_values) if "{{" in selected else selected
 
 
-def has_pass3_suffix(content_name: str) -> bool:
-    """True if name has a suffix or substring marking it as a Pass 3 operational template.
-
-    _entry_template → compound list entry templates
-    _body_prefix_ → instruction mode body prefixes
-    """
-    return content_name.endswith("_entry_template") or "_body_prefix_" in content_name
-
-
-def has_pass3_prefix(content_name: str) -> bool:
-    """True if name starts with a prefix marking it as consumed by Pass 3 step rendering.
-
-    Naming conventions from TOML_ARCHITECTURE.md and NAMING_ALIGNMENT_PLAN.md.
-    """
-    for prefix in (
-        "step_header_", "signal_at_mode_change_", "step_done_when_",
-        "cross_step_dependency_", "halfway_point_", "group_framing_",
-        "instruction_mode_explanation_uniform_",
-    ):
-        if content_name.startswith(prefix):
-            return True
-    return False
-
-
-def is_pass3_operational(content_name: str) -> bool:
-    """True if a content field is consumed by a specific Pass 3 rendering operation.
-
-    These fields are entry templates, step headers, mode prefixes, per-step
-    annotations, or per-group/per-entry templates. They must be skipped by
-    the section content pass (Pass 2) because they are consumed during the
-    data walk (Pass 3) by compound list, instruction step, or structured
-    item renderers.
-    """
-    if has_pass3_suffix(content_name):
-        return True
-    if content_name in ("example_heading", "grouped_tool_header"):
-        return True
-    return has_pass3_prefix(content_name)
-
-
-def is_field_level_content(content_name: str, data_field_names: frozenset[str]) -> bool:
-    """True if a content field is field-level decoration (trunk matches a data field)."""
-    for suffix in ("_heading", "_preamble", "_label", "_postscript", "_transition"):
-        if content_name.endswith(suffix):
-            return strip_suffix(content_name, suffix) in data_field_names
-    return False
-
-
-def is_body_consumed_content(
-    content_name: str,
-    data_field_names: frozenset[str],
-    data_driven_templates: frozenset[str],
-) -> bool:
-    """True if content field is consumed by body processing — skip in slot assignment.
-
-    Three reasons: Pass 3 operational template, field-level decoration
-    (trunk matches data field), or data-driven StringTemplate.
-    """
-    if is_pass3_operational(content_name):
-        return True
-    if is_field_level_content(content_name, data_field_names):
-        return True
-    return content_name in data_driven_templates
-
-
-def is_closing_content(content_name: str) -> bool:
-    """True if a content field is closing prose based on its name."""
-    return "closing" in content_name or "closer" in content_name
-
-
-def is_postscript_content(content_name: str, data_field_names: frozenset[str]) -> bool:
-    """True if a content field belongs in the postscript slot.
-
-    Closing prose and section-level postscripts (trunk NOT matching a data field).
-    """
-    if is_closing_content(content_name):
-        return True
-    if content_name.endswith("_postscript"):
-        return strip_suffix(content_name, "_postscript") not in data_field_names
-    return False
-
 
 
 def items_for_slot(items: list[tuple[str, str]], slot: str) -> tuple[str, ...]:
@@ -366,55 +285,19 @@ def assemble_buffer(
     )
 
 
-def slot_for_prose(content_name: str, data_field_names: frozenset[str]) -> str:
-    """Return the buffer slot name for a prose content field: 'postscript' or 'preamble'."""
-    if is_postscript_content(content_name, data_field_names):
-        return "postscript"
-    return "preamble"
+def buffer_slot_for_field(content_name: str) -> str | None:
+    """Return buffer slot for a non-heading content field, or None if body-consumed.
 
-
-def route_variant_slot(content_name: str, data_field_names: frozenset[str]) -> str:
-    """Determine which buffer slot a resolved variant belongs in."""
-    if is_postscript_content(content_name, data_field_names):
-        return "postscript"
-    return "preamble"
-
-
-def process_variant_field(
-    content_name: str,
-    content_value: BaseModel,
-    structure_section: BaseModel,
-    data_values: dict[str, str],
-    data_field_names: frozenset[str],
-) -> tuple[str, str] | None:
-    """Resolve a variant and determine its target slot. None if per-item or empty."""
-    if is_per_item_variant(content_name):
-        return None
-    rendered = resolve_section_variant(content_name, content_value, structure_section, data_values)
-    if not rendered:
-        return None
-    return (route_variant_slot(content_name, data_field_names), rendered)
-
-
-def is_per_item_variant(content_name: str) -> bool:
-    """True if a variant sub-table is per-item framing (consumed by body rendering).
-
-    Per-item variants wrap individual criteria items, not the section.
-    Skipped during slot assignment, consumed by the trunk resolver.
+    Uses terminal suffix: _preamble/_p_variant → 'preamble',
+    _closing/_c_variant → 'postscript'. Everything else → None (body).
     """
-    return content_name in (
-        "definition_framing_variant",
-        "evidence_framing_variant",
-        "definition_to_evidence_transition_variant",
-    )
+    if has_preamble_suffix(content_name):
+        return "preamble"
+    if has_closing_suffix(content_name):
+        return "postscript"
+    return None
 
 
-def template_references_data(template_text: str, data_field_names: frozenset[str]) -> bool:
-    """True if a template string contains a {{placeholder}} matching any data field name."""
-    for data_name in data_field_names:
-        if "{{" + data_name + "}}" in template_text:
-            return True
-    return False
 
 
 def resolve_section_variant(

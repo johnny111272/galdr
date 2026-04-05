@@ -36,7 +36,7 @@ def compose_section(
     if not check_section_gate(data_section, extract_section_visible(structure_section)):
         return None
     data_field_names = frozenset(data_section.model_fields.keys())
-    buffer = populate_section_buffer(content_section, data_field_names, structure_section, data_values)
+    buffer, consumed_variants = populate_section_buffer(content_section, data_field_names, structure_section, data_values)
     body = process_data_fields(data_section, content_section, structure_section, data_values)
     filled = buffer.model_copy(update={"body": tuple(body)})
     return render_buffer(filled)
