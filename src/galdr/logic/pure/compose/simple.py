@@ -216,6 +216,21 @@ def select_active_roles(mode_content: BaseModel) -> list[str]:
     return active
 
 
+def find_d1_content_table(
+    enum_field_name: str,
+    content_section: BaseModel,
+) -> BaseModel | None:
+    """Find a D1 template table on the content section matching the enum field name.
+
+    D1 tables are non-RootModel BaseModel fields without _variant suffix,
+    named after the data item's enum field.
+    """
+    content_value = getattr(content_section, enum_field_name, None)
+    if content_value is not None and is_variant_annotation(type(content_value)):
+        return content_value
+    return None
+
+
 def find_enum_field_name(item_type: type[BaseModel]) -> str | None:
     """Find the name of the first Enum field on a BaseModel type. None if no Enum field."""
     for field_name, field_info in item_type.model_fields.items():

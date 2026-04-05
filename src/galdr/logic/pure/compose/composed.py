@@ -21,6 +21,7 @@ from galdr.logic.pure.compose.simple import (
     assemble_buffer,
     buffer_slot_for_field,
     find_decoration,
+    find_d1_content_table,
     find_enum_field_name,
     get_visibility_toggle,
     has_enum_discriminator,
@@ -340,40 +341,6 @@ def render_structured_item(
     return "\n\n".join(fragments)
 
 
-def render_instruction_steps(
-    items: list[BaseModel],
-    content_section: BaseModel,
-    section_data_values: dict[str, str],
-) -> list[str]:
-    """Render instruction steps with mode-dependent headers and numbering.
-
-    Each step has an Enum discriminator (instruction_mode) and text body.
-    Selects header template by mode value, interpolates step_n/step_total.
-    """
-    step_total = str(len(items))
-    rendered: list[str] = []
-    for index, item in enumerate(items):
-        item_values = unwrap_item_fields(item)
-        step_values = {
-            **section_data_values,
-            **item_values,
-            "step_n": str(index + 1),
-            "step_total": step_total,
-        }
-        mode = item_values.get("instruction_mode", "")
-        header_key = "step_header_" + mode
-        header_template = getattr(content_section, header_key, None)
-        step_parts: list[str] = []
-        if header_template is not None:
-            step_parts.append(interpolate(header_template.root, step_values))
-        body_text = item_values.get("instruction_text", "")
-        if body_text:
-            step_parts.append(body_text)
-        if step_parts:
-            rendered.append("\n\n".join(step_parts))
-    return rendered
-
-
 def resolve_role_templates(
     mode_content: BaseModel,
     active_roles: list[str],
@@ -423,78 +390,6 @@ def render_enum_discriminated_items(
     return rendered
 
 
-def render_compound_list_field(
-    items: list[BaseModel],
-    content_section: BaseModel,
-    data_values: dict[str, str],
-) -> list[str]:
-    """Route a compound list to the appropriate renderer.
-
-    Priority order:
-    1. Enum discriminator → instruction steps (mode headers + numbering)
-    2. Entry template exists → flat compound items (template interpolation)
-    3. Nested list or scalar list fields → structured items (definition + evidence)
-    4. Fallback → join fields with comma
-    """
-    item_type = type(items[0])
-    if has_enum_discriminator(item_type):
-        return render_instruction_steps(items, content_section, data_values)
-    entry_template = find_entry_template(content_section)
-    if entry_template:
-        item_dicts = [unwrap_item_fields(item) for item in items]
-        return [render_bulleted(render_entries_from_dicts(item_dicts, entry_template, data_values))]
-    return [render_structured_item(item, data_values) for item in items]
-
-
-def render_list_data(
-    annotation: type,
-    field_value: BaseModel,
-    content_section: BaseModel,
-    data_values: dict[str, str],
-) -> list[str]:
-    """Render a list data field — compound or scalar.
-
-    Strips Optional, checks annotation to determine compound vs scalar
-    items, delegates to the appropriate renderer.
-    """
-    items = field_value.root
-    if not items:
-        return []
-    cleaned = strip_optional_annotation(annotation)
-    if is_compound_list_annotation(cleaned):
-        return render_compound_list_field(items, content_section, data_values)
-    return [render_bulleted([list_item_to_string(item) for item in items])]
-
-
-def process_data_fields(
-    data_section: BaseModel,
-    content_section: BaseModel,
-    structure_section: BaseModel,
-    data_values: dict[str, str],
-) -> list[str]:
-    """Walk data fields in declaration order, attach content decoration.
-
-    Classifies each field by annotation. Skips gates and nested.
-    Renders scalars via templates, lists via compound or scalar renderers.
-    """
-    fragments: list[str] = []
-    for field_name, field_info in data_section.model_fields.items():
-        field_value = getattr(data_section, field_name)
-        if field_value is None:
-            continue
-        classification = classify_data_annotation(field_info.annotation)
-        if classification in ("gate", "nested"):
-            continue
-        decoration = find_decoration(field_name, content_section)
-        fragments.extend(render_decoration_before(decoration, data_values))
-        if classification == "scalar":
-            fragments.append(render_scalar_value(field_name, field_value, content_section, data_values))
-        elif classification == "list":
-            fragments.extend(render_list_data(field_info.annotation, field_value, content_section, data_values))
-        fragments.extend(render_decoration_after(field_name, decoration, structure_section, data_values))
-    return fragments
-
-
 def render_decoration_before(
     decoration: dict[str, str],
     data_values: dict[str, str],
@@ -525,19 +420,44 @@ def render_decoration_after(
     return fragments
 
 
-def find_d1_content_table(
-    enum_field_name: str,
-    content_section: BaseModel,
-) -> BaseModel | None:
-    """Find a D1 template table on the content section matching the enum field name.
 
-    D1 tables are non-RootModel BaseModel fields without _variant suffix,
-    named after the data item's enum field.
-    """
-    content_value = getattr(content_section, enum_field_name, None)
-    if content_value is not None and is_variant_annotation(type(content_value)):
-        return content_value
-    return None
+def render_enum_list(
+    field_value: BaseModel,
+    content_section: BaseModel,
+    data_values: dict[str, str],
+) -> list[str]:
+    """Render an enum-discriminated list using the D1 template table."""
+    items = field_value.root
+    enum_fname = find_enum_field_name(type(items[0]))
+    mode_table = find_d1_content_table(enum_fname, content_section) if enum_fname else None
+    if mode_table is not None:
+        active_roles = select_active_roles(mode_table)
+        return render_enum_discriminated_items(items, enum_fname, mode_table, active_roles, data_values)
+    return [render_structured_item(item, data_values) for item in items]
+
+
+def render_trunk_body(
+    shape: str,
+    field_name: str,
+    field_value: BaseModel,
+    content_section: BaseModel,
+    display_section: BaseModel | None,
+    data_values: dict[str, str],
+) -> list[str]:
+    """Dispatch a trunk to its shape-specific renderer. Returns body fragments."""
+    if shape == "scalar":
+        return [render_scalar_value(field_name, field_value, content_section, data_values)]
+    if shape == "simple_list":
+        items = field_value.root
+        collect_list_format(field_name, display_section, len(items))
+        return [render_bulleted([list_item_to_string(item) for item in items])]
+    if shape == "templated_list":
+        entry_template = find_entry_template(content_section)
+        item_dicts = [unwrap_item_fields(item) for item in field_value.root]
+        return [render_bulleted(render_entries_from_dicts(item_dicts, entry_template, data_values))]
+    if shape == "enum_list":
+        return render_enum_list(field_value, content_section, data_values)
+    return [render_structured_item(item, data_values) for item in field_value.root]
 
 
 def resolve_all_trunks(
@@ -550,8 +470,7 @@ def resolve_all_trunks(
 ) -> list[str]:
     """Walk data fields in declaration order, render each by shape.
 
-    Replaces process_data_fields with shape-aware rendering.
-    Each trunk is classified, decorated, and rendered by its shape.
+    Classifies, decorates, renders body, wraps with decoration.
     """
     fragments: list[str] = []
     for field_name, field_info in data_section.model_fields.items():
@@ -563,29 +482,6 @@ def resolve_all_trunks(
             continue
         decoration = find_decoration(field_name, content_section)
         fragments.extend(render_decoration_before(decoration, data_values))
-        if shape == "scalar":
-            fragments.append(render_scalar_value(field_name, field_value, content_section, data_values))
-        elif shape == "simple_list":
-            items = field_value.root
-            fmt = collect_list_format(field_name, display_section, len(items))
-            fragments.append(render_bulleted([list_item_to_string(item) for item in items]))
-        elif shape == "templated_list":
-            entry_template = find_entry_template(content_section)
-            items = field_value.root
-            item_dicts = [unwrap_item_fields(item) for item in items]
-            fragments.append(render_bulleted(render_entries_from_dicts(item_dicts, entry_template, data_values)))
-        elif shape == "enum_list":
-            items = field_value.root
-            enum_fname = find_enum_field_name(type(items[0]))
-            mode_table = find_d1_content_table(enum_fname, content_section) if enum_fname else None
-            if mode_table is not None:
-                active_roles = select_active_roles(mode_table)
-                fragments.extend(render_enum_discriminated_items(items, enum_fname, mode_table, active_roles, data_values))
-            else:
-                fragments.extend([render_structured_item(item, data_values) for item in items])
-        elif shape == "nested_list":
-            fragments.extend([render_structured_item(item, data_values) for item in field_value.root])
-        elif shape == "framed_list":
-            fragments.extend([render_structured_item(item, data_values) for item in field_value.root])
+        fragments.extend(render_trunk_body(shape, field_name, field_value, content_section, display_section, data_values))
         fragments.extend(render_decoration_after(field_name, decoration, structure_section, data_values))
     return fragments
