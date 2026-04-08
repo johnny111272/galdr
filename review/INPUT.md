@@ -29,14 +29,14 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 | ✅ | 2 | `section_preamble` | StringProse | `_preamble` | preamble | `"Before processing your input, you must read and internalize several reference documents..."` |
 | ✅ | 3 | `context_required_heading` | StringText | `_heading` | heading | `"Required Reading"` |
 | ✅ | 4 | `context_required_preamble` | StringProse | `_preamble` | preamble | `"These are not reference materials to consult during work. They are foundational knowledge you must absorb before starting."` |
-| ✅ | 5 | `context_entry_template` | StringTemplate | `_entry_template` | body | `"**{{context_label}}**: Read \`{{context_path}}\`"` |
+| ✅ | 5 | `context_required_entry_template` | StringTemplate | `_entry_template` | body | `"**{{context_label}}**: Read \`{{context_path}}\`"` |
 | ✅ | 6 | `context_available_heading` | StringText | `_heading` | heading | `"Available Resources"` |
 | ✅ | 7 | `parameters_transition` | StringProse | `_transition` | body | `"With this knowledge internalized, here is your input data:"` |
 | ✅ | 8 | `parameters_heading` | TitleString | `_heading` | heading | `"Parameters"` |
-| ✅ | 9 | `parameter_entry_template` | StringTemplate | `_entry_template` | body | `` "`{{param_name}}` ({{param_type}}): {{param_description}}" `` |
-| ✅ | 10 | `description_format_declaration` | StringTemplate | `_declaration` | body | `"Your input is a {{format}} file containing {{description}}."` |
+| ✅ | 9 | `parameters_entry_template` | StringTemplate | `_entry_template` | body | `` "`{{param_name}}` ({{param_type}}): {{param_description}}" `` |
+| ✅ | 10 | `description_format_declaration_template` | StringTemplate | `_declaration_template` | body | `"Your input is a {{format}} file containing {{description}}."` |
 | ✅ | 11 | `input_completeness_postscript` | StringProse | `_postscript` | body | `"Your input and required reading together constitute your complete input. Do not seek additional sources."` |
-| ✅ | 12 | `schema_label` | StringTemplate | `_label` | body | `` "Input validates against: `{{input_schema}}`" `` |
+| ✅ | 12 | `schema_label_template` | StringTemplate | `_label_template` | body | `` "Input validates against: `{{input_schema}}`" `` |
 
 ## Structure (InputStructure)
 
@@ -46,7 +46,7 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 | ✅ | 2 | `context_required_preamble_visible` | Boolean | `true` | → content #4 |
 | ✅ | 3 | `parameters_transition_visible` | Boolean | `true` | → content #7 |
 | ✅ | 4 | `input_completeness_postscript_visible` | Boolean | `false` | → content #11 |
-| ✅ | 5 | `schema_label_visible` | Boolean | `true` | → content #12 |
+| ✅ | 5 | `schema_label_template_visible` | Boolean | `true` | → content #12 |
 | ✅ | 6 | `parameters_heading_visible` | VisibilityMode | `"auto"` | → content #8 (auto = show when parameters count ≥ threshold) |
 | ✅ | 7 | `parameters_heading_auto_threshold` | Integer | `2` | threshold for above |
 
@@ -81,13 +81,13 @@ PREAMBLE:
                                              [renders only if context_required data is present]
 
 BODY:
-  [GATE] format                            → interpolated into description_format_declaration
+  [GATE] format                            → interpolated into description_format_declaration_template
   [GATE] delivery                          → used for conditional rendering of delivery-mode-specific content
-  ✅ description_format_declaration        "Your input is a {{format}} file containing {{description}}."
+  ✅ description_format_declaration_template  "Your input is a {{format}} file containing {{description}}."
                                              interpolates .format and .description
 
   [NESTED] context_required                ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
-    Would render: context_entry_template per item
+    Would render: context_required_entry_template per item
                                              [display: context_required_format = "numbered"]
   [NESTED] context_available               ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
 
@@ -95,16 +95,16 @@ BODY:
                                              [visible: parameters_transition_visible = true]
 
   [LIST] parameters                        For each ParameterItem:
-    .param_name                            → interpolated into parameter_entry_template
-    .param_type                            → interpolated into parameter_entry_template
-    .param_description                     → interpolated into parameter_entry_template
-    ⚠️ parameter_entry_template            "`{{param_name}}` ({{param_type}}): {{param_description}}"
+    .param_name                            → interpolated into parameters_entry_template
+    .param_type                            → interpolated into parameters_entry_template
+    .param_description                     → interpolated into parameters_entry_template
+    ⚠️ parameters_entry_template           "`{{param_name}}` ({{param_type}}): {{param_description}}"
                                              per-item template — interpolation with per-item data not wired
     ⚠️ format                              [display: parameters_format = ["bulleted", "prose"], threshold = 2]
 
-  [SCALAR] input_schema                    → interpolated into schema_label
-  ✅ schema_label                          "Input validates against: `{{input_schema}}`"
-                                             [visible: schema_label_visible = true]
+  [SCALAR] input_schema                    → interpolated into schema_label_template
+  ✅ schema_label_template                 "Input validates against: `{{input_schema}}`"
+                                             [visible: schema_label_template_visible = true]
 
   input_completeness_postscript            "Your input and required reading together constitute your complete input."
                                              [visible: input_completeness_postscript_visible = false]
@@ -119,17 +119,17 @@ CLOSING:
 
 ### ⚠️ ISSUE 1: `context_required` and `context_available` are NESTED BaseModel — skipped entirely
 
-Both context fields hold `list of ContextItem` where `ContextItem` is a nested BaseModel (not a `RootModel`). The data unwrap only handles scalar fields and `RootModel` lists. The entire context rendering path is skipped — `context_entry_template` is never used, `context_required_heading` and `context_required_preamble` are orphaned content.
+Both context fields hold `list of ContextItem` where `ContextItem` is a nested BaseModel (not a `RootModel`). The data unwrap only handles scalar fields and `RootModel` lists. The entire context rendering path is skipped — `context_required_entry_template` is never used, `context_required_heading` and `context_required_preamble` are orphaned content.
 
 **Fix required:** Either (a) add nested BaseModel traversal to the engine, or (b) define ContextItem as `RootModel[str]` with a pre-formatted string. Option (b) is simpler but moves formatting logic into the data.
 
-### ⚠️ ISSUE 2: `parameter_entry_template` needs per-item interpolation
+### ⚠️ ISSUE 2: `parameters_entry_template` needs per-item interpolation
 
-`parameter_entry_template` uses `{{param_name}}`, `{{param_type}}`, `{{param_description}}` — all per-item fields from `ParameterItem`. The engine does not yet support per-item template interpolation (the template is a body-slot content field, but its placeholders resolve from item fields, not section-level data). Each ParameterItem would need its own interpolation pass.
+`parameters_entry_template` uses `{{param_name}}`, `{{param_type}}`, `{{param_description}}` — all per-item fields from `ParameterItem`. The engine does not yet support per-item template interpolation (the template is a body-slot content field, but its placeholders resolve from item fields, not section-level data). Each ParameterItem would need its own interpolation pass.
 
-### ⚠️ ISSUE 3: `context_entry_template` same problem as parameter_entry_template
+### ⚠️ ISSUE 3: `context_required_entry_template` same problem as parameters_entry_template
 
-`context_entry_template` uses `{{context_label}}` and `{{context_path}}` — per-item ContextItem fields. Same per-item interpolation issue as above, compounded by the nested BaseModel issue.
+`context_required_entry_template` uses `{{context_label}}` and `{{context_path}}` — per-item ContextItem fields. Same per-item interpolation issue as above, compounded by the nested BaseModel issue.
 
 ### ⚠️ ISSUE 4: All display list format controls not wired
 
@@ -138,19 +138,3 @@ Both context fields hold `list of ContextItem` where `ContextItem` is a nested B
 ### ⚠️ ISSUE 5: `parameters_heading_visible = "auto"` — auto logic not implemented
 
 The auto threshold checks `len(parameters) >= threshold`. The engine does not perform this count.
-
----
-
-## Renames Needed
-
-### Template suffix (`_template` as final suffix)
-
-- `description_format_declaration` → `description_format_declaration_template` — contains `{{format}}` and `{{description}}`
-- `schema_label` → `schema_label_template` — contains `{{input_schema}}`
-
-Note: `context_entry_template` and `parameter_entry_template` already end in `_template` — no rename needed for the template suffix rule.
-
-### Trunk fixes (trunk must match data field)
-
-- `parameter_entry_template` → `parameters_entry_template` — trunk `parameter` (singular) doesn't match data field `parameters` (plural list); trunk should be `parameters` to match the data field the template decorates
-- `context_entry_template` → `context_required_entry_template` — trunk `context` is ambiguous; the data field is `context_required` (the template decorates `context_required` items, not `context_available`); rename trunk to `context_required`

@@ -14,13 +14,13 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
 | ✅ | 1 | `heading` | TitleString | `heading` | heading | `"Constraints"` |
-| ✅ | 2 | `constraint_count_heading` | StringTemplate | `_heading` | heading | `"You have {{COUNT}} operational constraints:"` |
+| ✅ | 2 | `constraint_count_heading_template` | StringTemplate | `_heading_template` | heading | `"You have {{COUNT}} operational constraints:"` |
 | ✅ | 3 | `constraints_are_not_steps_preamble` | StringProse | `_preamble` | preamble | `"Constraints are not steps — they are conditions that must hold true at all times..."` |
 | ✅ | 4 | `hierarchy_tier_comparison_preamble` | StringProse | `_preamble` | preamble | `"These constraints are binding operational rules — less severe than critical rules..."` |
 | ✅ | 5 | `hierarchy_three_tier_explanation_preamble` | StringProse | `_preamble` | preamble | `"You operate under three tiers of behavioral rules: critical rules (hard failures)..."` |
-| ✅ | 6 | `section_preamble_p_variant` | BaseModel | `_p_variant` | preamble | `{standalone: "...", references_instructions: "...", references_critical_rules: "..."}` |
-| ✅ | 7 | `no_inferred_constraints_p_variant` | BaseModel | `_p_variant` | preamble | `{light: "These are your operational constraints.", explicit: "These {{COUNT}} rules are exhaustive..."}` |
-| ✅ | 8 | `closing_compliance_reminder_c_variant` | BaseModel | `_c_variant` | closing | `{evaluation_warning: "Every constraint above is auditable...", simultaneity: "All {{COUNT}} constraints..."}` |
+| ✅ | 6 | `section_preamble_variant` | BaseModel | `_preamble_variant` | preamble | `{standalone: "...", references_instructions: "...", references_critical_rules: "..."}` |
+| ✅ | 7 | `no_inferred_constraints_preamble_variant_template` | BaseModel | `_preamble_variant_template` | preamble | `{light: "These are your operational constraints.", explicit: "These {{COUNT}} rules are exhaustive..."}` |
+| ✅ | 8 | `compliance_reminder_closing_variant_template` | BaseModel | `_closing_variant_template` | closing | `{evaluation_warning: "Every constraint above is auditable...", simultaneity: "All {{COUNT}} constraints..."}` |
 
 ## Structure (ConstraintsStructure)
 
@@ -32,12 +32,12 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 | ✅ | 4 | `constraints_are_not_steps_preamble_visible` | Boolean | `true` | → content #3 |
 | ⚠️ | 5 | `no_inferred_constraints_visible` | Boolean | `true` | → content #7 — not wired to variant |
 | ⚠️ | 6 | `closing_compliance_reminder_visible` | Boolean | `true` | → content #8 — not wired to variant |
-| ✅ | 7 | `constraint_count_heading_visible` | Boolean | `true` | → content #2 |
+| ✅ | 7 | `constraint_count_heading_template_visible` | Boolean | `true` | → content #2 |
 | ✅ | 8 | `hierarchy_tier_comparison_preamble_visible` | Boolean | `true` | → content #4 |
 | ✅ | 9 | `hierarchy_three_tier_explanation_preamble_visible` | Boolean | `true` | → content #5 |
-| ✅ | 10 | `section_preamble_p_variant` | ConstraintsSectionPreamblePVariant | `"standalone"` | → selects key in content #6 |
-| ✅ | 11 | `closing_compliance_reminder_c_variant` | ConstraintsClosingComplianceReminderCVariant | `"evaluation_warning"` | → selects key in content #8 |
-| ✅ | 12 | `no_inferred_constraints_p_variant` | ConstraintsNoInferredConstraintsPVariant | `"light"` | → selects key in content #7 |
+| ✅ | 10 | `section_preamble_selector` | ConstraintsSectionPreambleSelector | `"standalone"` | → selects key in content #6 |
+| ✅ | 11 | `compliance_reminder_closing_selector` | ConstraintsComplianceReminderClosingSelector | `"evaluation_warning"` | → selects key in content #8 |
+| ✅ | 12 | `no_inferred_constraints_preamble_selector` | ConstraintsNoInferredConstraintsPreambleSelector | `"light"` | → selects key in content #7 |
 
 ## Display (ConstraintsDisplay)
 
@@ -57,8 +57,8 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 ```
 HEADING:
   ✅ heading                               "Constraints"
-  ✅ constraint_count_heading              "You have {{COUNT}} operational constraints:"
-                                             [visible: constraint_count_heading_visible = true]
+  ✅ constraint_count_heading_template     "You have {{COUNT}} operational constraints:"
+                                             [visible: constraint_count_heading_template_visible = true]
                                              ⚠️ threshold: constraint_count_heading_visibility_threshold = 6 — not wired
 
 PREAMBLE:
@@ -68,9 +68,9 @@ PREAMBLE:
                                              [visible: hierarchy_tier_comparison_preamble_visible = true]
   ✅ hierarchy_three_tier_explanation_preamble  "You operate under three tiers..."
                                              [visible: hierarchy_three_tier_explanation_preamble_visible = true]
-  ⚠️ section_preamble_p_variant           {variant: "standalone" → "These constraints govern your execution..."}
+  ⚠️ section_preamble_variant             {variant: "standalone" → "These constraints govern your execution..."}
                                              [visible: section_preamble_visible = true — not wired to variant]
-  ⚠️ no_inferred_constraints_p_variant    {variant: "light" → "These are your operational constraints."}
+  ⚠️ no_inferred_constraints_preamble_variant_template  {variant: "light" → "These are your operational constraints."}
                                              [visible: no_inferred_constraints_visible = true — not wired to variant]
 
 BODY:
@@ -79,7 +79,7 @@ BODY:
     ⚠️ format: rules_format = ["bulleted", "numbered"], threshold = 6 — not wired
 
 CLOSING:
-  ⚠️ closing_compliance_reminder_c_variant  {variant: "evaluation_warning" → "Every constraint above is auditable..."}
+  ⚠️ compliance_reminder_closing_variant_template  {variant: "evaluation_warning" → "Every constraint above is auditable..."}
                                              [visible: closing_compliance_reminder_visible = true — not wired to variant]
                                              ⚠️ threshold: closing_compliance_reminder_visibility_threshold = 6 — not wired
 ```
@@ -94,7 +94,7 @@ The master `section_visible = true` toggle exists in structure but the engine do
 
 ### ⚠️ ISSUE 2: Variant visibility gates not connected to variant selectors
 
-`section_preamble_visible`, `no_inferred_constraints_visible`, and `closing_compliance_reminder_visible` are separate from their variant selectors (`section_preamble_p_variant`, `no_inferred_constraints_p_variant`, `closing_compliance_reminder_c_variant`). The engine needs to: (a) check the visibility gate, (b) use the variant selector to pick the correct string from the content table. These two steps are not yet connected.
+`section_preamble_visible`, `no_inferred_constraints_visible`, and `closing_compliance_reminder_visible` are separate from their variant selectors (`section_preamble_selector`, `no_inferred_constraints_preamble_selector`, `compliance_reminder_closing_selector`). The engine needs to: (a) check the visibility gate, (b) use the variant selector to pick the correct string from the content table. These two steps are not yet connected.
 
 ### ⚠️ ISSUE 3: Display thresholds not wired
 
@@ -103,30 +103,3 @@ The master `section_visible = true` toggle exists in structure but the engine do
 ### ⚠️ ISSUE 4: `must_vs_must_not_normalization` not wired
 
 Display control for MUST/MUST-NOT polarity treatment (`"preserve_voice"`) is not read by the engine.
-
----
-
-## Renames Needed
-
-### Template suffix (`_template` as final suffix)
-
-- `constraint_count_heading` → `constraint_count_heading_template` — contains `{{COUNT}}`
-
-### Variant templates (at least one alternative contains `{{...}}`)
-
-- `closing_compliance_reminder_c_variant` → `closing_compliance_reminder_c_variant_template` — `simultaneity` alternative contains `{{COUNT}}`
-- `no_inferred_constraints_p_variant` → `no_inferred_constraints_p_variant_template` — `explicit` alternative contains `{{COUNT}}`
-
-### Variant naming (`_variant` as modifier, `_selector` in structure)
-
-Content: drop slot letter from `_x_variant` — the positional suffix before `_variant` determines the slot. Fix ambiguous names by adding a recognized positional suffix where needed.
-
-- `section_preamble_p_variant` → `section_preamble_variant` — drop `_p`; slot determined by `_preamble`
-- `closing_compliance_reminder_c_variant` → `compliance_reminder_closing_variant` — drop `_c`, shorten trunk, add `_closing`; also has `_template` from above, so combined rename is `compliance_reminder_closing_variant_template`
-- `no_inferred_constraints_p_variant` → `no_inferred_constraints_preamble_variant` — drop `_p`, add `_preamble` for disambiguation; also has `_template` from above, so combined rename is `no_inferred_constraints_preamble_variant_template`
-
-Structure: rename `_variant` selectors to `_selector`.
-
-- `section_preamble_p_variant` → `section_preamble_selector`
-- `closing_compliance_reminder_c_variant` → `compliance_reminder_closing_selector`
-- `no_inferred_constraints_p_variant` → `no_inferred_constraints_preamble_selector`

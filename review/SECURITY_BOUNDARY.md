@@ -16,24 +16,24 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ❌ | 1 | `filesystem_map_label` | StringText | `_label` | body | `"Your filesystem map:"` — trunk `filesystem_map` doesn't match data field `display` |
+| ✅ | 1 | `filesystem_permissions_label` | StringText | `_label` | body | `"Your filesystem map:"` |
 | ✅ | 2 | `section_closing` | StringProse | `_closing` | closing | `"If your task requires access to a path not listed above, report this in your return status."` |
 | ✅ | 3 | `compound_entry_template` | StringTemplate | `_template` | body | `"{{PATH}} -- {{TOOLS}}"` — per-item interpolation |
-| ❌ | 4 | `grouped_tool_heading` | StringTemplate | `_heading` | heading | `"Available tools: {{TOOLS}}"` — `{{TOOLS}}` is a per-item aggregate, not a section scalar |
-| ✅ | 5 | `framing_heading_h_variant` | BaseModel | `_h_variant` | heading | `{territory: "Your Workspace", environmental: "Operating Environment", cage: "Permitted Boundaries"}` |
-| ✅ | 6 | `framing_declaration_b_variant` | BaseModel | `_b_variant` | body | `{territory: "Your workspace is {{WORKSPACE_PATH}}...", environmental: "...", cage: "..."}` |
-| ✅ | 7 | `framing_preamble_p_variant` | BaseModel | `_p_variant` | preamble | `{territory: "Within this workspace, you can access:", environmental: "...", cage: "..."}` |
+| ⚠️ | 4 | `grouped_tool_heading_template` | StringTemplate | `_heading_template` | heading | `"Available tools: {{TOOLS}}"` — `{{TOOLS}}` is a per-item aggregate, not a section scalar |
+| ✅ | 5 | `framing_heading_variant` | BaseModel | `_heading_variant` | heading | `{territory: "Your Workspace", environmental: "Operating Environment", cage: "Permitted Boundaries"}` |
+| ✅ | 6 | `framing_declaration_variant_template` | BaseModel | `_declaration_variant_template` | body | `{territory: "Your workspace is {{WORKSPACE_PATH}}...", environmental: "...", cage: "..."}` |
+| ✅ | 7 | `framing_preamble_variant` | BaseModel | `_preamble_variant` | preamble | `{territory: "Within this workspace, you can access:", environmental: "...", cage: "..."}` |
 
 ## Structure (SecurityBoundaryStructure)
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `fuse_workspace_path_and_resolver` | Boolean | `true` | Merge workspace_path with path-resolution sentence — not implemented |
-| ✅ | 2 | `filesystem_map_label_visible` | Boolean | `true` | → content #1 visibility |
-| ✅ | 3 | `section_preamble_visible` | Boolean | `true` | → content #7 (framing_preamble_p_variant) visibility |
+| ✅ | 2 | `filesystem_permissions_label_visible` | Boolean | `true` | → content #1 visibility |
+| ✅ | 3 | `section_preamble_visible` | Boolean | `true` | → content #7 (framing_preamble_variant) visibility |
 | ✅ | 4 | `section_closing_visible` | Boolean | `false` | → content #2 |
 | ⚠️ | 5 | `tool_names_visible` | Boolean | `true` | Controls tool display in entries — engine doesn't check this |
-| ✅ | 6 | `framing_variant` | SecurityBoundaryFramingVariant (enum) | `"territory"` | → selects key in content #5, #6, #7 |
+| ✅ | 6 | `framing_selector` | SecurityBoundaryFramingVariant (enum) | `"territory"` | → selects key in content #5, #6, #7 |
 
 ## Display (SecurityBoundaryDisplay)
 
@@ -42,7 +42,7 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 | ⚠️ | 1 | `path_style` | enum | `"relative_dotslash"` | Path formatting — engine renders paths as-is from data |
 | ⚠️ | 2 | `uniform_toolset_format` | enum | `"grouped"` | When all entries share tools: grouped header vs per-entry — not wired |
 | ⚠️ | 3 | `heterogeneous_toolset_format` | enum | `"per_entry_list"` | When entries have different tools: per-entry format — not wired |
-| ✅ | 4 | `filesystem_map_label_visibility_threshold` | Integer | `4` | Entry count threshold for showing the label (7 entries → label shows) |
+| ✅ | 4 | `filesystem_permissions_label_visibility_threshold` | Integer | `4` | Entry count threshold for showing the label (7 entries → label shows) |
 | ⚠️ | 5 | `entry_list_format` | enum | `"bullet"` | List marker style — engine uses bulleted regardless |
 
 ---
@@ -51,28 +51,27 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 
 ```
 HEADING:
-  ✅ framing_heading_h_variant             selected by structure.framing_variant = "territory"
+  ✅ framing_heading_variant               selected by structure.framing_selector = "territory"
                                              → "Your Workspace"
-  ❌ grouped_tool_heading                  "Available tools: {{TOOLS}}"
+  ⚠️ grouped_tool_heading_template         "Available tools: {{TOOLS}}"
                                              {{TOOLS}} is not a section scalar — it's a per-item aggregate
                                              only renders when uniform_toolset_format = "grouped"
                                              (agent-builder has heterogeneous tools — wouldn't render anyway)
 
 PREAMBLE:
-  ✅ framing_preamble_p_variant            selected by structure.framing_variant = "territory"
+  ✅ framing_preamble_variant              selected by structure.framing_selector = "territory"
                                              → "Within this workspace, you can access:"
                                              [visible: section_preamble_visible = true]
 
 BODY (in data field order):
   ✅ data.workspace_path                   SCALAR
-       ✅ framing_declaration_b_variant      selected by structure.framing_variant = "territory"
+       ✅ framing_declaration_variant_template  selected by structure.framing_selector = "territory"
                                              → "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
                                              ← data.workspace_path via {{WORKSPACE_PATH}}
   ✅ data.display                           LIST (7 DisplayEntry items)
-       ❌ filesystem_map_label               "Your filesystem map:"
-                                             trunk `filesystem_map` ≠ data field `display` — label is orphaned
-                                             [visible: filesystem_map_label_visible = true]
-                                             [threshold: filesystem_map_label_visibility_threshold = 4 → 7 entries, would show]
+       ✅ filesystem_permissions_label       "Your filesystem map:"
+                                             [visible: filesystem_permissions_label_visible = true]
+                                             [threshold: filesystem_permissions_label_visibility_threshold = 4 → 7 entries, would show]
        ✅ compound_entry_template            "{{PATH}} -- {{TOOLS}}" — per-item interpolation
                                              ← DisplayEntry.path via {{PATH}}
                                              ← DisplayEntry.tools via {{TOOLS}}
@@ -92,60 +91,22 @@ CLOSING:
 
 ## Issues
 
-### ❌ ISSUE 1: `filesystem_map_label` trunk doesn't match data field `display`
-
-Content field trunk is `filesystem_map` (stripping `_label` suffix). Data field is `display`. The decoration matcher looks for `display_label` — doesn't find `filesystem_map_label`. The label is orphaned.
-
-**Fix options:** Rename content field to `display_label`, or rename the data field from `display` to `filesystem_map` in the schema.
-
-### ❌ ISSUE 2: `grouped_tool_heading` references `{{TOOLS}}` — not a section scalar
+### ⚠️ ISSUE 1: `grouped_tool_heading_template` references `{{TOOLS}}` — not a section scalar
 
 `{{TOOLS}}` is not a field on SecurityBoundaryAnthropic. It represents the shared tool set across all DisplayEntry items — a per-item aggregate that no engine mechanism computes. The template would render with literal `{{TOOLS}}` unsubstituted.
 
 Additionally, this heading should only render when `uniform_toolset_format = "grouped"` (all entries share the same tools). The engine doesn't check this condition. For agent-builder with heterogeneous tool sets, this heading would be wrong even if it rendered.
 
-### ⚠️ ISSUE 3: Five display controls not implemented
+### ⚠️ ISSUE 2: Five display controls not implemented
 
 The engine doesn't use any of the security_boundary display fields:
 - `path_style` — paths render as-is from data, no `./` prefix or formatting applied
 - `uniform_toolset_format` / `heterogeneous_toolset_format` — tool display mode not checked; engine always uses compound_entry_template
 - `entry_list_format` — always renders bulleted
-- `filesystem_map_label_visibility_threshold` — threshold field exists but engine doesn't compare entry count against it
+- `filesystem_permissions_label_visibility_threshold` — threshold field exists but engine doesn't compare entry count against it
 
-### ⚠️ ISSUE 4: `fuse_workspace_path_and_resolver` and `tool_names_visible` not implemented
+### ⚠️ ISSUE 3: `fuse_workspace_path_and_resolver` and `tool_names_visible` not implemented
 
-`fuse_workspace_path_and_resolver = true` should merge the workspace_path scalar with a path-resolution sentence into one framing declaration. Currently the framing_declaration_b_variant handles this text, but the fuse toggle itself has no engine implementation.
+`fuse_workspace_path_and_resolver = true` should merge the workspace_path scalar with a path-resolution sentence into one framing declaration. Currently the framing_declaration_variant_template handles this text, but the fuse toggle itself has no engine implementation.
 
 `tool_names_visible = true` should gate whether tool names appear alongside paths. The engine doesn't read this toggle — tools always show if present in data.
-
----
-
-## Renames Needed
-
-### Template suffix (`_template` as final suffix)
-
-- `grouped_tool_heading` → `grouped_tool_heading_template` — contains `{{TOOLS}}`; already flagged ❌ for the aggregate-value issue, but also needs `_template` since it has a placeholder
-
-### Variant templates (at least one alternative contains `{{...}}`)
-
-- `framing_declaration_b_variant` → `framing_declaration_b_variant_template` — `territory` alternative contains `{{WORKSPACE_PATH}}`; authors need to know templates are expected
-
-### Trunk fixes (trunk must match data field)
-
-- `filesystem_map_label` → `display_label` — trunk `filesystem_map` doesn't match data field `display`; rename trunk to `display` so decoration matcher finds `display_label`
-
-### Data field rename (schema change)
-
-- Data field `display` → `filesystem_permissions` — `filesystem_map_label` was named expecting a clearer data field name; if schema is updated to `filesystem_permissions`, content field becomes `filesystem_permissions_label` with correct trunk
-
-### Variant naming (`_variant` as modifier, `_selector` in structure)
-
-Content: drop slot letter from `_x_variant` — the positional suffix before `_variant` determines the slot.
-
-- `framing_heading_h_variant` → `framing_heading_variant` — drop `_h`; slot determined by `_heading`
-- `framing_preamble_p_variant` → `framing_preamble_variant` — drop `_p`; slot determined by `_preamble`
-- `framing_declaration_b_variant` → `framing_declaration_variant` — drop `_b`; slot determined by `_declaration`; note: `territory` alternative contains `{{WORKSPACE_PATH}}`, so the combined rename is `framing_declaration_variant_template`
-
-Structure: rename `_variant` selectors to `_selector`.
-
-- `framing_variant` → `framing_selector`

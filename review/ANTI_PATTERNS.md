@@ -70,9 +70,3 @@ Display control `patterns_format = "bare_bullets"` specifies how the list render
 ### ⚠️ ISSUE 3: `max_entries_rendered = 0` not implemented
 
 Structure field `max_entries_rendered` (0 = render all, N = cap at N) is present but the engine does not slice the list. Currently renders all items regardless. For this agent the value is 0 so no practical difference, but the mechanism is absent.
-
----
-
-## Renames Needed
-
-No renames needed. No content fields contain `{{placeholders}}` and no trunk mismatches exist.

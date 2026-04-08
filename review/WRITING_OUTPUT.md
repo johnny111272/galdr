@@ -25,7 +25,7 @@ Agent-builder: this section is only rendered when `has_output_tool = true`. For 
 | ✅ | 2 | `transition_preamble` | StringProse | `_preamble` | preamble | `"After processing input according to the instructions above, write your results using the following output tool."` |
 | ✅ | 3 | `tool_mandate_preamble` | StringProse | `_preamble` | preamble | `"Output flows through one channel: the tool specified here. You do not write files directly. You do not choose alternative tools. You invoke this tool — no exceptions."` |
 | ✅ | 4 | `invocation_preamble` | StringProse | `_preamble` | preamble | `"Your invocation template (copy exactly, substituting only the marked placeholders):"` |
-| ✅ | 5 | `tool_identity_label` | StringTemplate | `_label` | body | `"Your output tool is: \`{{TOOL_NAME}}\`"` |
+| ✅ | 5 | `tool_identity_label_template` | StringTemplate | `_label_template` | body | `"Your output tool is: \`{{TOOL_NAME}}\`"` |
 | ✅ | 6 | `heredoc_explanation_postscript` | StringProse | `_postscript` | body | `"This uses heredoc syntax to pass multi-line JSON to the tool. The EOF markers delimit the content block."` |
 
 ## Structure (WritingOutputStructure)
@@ -57,8 +57,8 @@ PREAMBLE:
                                              [visible: implicit — no toggle, always renders]
 
 BODY:
-  [SCALAR] tool_name                       → interpolated into tool_identity_label
-  ✅ tool_identity_label                   "Your output tool is: `{{TOOL_NAME}}`"
+  [SCALAR] tool_name                       → interpolated into tool_identity_label_template
+  ✅ tool_identity_label_template          "Your output tool is: `{{TOOL_NAME}}`"
                                              NOTE: uses UPPERCASE {{TOOL_NAME}} — check if data field is lowercase tool_name
 
   [GATE] invocation_variant                → GATE: selects which invocation template to render
@@ -83,7 +83,7 @@ CLOSING:
 
 ## Issues
 
-### ⚠️ ISSUE 1: `tool_identity_label` uses `{{TOOL_NAME}}` — uppercase vs lowercase
+### ⚠️ ISSUE 1: `tool_identity_label_template` uses `{{TOOL_NAME}}` — uppercase vs lowercase
 
 Content template uses `{{TOOL_NAME}}` (uppercase). Data field is `tool_name` (lowercase). Template interpolation must handle case-insensitive matching, or the placeholder will not resolve. Need to confirm whether the template engine normalizes placeholder keys.
 
@@ -106,11 +106,3 @@ Six data fields exist with no corresponding content templates. These conditional
 ### ⚠️ ISSUE 5: Section-level skip not wired to `has_output_tool`
 
 This section should only render when `has_output_tool = true` on the CriticalRules model. There is no cross-section visibility mechanism in the engine — the section would render even when there is no output tool.
-
----
-
-## Renames Needed
-
-### Template suffix (`_template` as final suffix)
-
-- `tool_identity_label` → `tool_identity_label_template` — contains `{{TOOL_NAME}}`

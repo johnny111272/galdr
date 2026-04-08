@@ -111,20 +111,14 @@ The per-agent return instructions are the most critical content in this section 
 
 `return_schema` is an optional path scalar. When present, it should render as a schema reference label. No content template exists.
 
-**Fix required:** A schema reference content field similar to `schema_reference_label` in the output section.
+**Fix required:** A schema reference content field similar to `schema_reference_label_template` in the output section.
 
 ### ⚠️ ISSUE 3: Two mutually exclusive `_preamble` token-count fields both render
 
 `token_must_be_first_word_tokens_three_preamble` and `token_must_be_first_word_tokens_two_preamble` are both in the preamble slot. Only one should render based on whether ABORT is a valid return state (driven by `mode` or another gate). Engine currently has no mechanism to select between two content fields in the same slot based on a gate value — both would render.
 
-**Fix required:** Either (a) structure visibility toggles for each (`tokens_three_visible`, `tokens_two_visible`) with agent-specific values, or (b) merge into a single `_p_variant` table keyed on mode.
+**Fix required:** Either (a) structure visibility toggles for each (`tokens_three_visible`, `tokens_two_visible`) with agent-specific values, or (b) merge into a single `_preamble_variant` table keyed on mode.
 
 ### ⚠️ ISSUE 4: `track_metrics_as_you_work_antidrift_postscript` has no structure toggle
 
 Unlike all other postscripts in this section, `track_metrics_as_you_work_antidrift_postscript` has no corresponding structure visibility toggle. It will always render when reached. Inconsistent with the pattern of the rest of the section.
-
----
-
-## Renames Needed
-
-No renames needed. No content fields contain `{{placeholders}}` and no trunk mismatches exist.
