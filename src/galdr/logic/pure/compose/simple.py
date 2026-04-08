@@ -22,6 +22,7 @@ from galdr.logic.pure.render.primitive import heading
 from galdr.logic.pure.template.primitive import interpolate
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.gen.output_display import FormatPair, ListFormat
+from galdr.structure.model.section_buffer import SectionBuffer
 
 
 def is_visible_by_mode(mode: str) -> bool:
@@ -339,10 +340,8 @@ def items_for_slot(items: list[tuple[str, str]], slot: str) -> tuple[str, ...]:
 def assemble_buffer(
     heading_text: str | None,
     items: list[tuple[str, str]],
-) -> "SectionBuffer":
+) -> SectionBuffer:
     """Build a SectionBuffer from a heading and a list of (slot, text) tuples."""
-    from galdr.structure.model.section_buffer import SectionBuffer
-
     return SectionBuffer(
         heading=heading(heading_text, 2) if heading_text else None,
         preamble=items_for_slot(items, "preamble"),
