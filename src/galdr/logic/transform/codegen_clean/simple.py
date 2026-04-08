@@ -1,4 +1,4 @@
-"""Codegen clean simple — RootModel field classifier.
+"""Codegen clean simple — RootModel field classifier and constraint stripping.
 
 CC=1-3. No cross-module imports.
 
@@ -6,6 +6,21 @@ Predicate for identifying Annotated fields that reference RootModel types.
 This is the classifier that decides whether a given Field annotation should
 have its constraints stripped in the composed-level state machine.
 """
+
+import re
+
+
+def strip_inline_constraints(line: str) -> str:
+    """Remove inline min_length/max_length constraint fragments from a line.
+
+    Strips ,min_length=N and ,max_length=N fragments that appear inline
+    within Field() annotations. These are duplicates of constraints already
+    defined on the referenced RootModel type.
+    """
+    result = line
+    for match in re.finditer(r",?\s*(min_length|max_length)=\d+", line):
+        result = result.replace(match.group(0), "")
+    return result
 
 
 def check_rootmodel_field(lines: list[str], index: int, rootmodel_names: set[str]) -> bool:

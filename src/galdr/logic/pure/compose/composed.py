@@ -32,20 +32,19 @@ from galdr.logic.pure.compose.simple import (
     is_toggle_visible,
     list_item_to_string,
     list_item_type,
-    render_content_text,
-    render_entries_from_dicts,
     render_item_scalar_field,
     resolve_format_pair,
-    resolve_section_variant,
     select_active_roles,
+    select_section_variant,
     strip_optional_annotation,
     unwrap_scalar_field,
 )
 from galdr.logic.pure.render.primitive import heading as render_heading_md
 from galdr.structure.model.section_buffer import SectionBuffer
 from galdr.logic.pure.render.simple import render_bulleted
-from galdr.logic.pure.template.primitive import interpolate
+from galdr.logic.pure.template.simple import interpolate
 from galdr.structure.gen.output_content import StringTemplate
+from galdr.structure.model.section_context import SectionContext
 
 
 def unwrap_item_fields(item: BaseModel) -> dict[str, str]:
@@ -230,12 +229,12 @@ def resolve_heading_text(
         if content_value is None:
             continue
         if is_basemodel_annotation(content_field_info.annotation):
-            resolved = resolve_section_variant(content_name, content_value, structure_section, data_values)
-            if resolved:
-                result = resolved
+            selected = select_section_variant(content_name, content_value, structure_section)
+            if selected:
+                result = interpolate(selected, data_values)
                 consumed.add(content_name)
         else:
-            result = render_content_text(content_value, data_values)
+            result = interpolate(content_value.root, data_values)
     return result, frozenset(consumed)
 
 
@@ -267,13 +266,13 @@ def populate_section_buffer(
         if slot is None:
             continue
         if is_basemodel_annotation(content_field_info.annotation):
-            rendered = resolve_section_variant(content_name, content_value, structure_section, data_values)
-            if rendered:
-                items.append((slot, rendered))
+            selected = select_section_variant(content_name, content_value, structure_section)
+            if selected:
+                items.append((slot, interpolate(selected, data_values)))
                 consumed_variants.add(content_name)
         else:
             if is_toggle_visible(get_visibility_toggle(content_name, structure_section)):
-                items.append((slot, render_content_text(content_value, data_values)))
+                items.append((slot, interpolate(content_value.root, data_values)))
     return assemble_buffer(heading_text, items), frozenset(consumed_variants)
 
 
@@ -437,32 +436,30 @@ def render_trunk_body(
     shape: str,
     field_name: str,
     field_value: BaseModel,
-    content_section: BaseModel,
-    display_section: BaseModel | None,
-    data_values: dict[str, str],
+    section_context: SectionContext,
 ) -> list[str]:
     """Dispatch a trunk to its shape-specific renderer. Returns body fragments."""
     if shape == "scalar":
-        return [render_scalar_value(field_name, field_value, content_section, data_values)]
+        return [render_scalar_value(field_name, field_value, section_context.content, section_context.data_values)]
     if shape == "simple_list":
         items = field_value.root
-        resolved_format = collect_list_format(field_name, display_section, len(items))
+        resolved_format = collect_list_format(field_name, section_context.display, len(items))
         return [render_bulleted([list_item_to_string(item) for item in items])]
     if shape == "templated_list":
-        entry_template = find_entry_template(content_section)
-        item_dicts = [unwrap_item_fields(item) for item in field_value.root]
-        return [render_bulleted(render_entries_from_dicts(item_dicts, entry_template, data_values))]
+        entry_template = find_entry_template(section_context.content)
+        rendered_entries: list[str] = []
+        for item in field_value.root:
+            merged = {**section_context.data_values, **unwrap_item_fields(item)}
+            rendered_entries.append(interpolate(entry_template, merged))
+        return [render_bulleted(rendered_entries)]
     if shape == "enum_list":
-        return render_enum_list(field_value, content_section, data_values)
-    return [render_structured_item(item, data_values) for item in field_value.root]
+        return render_enum_list(field_value, section_context.content, section_context.data_values)
+    return [render_structured_item(item, section_context.data_values) for item in field_value.root]
 
 
 def resolve_all_trunks(
     data_section: BaseModel,
-    content_section: BaseModel,
-    structure_section: BaseModel,
-    display_section: BaseModel | None,
-    data_values: dict[str, str],
+    section_context: SectionContext,
     consumed_variants: frozenset[str],
 ) -> list[str]:
     """Walk data fields in declaration order, render each by shape.
@@ -474,11 +471,11 @@ def resolve_all_trunks(
         field_value = getattr(data_section, field_name)
         if field_value is None:
             continue
-        shape = classify_trunk_shape(field_info.annotation, content_section)
+        shape = classify_trunk_shape(field_info.annotation, section_context.content)
         if shape in ("gate", "nested"):
             continue
-        decoration = find_decoration(field_name, content_section)
-        fragments.extend(render_decoration_before(decoration, data_values))
-        fragments.extend(render_trunk_body(shape, field_name, field_value, content_section, display_section, data_values))
-        fragments.extend(render_decoration_after(field_name, decoration, structure_section, data_values))
+        decoration = find_decoration(field_name, section_context.content)
+        fragments.extend(render_decoration_before(decoration, section_context.data_values))
+        fragments.extend(render_trunk_body(shape, field_name, field_value, section_context))
+        fragments.extend(render_decoration_after(field_name, decoration, section_context.structure, section_context.data_values))
     return fragments

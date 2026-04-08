@@ -18,6 +18,7 @@ from galdr.logic.pure.compose.simple import (
     extract_section_visible,
     render_buffer,
 )
+from galdr.structure.model.section_context import SectionContext
 
 
 def compose_section(
@@ -35,8 +36,14 @@ def compose_section(
     """
     if not check_section_gate(data_section, extract_section_visible(structure_section)):
         return None
+    section_context = SectionContext(
+        content=content_section,
+        structure=structure_section,
+        display=display_section,
+        data_values=data_values,
+    )
     data_field_names = frozenset(data_section.model_fields.keys())
     buffer, consumed_variants = populate_section_buffer(content_section, data_field_names, structure_section, data_values)
-    body = resolve_all_trunks(data_section, content_section, structure_section, display_section, data_values, consumed_variants)
+    body = resolve_all_trunks(data_section, section_context, consumed_variants)
     filled = buffer.model_copy(update={"body": tuple(body)})
     return render_buffer(filled)

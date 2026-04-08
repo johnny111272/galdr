@@ -19,7 +19,6 @@ from pydantic import BaseModel, RootModel
 
 from galdr.logic.pure.compose.primitive import has_closing_suffix, has_preamble_suffix
 from galdr.logic.pure.render.primitive import heading
-from galdr.logic.pure.template.primitive import interpolate
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.gen.output_display import FormatPair, ListFormat
 from galdr.structure.model.section_buffer import SectionBuffer
@@ -290,27 +289,6 @@ def render_item_scalar_field(field_name: str, text: str) -> str:
     return text
 
 
-def render_entries_from_dicts(
-    item_dicts: list[dict[str, str]],
-    entry_template: str,
-    section_data_values: dict[str, str],
-) -> list[str]:
-    """Render pre-unwrapped item dicts through an entry template.
-
-    Merges each item's values with section data values, then interpolates.
-    Returns list of rendered strings (one per item).
-    """
-    rendered: list[str] = []
-    for item_values in item_dicts:
-        merged = {**section_data_values, **item_values}
-        rendered.append(interpolate(entry_template, merged))
-    return rendered
-
-
-def render_content_text(content_value: RootModel, data_values: dict[str, str]) -> str:
-    """Render a single content text field — interpolate if template, else passthrough."""
-    text = content_value.root
-    return interpolate(text, data_values) if "{{" in text else text
 
 
 def get_enum_string(selector: Enum | str) -> str:
@@ -318,16 +296,6 @@ def get_enum_string(selector: Enum | str) -> str:
     return selector.value if isinstance(selector, Enum) else str(selector)
 
 
-def render_variant(
-    variant_model: BaseModel,
-    selector_value: str,
-    data_values: dict[str, str],
-) -> str | None:
-    """Select and render a variant prose alternative. None if empty."""
-    selected = select_variant(variant_model, selector_value)
-    if not selected:
-        return None
-    return interpolate(selected, data_values) if "{{" in selected else selected
 
 
 
@@ -364,20 +332,20 @@ def buffer_slot_for_field(content_name: str) -> str | None:
 
 
 
-def resolve_section_variant(
+def select_section_variant(
     content_name: str,
     content_value: BaseModel,
     structure_section: BaseModel,
-    data_values: dict[str, str],
 ) -> str | None:
-    """Resolve a variant sub-table field: find selector in structure, pick and render.
+    """Select raw variant text from a variant sub-table using the structure selector.
 
-    Returns the rendered variant prose, or None if no selector or empty selection.
+    Returns the selected prose string (not yet interpolated), or None if
+    no selector found or empty selection. Caller handles interpolation.
     """
     selector = getattr(structure_section, content_name, None)
     if selector is None:
         return None
-    return render_variant(content_value, get_enum_string(selector), data_values)
+    return select_variant(content_value, get_enum_string(selector)) or None
 
 
 def list_item_to_string(item: BaseModel) -> str:

@@ -13,7 +13,7 @@ transform removes the Field-level duplicates.
 import re
 
 from galdr.logic.transform.codegen_clean.primitive import collect_rootmodel_names
-from galdr.logic.transform.codegen_clean.simple import check_rootmodel_field
+from galdr.logic.transform.codegen_clean.simple import check_rootmodel_field, strip_inline_constraints
 
 
 def strip_redundant_constraints(content: str) -> str:
@@ -43,6 +43,6 @@ def strip_redundant_constraints(content: str) -> str:
         if in_rootmodel_field and re.match(r"\s+(pattern|min_length|max_length)=", line):
             continue
         if in_rootmodel_field:
-            line = re.sub(r",?\s*(min_length|max_length)=\d+", "", line)
+            line = strip_inline_constraints(line)
         result.append(line)
     return "\n".join(result)
