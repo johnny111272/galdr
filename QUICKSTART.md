@@ -1,6 +1,6 @@
 # Galdr Quickstart
 
-Galdr is the final stage of the bragi agent pipeline. It takes an `anthropic_render.toml` file — the fully resolved, Anthropic-specific render data — and composes it with style and display configuration to produce two deployable artifacts:
+Galdr is the final stage of the bragi agent pipeline. It takes an `anthropic_render.toml` file — the fully resolved, Anthropic-specific render data — and composes it with three output control surfaces (content, structure, display) to produce two deployable artifacts:
 
 - **Agent prompt** — `definitions/staging/{name}.md`
 - **Dispatcher skill** — `definitions/staging/dispatch-{name}/SKILL.md`
@@ -28,22 +28,11 @@ uv run galdr path/to/anthropic_render.toml --check
 # Render to a specific agent output path
 uv run galdr path/to/anthropic_render.toml -o path/to/output.md
 
-# With a specific recipe
-uv run galdr path/to/anthropic_render.toml --recipe recipes/terse-v1.toml
-
-# With a specific style
-uv run galdr path/to/anthropic_render.toml --style styles/stern.toml
-
-# Benchmark set: render all recipes in a directory
-uv run galdr path/to/anthropic_render.toml --recipe-batch recipes/benchmark-set/
-
-# Override workspace root (auto-detected if omitted)
-uv run galdr path/to/anthropic_render.toml --workspace /path/to/bragi
-```
-
-**Running guardrails:**
-```bash
-uv run pytest tests/test_guardrails.py   # Gleipnir structural checks — run FREQUENTLY
+# With specific control surface TOMLs
+uv run galdr path/to/anthropic_render.toml \
+  --content extracted/content.toml \
+  --structure extracted/structure.toml \
+  --display extracted/display.toml
 ```
 
 ---
@@ -62,15 +51,16 @@ uv run galdr /Users/johnny/.ai/spaces/bragi/definitions/agents/agent-builder/ant
 
 ---
 
-## Three Input Axes
+## Four Input Axes
 
 | Axis | Source | Controls |
 |------|--------|----------|
-| **Data** | `anthropic_render.toml` | What to say — content from the pipeline |
-| **Style** | `styles/*.toml` | How to word it — labels, prose, templates, headings |
-| **Display** | `display/*.toml` | How to format it — list types, separators, layout |
+| **Data** | `anthropic_render.toml` | What to say — agent values from the pipeline |
+| **Content** | `extracted/content.toml` | How to word it — prose, templates, variant alternatives |
+| **Structure** | `extracted/structure.toml` | What to include — visibility toggles, variant selectors, section ordering |
+| **Display** | `extracted/display.toml` | How to format it — list types, thresholds, separators |
 
-These are orthogonal. Any style works with any display. The recipe controls ordering, section inclusion, and per-section overrides.
+These are orthogonal. Any content works with any structure and any display. One definition × N content × M structure × K display = a benchmarking matrix.
 
 ---
 
@@ -78,9 +68,9 @@ These are orthogonal. Any style works with any display. The recipe controls orde
 
 **Reads:**
 - `definitions/agents/{name}/anthropic_render.toml` — validated by Nornir gate
-- `recipes/*.toml` — composition ordering and overrides
-- `styles/*.toml` — text configuration
-- `display/*.toml` — formatting configuration
+- `extracted/content.toml` — prose, templates, variant alternatives
+- `extracted/structure.toml` — visibility toggles, variant selectors, section ordering
+- `extracted/display.toml` — formatting configuration
 
 **Produces:**
 - `definitions/staging/{name}.md` — the rendered agent prompt

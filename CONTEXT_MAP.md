@@ -268,24 +268,13 @@ Every content field declares its buffer slot via terminal suffix:
 - `_x_variant` (h/p/b/c) → slot determined by letter. Plain `_variant` no longer used.
 - D1 template tables (e.g., `instruction_mode`) have no `_variant` suffix — body by default.
 - Unsuffixed fields (e.g., CriticalRules rule items) are body content by default.
-The engine code (`compose/simple.py`) still uses old heuristic-based classification — needs updating to use suffix-based classification. This is Phase 2 of the plan.
+Engine uses suffix-based buffer classification. Heuristic classification deleted.
 
 ### Schema Changes — Completed (2026-04-04)
-- `role_responsibility_label` → `role_responsibility_declaration`
-- Instruction mode flat fields → `instruction_mode` sub-table (group with role sub-tables: header, header_n_only, body_prefix, signal_at_mode_change)
-- `instruction_mode_explanation` flat fields → `instruction_mode_explanation_p_variant` simplegroup
-- `framing_variant` shared variant → 3 per-slot simple variants
-- `abort_stance_variant` shared variant → 2 per-slot simple variants
-- `declaration` → `role_identity_declaration` with companions
-- ~35 content fields renamed with correct positional suffixes
+- All content fields renamed with terminal positional suffixes
+- Per-slot variant convention (`_h/_p/_b/_c_variant`) replaces old shared variants
+- Instruction mode flat fields → `instruction_mode` sub-table group
+- `workspace_path` added to CriticalRules data model (cross-section fix)
 
-### The Composition Engine — Buffer Works, Trunk Resolver Next
-SectionBuffer model works (heading/preamble/body/postscript). `populate_section_buffer` fills heading/preamble/postscript from content walk. `process_data_fields` fills body. Engine produces 308 lines for agent-builder with gate validation passing.
-
-**Next:** Phase 2 (engine code: replace heuristic classification with suffix-based) then trunk resolver (replace `process_data_fields` with generic shape-based resolver). Design in `TRUNK_RESOLVER_DESIGN.md`. Plan in `.claude/plans/`.
-
-### TOML_ARCHITECTURE.md Needs Update
-The position suffixes section needs expanding to include `_intro`, `_separator`, `_closing` vs `_postscript` distinction, `_x_variant` slot letters, and the D1 template table pattern. The shared variant documentation needs removal.
-
-### AGENT_BUILD_SYSTEM.md Shows Old OOP Design
-The "Section Containers" and "Composition" sections still show per-section class patterns with `.render()` methods. This contradicts the generic engine design and is listed as an anti-pattern in CLAUDE.md. Needs rewriting to match `COMPOSITION_ENGINE_DESIGN.md`.
+### Current Status
+See `plans/composition-engine-master-plan.md` for active work status. See `review/` for per-section schema audit.

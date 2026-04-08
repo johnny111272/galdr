@@ -82,13 +82,13 @@ Structure.toml controls what renders without affecting how it's worded or format
 ```toml
 [identity]
 field_ordering = "identity_first"
-expertise_is_strictly_limited_postscript_visible = true
-closing_identity_reminder_visible = false
+role_expertise_is_strictly_limited_postscript_visible = true
+identity_reminder_closing_visible = false
 
 [constraints]
 section_visible = true
 max_entries_rendered = 0
-section_preamble_variant = "standalone"
+section_preamble_p_variant = "standalone"
 ```
 
 Structure is stable — it defines the shape of what renders. Experiments typically change content or display, not structure.
@@ -144,42 +144,9 @@ Multiple display variants can exist: `standard.toml`, `compact.toml`, `dense.tom
 
 ---
 
-## Section Containers
-
-Each section has a container that receives four typed inputs and produces markdown:
-
-```python
-identity = Identity(
-    data=data_model.identity,
-    structure=structure_model.identity,
-    content=content_model.identity,
-    display=display_model.identity,
-)
-output = identity.render()
-```
-
-The container's job:
-1. Check visibility toggles and data gates
-2. Select variant content based on structure selectors
-3. Interpolate content templates with data values
-4. Format arrays according to display settings
-5. Return a markdown string
-
----
-
 ## Composition
 
-The composition engine iterates through the section order and assembles section outputs:
-
-```
-for each section in structure.section_order:
-    data      = data_model.{section}
-    structure = structure_model.{section}
-    content   = content_model.{section}
-    display   = display_model.{section}
-    container = Container(data, structure, content, display)
-    output.append(container.render())
-```
+One generic `compose_section()` processes all sections — no per-section code. For how the engine works, see `COMPOSITION_ENGINE_DESIGN.md` and `redesign/`.
 
 ---
 

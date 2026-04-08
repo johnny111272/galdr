@@ -4,36 +4,19 @@
 
 The design for the trunk resolver — the component that processes each data field through shape detection, targeted collection, and rendering to produce body slot entries in the SectionBuffer.
 
-This replaces the current `process_data_fields` in `composed.py`.
+This documents the shape classification and co-occurrence data for body-slot data fields. For the processing architecture, see `redesign/`.
 
 ---
 
-## Critical Finding: Shape-First, Not Collect-First
+## Shape Classification
 
-The original design assumed a wide collection stage (gather everything per trunk) followed by narrowing. Analysis of the actual data shows this is inverted:
-
-**57% of trunks (16/28) have ZERO cross-axis pieces.** No label, no format, no visibility toggle, no override, no entry template, no variants. They're naked scalars consumed by content templates.
-
-**The optimal order is: detect shape FIRST (from data type alone, zero cross-axis lookups), THEN collect only the pieces that shape needs.**
-
-This reduces average lookups per trunk from ~11 to ~2.
-
-### Key Mutual Exclusivity Rules
-
-| Rule | Implication |
-|------|-------------|
-| Scalar data → Shape A | Skip ALL cross-axis lookups except content template scan |
-| Entry template found → Shape C | Skip decoration, format, variants |
-| Format exists → Shape B or E only | Skip format for A, C, D |
-| Per-item variants → Shape E only | Skip variant lookups for A, B, C, D |
-| Labels/postscripts → identity section only | Skip decoration outside identity |
-| No trunk has `_visible` or `_override` | Visibility/override are decoration-level, not trunk-level |
+Five rendering shapes, detectable from data field annotation type. The shape determines what the hourglass resolver collects and which renderer it routes to.
 
 ---
 
-## The Funnel (Not an Hourglass)
+## Shape Detection Tree
 
-The original design assumed wide collection → narrow resolution. Analysis shows the flow is actually a **funnel** — narrow early, stay narrow:
+Shape detection narrows from annotation type to specific shape:
 
 ```
     CLASSIFY: type-only (zero cross-axis lookups)
@@ -80,8 +63,6 @@ The original design assumed wide collection → narrow resolution. Analysis show
     │  append body   │
     └───────────────┘
 ```
-
-Most trunks exit at the first stage. Only compound BaseModel lists need the content lookup. Only Shape E needs variant resolution.
 
 ---
 
@@ -150,15 +131,6 @@ After shape detection, collect ONLY the pieces that shape needs:
 - Evidence format: `getattr(display, "evidence_format")`
 - Evidence threshold: `getattr(display, "evidence_format_threshold")`
 
-### No TrunkBundle model needed
-
-The original design proposed a `TrunkBundle` with 12 fields. Analysis shows:
-- `visible` and `override_active` are always True/False (no trunk has `_visible` or `_override`)
-- Most fields are None for most trunks
-- Each shape needs a DIFFERENT subset
-
-Instead of collecting everything into one model: **the shape-specific collection functions return only what the corresponding renderer needs.** No bundle, no wasted fields, no `Any` types.
-
 ---
 
 ## Stage 2: Shape Detection (The Decision Tree)
@@ -211,7 +183,7 @@ Every renderer is generic — it knows about field TYPES and NAMING CONVENTIONS,
 
 **Detection:** list of BaseModels where item type has an Enum annotation field.
 
-**Content schema pattern:** The content section contains a sub-table named after the enum field (e.g., `instruction_mode`). This sub-table is a group containing role sub-tables (`header`, `body_prefix`, etc.), each keyed by the enum values (`deterministic`, `probabilistic`). This is structurally identical to the shared variant pattern used by `framing_variant` and `abort_stance_variant`.
+**Content schema pattern:** The content section contains a sub-table named after the enum field (e.g., `instruction_mode`). This sub-table is a group containing role sub-tables (`header`, `body_prefix`, etc.), each keyed by the enum values (`deterministic`, `probabilistic`). This is structurally identical to the per-slot variant pattern (e.g., `framing_heading_h_variant`, `abort_stance_preamble_p_variant`).
 
 **Generic mechanism:**
 1. Find the Enum field by scanning item type's `model_fields` annotations
@@ -305,170 +277,8 @@ This table verifies the generic detection works for all current fields. The reso
 
 ### Observations
 
-1. **Shape A dominates** — most data fields are scalars consumed by content templates. Many of these are already consumed by preamble templates (role_identity in declaration, workspace_path in framing_variant). The body resolver needs to know: was this scalar already consumed by a preamble template? If yes, skip it in the body walk. `find_data_driven_templates` handles this.
+1. **Shape A dominates** — most data fields are scalars.
+2. **Shapes B and C** — straightforward list formatting.
+3. **Shape D** — two sub-types (D1: enum-discriminated, D2: nested groups) with different rendering.
+4. **Shape E** — per-item variant framing, limited to success_criteria and failure_criteria.
 
-2. **Shapes B and C** are straightforward — existing code handles them correctly.
-
-3. **Shape D** has two sub-types with different rendering needs but similar structure (list of items → headed paragraphs).
-
-4. **Shape E** is the only shape that needs per-item variant framing — limited to success_criteria and failure_criteria.
-
-5. **Several data fields are consumed by preamble/heading**, not body. `title` goes into the section heading. `role_identity` goes into the `declaration` template in preamble. `workspace_path` goes into the `framing_variant` preamble. The body resolver should skip these — they're already rendered.
-
----
-
-## Resolution Sequence Diagram
-
-```
-collect_trunk_bundle(trunk, data, content, structure, display, data_values)
-    │
-    ▼
-is gate? ──── yes ──→ extract gate value, return None
-    │ no
-    ▼
-is visible? ── no ──→ return None
-    │ yes
-    ▼
-is override? ─ yes ─→ substitute data_value
-    │ no
-    ▼
-already consumed by preamble? ── yes ──→ return None
-    │ no
-    ▼
-classify shape (A/B/C/D/E)
-    │
-    ├── A ──→ render_scalar(template_text or bare_value, decoration)
-    ├── B ──→ render_simple_list(items, format, decoration)
-    ├── C ──→ render_templated_list(item_dicts, template, format, decoration)
-    ├── D ──→ render_headed_list(items, content_section, ...)
-    └── E ──→ render_framed_items(items, variant_framing, evidence_format, decoration)
-    │
-    ▼
-return rendered_text ──→ append to body slot
-```
-
----
-
-## Renderer Input Signatures
-
-### Common wrapper (all shapes)
-
-Every shape's rendered content gets wrapped with decoration:
-```
-[decoration_before] + [rendered_content] + [decoration_after]
-```
-
-Decoration (label, postscript, etc.) comes from `find_decoration(trunk, content)`. The wrapping is done by the resolver after the shape renderer returns.
-
-### Shape A: render_scalar
-```
-text: str                    # interpolated template text or bare value
-```
-Returns: str
-
-### Shape B: render_formatted_list
-```
-items: list[str]             # scalar strings peeled from RootModels
-format: str                  # resolved format enum
-```
-Returns: str (formatted list)
-
-### Shape C: render_formatted_list (same renderer as B)
-```
-entries: list[str]           # interpolated entry strings
-format: str                  # resolved format enum
-```
-Returns: str (formatted list)
-
-### Shape D1: render_enum_discriminated_items
-```
-items: list[BaseModel]                  # the raw items
-enum_field_name: str                    # discovered Enum field name
-mode_content: BaseModel                 # the content sub-table (group of role sub-tables)
-active_roles: list[str]                 # role names to render (after structure selection)
-data_values: dict[str, str]             # for interpolation
-```
-Returns: list[str] (one rendered paragraph per item)
-
-### Shape D2: render_nested_items
-```
-items: list[BaseModel]       # the raw items
-content_section: BaseModel   # for group framing, entry templates
-data_values: dict[str, str]  # for interpolation
-heading_depth: int           # starting heading level (H3 for top)
-```
-Returns: list[str] (one rendered block per item)
-
-### Shape E: render_variant_framed_items
-```
-items: list[BaseModel]               # the raw items
-resolved_framings: list[str]         # variant-resolved framing texts
-evidence_format: str                 # resolved format for sub-lists
-data_values: dict[str, str]          # for interpolation
-```
-Returns: list[str] (one rendered block per item)
-
----
-
-## Implementation Approach
-
-### Step 1: TrunkBundle model
-Frozen Pydantic model in `structure/model/`. Holds all collected pieces.
-
-### Step 2: collect_trunk_bundle function
-Simple/composed level. Mechanical lookups by naming convention.
-
-### Step 3: resolve_trunk function
-Composed level. The hourglass — applies gate/visibility/override/shape decisions.
-
-### Step 4: Shape renderers
-Mostly exist already. Shape E needs the variant framing addition.
-
-### Step 5: Replace process_data_fields
-The assembled-level wiring: iterate data fields → collect → resolve → append to body.
-
----
-
-## Eliminating Per-Section Knowledge
-
-Three mechanisms that WERE per-section become generic:
-
-### 1. `is_per_item_variant` → "remaining variants"
-
-**Old:** Explicit name set `{"definition_framing_variant", "evidence_framing_variant", ...}`
-
-**New:** Buffer population tracks which variant sub-tables it consumed (section-level). Any variant in the content section NOT consumed by the buffer is per-item. Detection by elimination, not by name.
-
-**Implementation:** `populate_section_buffer` returns both the buffer AND a set of consumed variant names. The body resolver checks `is_variant_annotation` on content fields — if the name is NOT in the consumed set, it's a per-item variant for Shape E.
-
-### 2. `render_instruction_steps` → generic enum-discriminated renderer
-
-**Old:** Hardcoded `instruction_mode` field name and `step_header_` prefix matching.
-
-**New (schema change completed):** The content schema now uses a sub-table pattern. `instruction_mode` is a group containing role sub-tables (`header`, `header_n_only`, `body_prefix`, `signal_at_mode_change`), each keyed by enum values (`deterministic`, `probabilistic`). The engine finds the Enum field by annotation, finds the matching content sub-table by name, and iterates role sub-tables. No substring scanning, no position-marker detection — the sub-table structure IS the position information. This is the same pattern as `framing_variant` and `abort_stance_variant`.
-
-**Also changed:** `instruction_mode_explanation_variant` is now a variant sub-table keyed by mode composition (`mixed`, `uniform_deterministic`, `uniform_probabilistic`). The selector is computed from data (are modes mixed or uniform), not from structure.
-
-### 3. `render_structured_item` → generic nested-item renderer
-
-**Old:** Hardcoded `_name`/`_heading` suffix for heading detection.
-
-**New:** Same suffix convention, but it IS generic — the convention applies to any field in any section. `_name` → title-like → heading. This isn't per-section knowledge, it's a TOML naming convention.
-
----
-
-## What Already Exists and Can Be Reused
-
-| Function | File | Reuse |
-|----------|------|-------|
-| `find_decoration` | simple.py | Trunk-based decoration lookup ✓ |
-| `render_content_text` | simple.py | Template interpolation ✓ |
-| `render_bulleted` | render/simple.py | List formatting ✓ |
-| `render_entries_from_dicts` | simple.py | Templated entry rendering ✓ |
-| `unwrap_item_fields` | composed.py | Per-item field extraction ✓ |
-| `render_instruction_steps` | composed.py | Shape D1 renderer ✓ |
-| `render_structured_item` | composed.py | Shape D2/E base (needs variant addition for E) |
-| `render_decoration_before` | composed.py | Decoration assembly ✓ |
-| `render_decoration_after` | composed.py | Decoration assembly with visibility ✓ |
-| `classify_data_annotation` | composed.py | Gate/scalar/list/nested classification ✓ |
-| `resolve_format_pair` | simple.py | Threshold-based format resolution ✓ |

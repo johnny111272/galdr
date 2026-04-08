@@ -66,11 +66,17 @@ Not every block has all five elements — most skip some. But when elements exis
 | Suffix | Position | Purpose | Example |
 |---|---|---|---|
 | `_heading` | First | Names the block. Rendered as H2/H3. | `context_required_heading = "Required Reading"` |
-| `_preamble` | After heading | Sets context before any data. Frames how to process what follows. | `context_required_preamble = "These are not reference materials..."` |
-| `_label` | Before data | Immediately introduces a data field or list. | `expertise_label = "**Your judgment is authoritative in:**"` |
-| (entries) | Middle | The data itself — array items, field values, template expansions. | `context_entry = "**{{context_label}}**: Read..."` |
-| `_postscript` | After data | Reinforces, constrains, or summarizes what was just presented. | `expertise_postscript = "Your expertise is strictly limited to the areas listed above."` |
-| `_transition` | Between blocks | Marks a cognitive shift from one block to the next. | `knowledge_data_transition = "With this knowledge internalized..."` |
+| `_preamble` | After heading | Sets context before any data. | `context_required_preamble = "These are not reference materials..."` |
+| `_label` | Before data | Introduces a data field or list. | `role_expertise_label = "**Your judgment is authoritative in:**"` |
+| `_declaration` | Data rendering | Template that renders data as a statement. | `role_identity_declaration = "You are a {{role_identity}}."` |
+| `_intro` | Before sub-block | Per-item preamble within compound items. | `evidence_intro = "Any of the following indicates..."` |
+| `_entry_template` | Per-item | Template for each list item. | `compound_entry_template = "{{PATH}} -- {{TOOLS}}"` |
+| `_separator` | Between items | Inter-item prose for lists. | `criteria_separator = "Additionally"` |
+| `_postscript` | After data | Reinforces or constrains what was just presented. | `role_expertise_is_strictly_limited_postscript = "Your expertise is strictly limited..."` |
+| `_transition` | Pre-label | Renders before the next field's block. | `parameters_transition = "With this knowledge internalized..."` |
+| `_closing` | Section end | Section-level closing prose. | `identity_reminder_closing = "Remember: you are a {{role_identity}}."` |
+| `_x_variant` | Slot by letter | Variant with slot: h=heading, p=preamble, b=body, c=closing. | `framing_heading_h_variant` |
+| `_body` | Body | Standalone prose not tied to a data field. | (CriticalRules rule items) |
 
 This sequence applies at two levels:
 
@@ -102,7 +108,7 @@ Prose with `{{DATA}}` holes. The template is the knob; the data is fixed.
 
 ```toml
 declaration = "You are a {{role_identity}}."
-responsibility_label = "**Scope:** {{role_responsibility}}"
+role_responsibility_declaration = "**Scope:** {{role_responsibility}}"
 ```
 
 ### Array Display (handled by display.toml, not content)
@@ -128,9 +134,9 @@ Example: `expertise_postscript` → author writes "the areas listed above." If t
 Each file is read in isolation. Field names must be self-documenting without context from other files.
 
 Bad: `closer = false`
-Good: `closing_identity_reminder_visible = false`
+Good: `identity_reminder_closing_visible = false`
 
-A reader of structure.toml sees `closing_identity_reminder_visible = false` and knows exactly what's being toggled without opening content.toml.
+A reader of structure.toml sees `identity_reminder_closing_visible = false` and knows exactly what's being toggled without opening content.toml.
 
 ### Visibility Toggles Use `_visible` Suffix
 
@@ -139,14 +145,14 @@ Every boolean in structure.toml that controls whether a fragment renders uses th
 ```toml
 # structure.toml
 [identity]
-closing_identity_reminder_visible = false
+identity_reminder_closing_visible = false
 
 # content.toml
 [identity]
-closing_identity_reminder = "Remember: you are a {{role_identity}}."
+identity_reminder_closing = "Remember: you are a {{role_identity}}."
 ```
 
-The structure field is `closing_identity_reminder_visible` (boolean). The content field is `closing_identity_reminder` (string). The shared root name creates obvious cross-reference. The `_visible` suffix prevents confusion — without it, `closing_identity_reminder = false` could mean "the reinforcement text is false" rather than "don't show it."
+The structure field is `identity_reminder_closing_visible` (boolean). The content field is `identity_reminder_closing` (string). The shared root name creates obvious cross-reference. The `_visible` suffix prevents confusion — without it, `identity_reminder_closing = false` could mean "the reinforcement text is false" rather than "don't show it."
 
 ---
 
@@ -192,49 +198,32 @@ examples_max_number = 0                        # 0 = no truncation, N = cap. Onl
 
 The sibling value matches the data's type. No mixed-type fields, no string sentinels.
 
-### 3. `_variant` — Content Variant Selection
+### 3. `_x_variant` — Content Variant Selection
 
-Selects among named prose alternatives in content.toml. The alternatives live in a **sub-table** named after the variant selector. The sub-table's keys ARE the allowed enum values — self-documenting, no comments needed, and the schema derives the enum directly from the keys.
-
-```toml
-# structure.toml
-section_preamble_variant = "standalone"   # enum values derived from content sub-table keys
-
-# content.toml
-[constraints.section_preamble_variant]
-standalone = "These constraints govern your execution..."
-references_instructions = "While executing your instructions..."
-references_critical_rules = "These constraints are binding operational rules..."
-```
-
-The structure selector name matches the content sub-table name. An LLM reading content.toml sees a table called `section_preamble_variant` and immediately knows these are mutually exclusive alternatives — the table structure makes it impossible to misread as separate fields that all render.
-
-#### Shared Variants
-
-A single variant selector may drive multiple content field families when those families always change together. The sub-table contains sub-sub-tables for each governed family:
+Selects among named prose alternatives in content.toml. Each variant has a slot letter (h/p/b/c) indicating which buffer slot the resolved text goes to.
 
 ```toml
 # structure.toml
-framing_variant = "territory"
+framing_variant = "territory"   # one selector can drive multiple content variants
 
 # content.toml
-[security_boundary.framing_variant.heading]
+[security_boundary.framing_heading_h_variant]     # → heading slot
 territory = "Your Workspace"
 environmental = "Operating Environment"
 cage = "Permitted Boundaries"
 
-[security_boundary.framing_variant.workspace_path_declaration]
-territory = "Your workspace is {{WORKSPACE_PATH}}..."
-environmental = "You operate within {{WORKSPACE_PATH}}..."
-cage = "You are confined to {{WORKSPACE_PATH}}..."
-
-[security_boundary.framing_variant.section_preamble]
+[security_boundary.framing_preamble_p_variant]     # → preamble slot
 territory = "Within this workspace, you can access:"
 environmental = "The following paths are available to you:"
 cage = "You are permitted to access only the following paths:"
+
+[security_boundary.framing_declaration_b_variant]  # → body slot
+territory = "Your workspace is {{WORKSPACE_PATH}}..."
+environmental = "You operate within {{WORKSPACE_PATH}}..."
+cage = "You are confined to {{WORKSPACE_PATH}}..."
 ```
 
-The variant value picks a key, looked up in every sub-table under the variant name. The sub-table names are the governed field families. All sub-tables must have the same keys.
+Variant slot letters: `_h_variant` (heading), `_p_variant` (preamble), `_b_variant` (body), `_c_variant` (closing). One structure selector can drive multiple per-slot variants — they share a selector but each declares its own slot.
 
 ### 4. `_format` + `_format_threshold` — Display Format
 
@@ -370,7 +359,7 @@ Only things that VARY are knobs. Only knobs live in TOML.
 field_ordering = "identity_first"
 fuse_declaration_and_role_description = false
 expertise_is_strictly_limited_visible = true
-closing_identity_reminder_visible = false
+identity_reminder_closing_visible = false
 ```
 
 ### content.toml — `[identity]`
@@ -379,10 +368,10 @@ closing_identity_reminder_visible = false
 [identity]
 heading = "AGENT: {{title}}"
 declaration = "You are a {{role_identity}}."
-responsibility_label = "**Scope:** {{role_responsibility}}"
-expertise_label = "**Your judgment is authoritative in:**"
+role_responsibility_declaration = "**Scope:** {{role_responsibility}}"
+role_expertise_label = "**Your judgment is authoritative in:**"
 expertise_is_strictly_limited_postscript = "Your expertise is strictly limited to the areas listed above."
-closing_identity_reminder = "Remember: you are a {{role_identity}}."
+identity_reminder_closing = "Remember: you are a {{role_identity}}."
 ```
 
 ### display.toml — `[identity]`
@@ -400,12 +389,12 @@ responsibility_format_threshold = 3
 ```toml
 [identity]
 declaration = "You are a {{role_identity}} — not a debugger, not a reviewer, not a creative writer."
-responsibility_label = "**You are done when:** {{role_responsibility}}"
-expertise_label = "**Pay special attention to:**"
-closing_identity_reminder_visible = true
+role_responsibility_declaration = "**You are done when:** {{role_responsibility}}"
+role_expertise_label = "**Pay special attention to:**"
+identity_reminder_closing_visible = true
 ```
 
-Note: the override sets `closing_identity_reminder_visible = true` (structure concern — toggle visibility) without changing the text (content concern — stays as defined in content.toml). Override can contain fields from any of the three base files.
+Note: the override sets `identity_reminder_closing_visible = true` (structure concern — toggle visibility) without changing the text (content concern — stays as defined in content.toml). Override can contain fields from any of the three base files.
 
 ---
 

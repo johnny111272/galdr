@@ -52,7 +52,7 @@ This maps onto a natural TOML split:
 - **Format** — display decisions, occasionally tuned
 - **Style** — experimental prose, frequently adjusted
 
-Whether this is two files or three is an open question. Format might fold into either skeleton or style.
+**Resolved:** Four axes — data (anthropic_render.toml), content (content.toml), structure (structure.toml), display (display.toml).
 
 ### Pattern 4: Motor vs Judgment Axis
 
@@ -202,7 +202,7 @@ Notable multi-site values:
 ## Open Questions
 
 1. Does `task_type` become a schema field? If yes, what are its values?
-2. Do we need three TOML files (skeleton + format + style) or two (skeleton + style, with format folded in)?
+2. ~~Do we need three TOML files?~~ **Resolved:** Four axes — data, content, structure, display.
 3. Do FRONTMATTER and DISPATCHER share the body-section architecture or get their own?
-4. How does section_order interact with per-section templates?
+4. ~~How does section_order interact with per-section templates?~~ **Resolved:** structure.section_order.order drives iteration. Content is per-section, not per-template.
 5. Which of the schema extension candidates are worth implementing now vs deferring?

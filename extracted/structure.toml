@@ -18,9 +18,9 @@ order = [
 [identity]
 field_ordering = "identity_first"
 fuse_role_identity_declaration_and_role_description = false
-role_identity_declaration_heuristic_postscript_visible = true
-role_expertise_is_strictly_limited_postscript_visible = true
-identity_reminder_closing_visible = false
+role_identity_postscript_template_visible = true
+role_expertise_postscript_visible = true
+identity_reminder_closing_template_visible = false
 bold_contrast_phrase_from_role_description_visible = false
 
 [security_boundary]
@@ -28,7 +28,7 @@ bold_contrast_phrase_from_role_description_visible = false
 fuse_workspace_path_and_resolver = true
 
 # Whether to render a label line before display entries
-filesystem_map_label_visible = true
+filesystem_permissions_label_visible = true
 
 # Whether to render a preamble between heading and entries
 section_preamble_visible = true
@@ -40,25 +40,25 @@ section_closing_visible = false
 tool_names_visible = true
 
 # Framing paradigm: selects which content posture the section uses
-framing_variant = "territory"  # "territory" | "environmental" | "cage" — governs: framing_heading_h_variant, framing_declaration_b_variant, framing_preamble_p_variant
+framing_selector = "territory"  # "territory" | "environmental" | "cage" — governs: framing_heading_variant, framing_declaration_variant_template, framing_preamble_variant
 
 [critical_rules]
 # Prelude
 authority_preamble_visible = true
-rule_count_awareness_preamble_visible = "auto"       # "auto" | "always" | "never"
-rule_count_awareness_preamble_auto_threshold = 5
+rule_count_awareness_preamble_template_visible = "auto"       # "auto" | "always" | "never"
+rule_count_awareness_preamble_template_auto_threshold = 5
 
 # Universal rules
-workspace_confinement_visible = true
-fail_fast_visible = true
-input_is_your_only_source_visible = true
-no_invention_visible = true
+workspace_confinement_declaration_template_visible = true
+fail_fast_body_visible = true
+input_is_your_only_source_body_visible = true
+no_invention_body_visible = true
 
 # Output tool rules (conditional on has_output_tool)
-output_tool_exclusivity_visible = true
-batch_discipline_visible = true                    # also requires batch_size
+output_tool_exclusivity_declaration_template_visible = true
+batch_discipline_declaration_template_visible = true                    # also requires batch_size
 # Experimental
-discipline_over_helpfulness_visible = false
+discipline_over_helpfulness_body_visible = false
 
 # Presentation
 rule_presentation = "single_sentence"  # "single_sentence" | "heading_plus_body"
@@ -66,7 +66,7 @@ internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
 
 [instructions]
 # Heading
-heading_h_variant = "default"                   # "default" | "procedure" | "steps_with_count"
+heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
 
 # Mode infrastructure
 instruction_mode_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
@@ -74,22 +74,22 @@ instruction_mode_marker_placement = "header_fused"  # "header_fused" | "body_pre
 signal_at_mode_change_visible = false
 
 # Preamble components
-step_count_preamble_visible = true
+step_count_preamble_template_visible = true
 no_add_skip_reorder_preamble_visible = true
 instruction_mode_preview_preamble_visible = true
 no_extra_operations_preamble_visible = true
 
 # Step structure
 step_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
-step_done_when_postscript_visible = false
+step_done_when_postscript_template_visible = false
 
 # Closing
-guardrail_closing_visible = true
-instruction_mode_recap_closing_visible = false
+guardrail_closing_template_visible = true
+instruction_mode_recap_closing_template_visible = false
 
 # Dependency and progress
-cross_step_dependency_label_visible = false
-reminder_midpoint_visible = false
+cross_step_dependency_label_template_visible = false
+reminder_midpoint_preamble_template_visible = false
 
 # Scaffolding tier override (null = auto from step count)
 scaffolding_tier_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
@@ -107,7 +107,7 @@ example_display_headings_override = false
 examples_max_number_override = false
 
 # Whether a framing preamble renders between the group heading and first entry
-group_framing_preamble_visible = false
+group_framing_preamble_template_visible = false
 
 [constraints]
 # Visibility / activation
@@ -120,14 +120,14 @@ section_preamble_visible = true
 constraints_are_not_steps_preamble_visible = true
 no_inferred_constraints_visible = true
 closing_compliance_reminder_visible = true
-constraint_count_heading_visible = true
+constraint_count_heading_template_visible = true
 hierarchy_tier_comparison_preamble_visible = true
 hierarchy_three_tier_explanation_preamble_visible = true
 
 # Variant selectors (conditional on their _visible gates above)
-section_preamble_p_variant = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
-no_inferred_constraints_p_variant = "light"     # "light" | "explicit"
-closing_compliance_reminder_c_variant = "evaluation_warning"  # "evaluation_warning" | "simultaneity"
+section_preamble_selector = "standalone"       # "standalone" | "references_instructions" | "references_critical_rules"
+no_inferred_constraints_preamble_selector = "light"     # "light" | "explicit"
+compliance_reminder_closing_selector = "evaluation_warning"  # "evaluation_warning" | "simultaneity"
 
 [anti_patterns]
 # Whether to render the section at all
@@ -150,13 +150,13 @@ section_visible = true
 max_entries_rendered = 0
 
 # Definition framing paradigm
-definition_framing_b_variant = "declarative_assertion"
+definition_declaration_selector = "declarative_assertion"
 
 # Evidence list framing paradigm
-evidence_framing_b_variant = "properties"
+evidence_intro_selector = "properties"
 
 # Hierarchy connector paradigm
-definition_to_evidence_transition_b_variant = "goal_then_criteria"
+definition_to_evidence_transition_selector = "goal_then_criteria"
 
 # Evidence type handling
 evidence_type_handling = "undifferentiated"
@@ -190,22 +190,21 @@ cite_definition_and_evidence_postscript_visible = false
 check_before_and_during_postscript_visible = false
 
 # Abort behavioral posture (both selectors use same value — they switch together)
-abort_stance_preamble_p_variant = "obligation"  # "obligation" | "permission"
-abort_stance_definition_label_b_variant = "obligation"  # "obligation" | "permission"
+abort_stance_selector = "obligation"  # "obligation" | "permission"
 
 [input]
 section_preamble_visible = true
 context_required_preamble_visible = true
 parameters_transition_visible = true
 input_completeness_postscript_visible = false
-schema_label_visible = true
+schema_label_template_visible = true
 parameters_heading_visible = "auto"
 parameters_heading_auto_threshold = 2
 
 [output]
 # Variant selectors
 schema_embed = false
-directory_location_b_variant = "standard"    # "standard" | "with_boundary"
+directory_location_selector = "standard"    # "standard" | "with_boundary"
 
 [writing_output]
 # Transition sentence connecting from instructions to this section
