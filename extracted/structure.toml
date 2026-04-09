@@ -17,15 +17,13 @@ order = [
 
 [identity]
 field_ordering = "identity_first"
-fuse_role_identity_declaration_and_role_description = false
+
 role_identity_postscript_template_visible = true
 role_expertise_postscript_visible = true
 identity_reminder_closing_template_visible = false
 
 
 [security_boundary]
-# Whether to fuse workspace_path with path-resolution instruction in a single sentence
-fuse_workspace_path_and_resolver = true
 
 # Whether to render a label line before display entries
 filesystem_permissions_label_visible = true

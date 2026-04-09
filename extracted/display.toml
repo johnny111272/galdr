@@ -6,11 +6,8 @@ role_expertise_format_threshold = 3
 # Path style: "relative_dotslash" | "relative_bare" | "absolute"
 path_style = "relative_dotslash"
 
-# Entry format when tool sets are uniform across all entries: "grouped" | "per_entry"
-uniform_toolset_format = "grouped"
-
-# Entry format when tool sets differ across entries: "per_entry_list" | "per_entry_prose"
-heterogeneous_toolset_format = "per_entry_list"
+# Tool display format: "grouped" | "per_entry_list" | "per_entry_prose"
+toolset_format = "per_entry_list"
 
 # Entry count threshold for switching from no-intro to intro-present
 filesystem_permissions_label_visibility_threshold = 4

@@ -5,9 +5,9 @@
 ```
 SecurityBoundaryAnthropic
   .workspace_path    WorkspacePathXAbs (PathExistsAbsolute scalar)
-  .display           DisplayEntries (list of DisplayEntry)
-       .path         DisplayPath (scalar)
-       .tools        DisplayToolsCommands (list of tool name scalars)
+  .display           FilesystemPermissions (list of FilesystemPermission)
+       .path         FilesystemPermissionPath (scalar)
+       .tools        FilesystemPermissionToolsCommands (list of tool name scalars)
 ```
 
 Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
@@ -28,7 +28,6 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ⚠️ | 1 | `fuse_workspace_path_and_resolver` | Boolean | `true` | Merge workspace_path with path-resolution sentence — not implemented |
 | ✅ | 2 | `filesystem_permissions_label_visible` | Boolean | `true` | → content #1 visibility |
 | ✅ | 3 | `framing_preamble_visible` | Boolean | `true` | → content #7 (framing_preamble_variant) visibility |
 | ✅ | 4 | `section_closing_visible` | Boolean | `false` | → content #2 |
@@ -39,8 +38,8 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `path_style` | enum | `"relative_dotslash"` | Path formatting — engine renders paths as-is from data |
-| ⚠️ | 2 | `uniform_toolset_format` | enum | `"grouped"` | When all entries share tools: grouped header vs per-entry — not wired |
-| ⚠️ | 3 | `heterogeneous_toolset_format` | enum | `"per_entry_list"` | When entries have different tools: per-entry format — not wired |
+| ⚠️ | 2 | `toolset_format` | enum | `"grouped"` | When all entries share tools: grouped header vs per-entry — not wired |
+| ⚠️ | 3 | `toolset_format` | enum | `"per_entry_list"` | When entries have different tools: per-entry format — not wired |
 | ✅ | 4 | `filesystem_permissions_label_visibility_threshold` | Integer | `4` | Entry count threshold for showing the label (7 entries → label shows) |
 | ⚠️ | 5 | `entry_list_format` | enum | `"bullet"` | List marker style — engine uses bulleted regardless |
 
@@ -54,7 +53,7 @@ HEADING:
                                              → "Your Workspace"
   ⚠️ grouped_tool_heading_template         "Available tools: {{TOOLS}}"
                                              {{TOOLS}} is not a section scalar — it's a per-item aggregate
-                                             only renders when uniform_toolset_format = "grouped"
+                                             only renders when toolset_format = "grouped"
                                              (agent-builder has heterogeneous tools — wouldn't render anyway)
 
 PREAMBLE:
@@ -67,17 +66,17 @@ BODY (in data field order):
        ✅ framing_declaration_variant_template  selected by structure.framing_selector = "territory"
                                              → "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
                                              ← data.workspace_path via {{WORKSPACE_PATH}}
-  ✅ data.display                           LIST (7 DisplayEntry items)
+  ✅ data.filesystem_permissions                           LIST (7 FilesystemPermission items)
        ✅ filesystem_permissions_label       "Your filesystem map:"
                                              [visible: filesystem_permissions_label_visible = true]
                                              [threshold: filesystem_permissions_label_visibility_threshold = 4 → 7 entries, would show]
        ✅ compound_entry_template            "{{PATH}} -- {{TOOLS}}" — per-item interpolation
-                                             ← DisplayEntry.path via {{PATH}}
-                                             ← DisplayEntry.tools via {{TOOLS}}
+                                             ← FilesystemPermission.path via {{PATH}}
+                                             ← FilesystemPermission.tools via {{TOOLS}}
        ⚠️ [display controls not wired]
             path_style = "relative_dotslash"
-            uniform_toolset_format = "grouped"
-            heterogeneous_toolset_format = "per_entry_list"
+            toolset_format = "grouped"
+            toolset_format = "per_entry_list"
             entry_list_format = "bullet"
 
 
@@ -92,18 +91,15 @@ CLOSING:
 
 ### ⚠️ ISSUE 1: `grouped_tool_heading_template` references `{{TOOLS}}` — not a section scalar
 
-`{{TOOLS}}` is not a field on SecurityBoundaryAnthropic. It represents the shared tool set across all DisplayEntry items — a per-item aggregate that no engine mechanism computes. The template would render with literal `{{TOOLS}}` unsubstituted.
+`{{TOOLS}}` is not a field on SecurityBoundaryAnthropic. It represents the shared tool set across all FilesystemPermission items — a per-item aggregate that no engine mechanism computes. The template would render with literal `{{TOOLS}}` unsubstituted.
 
-Additionally, this heading should only render when `uniform_toolset_format = "grouped"` (all entries share the same tools). The engine doesn't check this condition. For agent-builder with heterogeneous tool sets, this heading would be wrong even if it rendered.
+Additionally, this heading should only render when `toolset_format = "grouped"` (all entries share the same tools). The engine doesn't check this condition. For agent-builder with heterogeneous tool sets, this heading would be wrong even if it rendered.
 
 ### ⚠️ ISSUE 2: Five display controls not implemented
 
 The engine doesn't use any of the security_boundary display fields:
 - `path_style` — paths render as-is from data, no `./` prefix or formatting applied
-- `uniform_toolset_format` / `heterogeneous_toolset_format` — tool display mode not checked; engine always uses compound_entry_template
+- `toolset_format` / `toolset_format` — tool display mode not checked; engine always uses compound_entry_template
 - `entry_list_format` — always renders bulleted
 - `filesystem_permissions_label_visibility_threshold` — threshold field exists but engine doesn't compare entry count against it
 
-### ⚠️ ISSUE 3: `fuse_workspace_path_and_resolver` not implemented
-
-`fuse_workspace_path_and_resolver = true` should merge the workspace_path scalar with a path-resolution sentence into one framing declaration. Currently the framing_declaration_variant_template handles this text, but the fuse toggle itself has no engine implementation.

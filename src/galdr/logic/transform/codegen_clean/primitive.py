@@ -25,5 +25,9 @@ def strip_future_annotations(content: str) -> str:
 
 
 def collect_rootmodel_names(content: str) -> set[str]:
-    """Find all class names that extend RootModel."""
-    return set(re.findall(r"class (\w+)\(RootModel", content))
+    """Find all class names that extend RootModel.
+
+    Handles both single-line and multi-line class definitions
+    where the base class wraps to the next line.
+    """
+    return set(re.findall(r"class (\w+)\(\s*RootModel", content))

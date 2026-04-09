@@ -30,7 +30,6 @@ Agent-builder has all fields populated. `role_expertise` has 4 items. `role_desc
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ✅ | 1 | `field_ordering` | IdentityFieldOrdering (enum) | `"identity_first"` | Field render order within section |
-| ⚠️ | 2 | `fuse_role_identity_declaration_and_role_description` | Boolean | `false` | Merge declaration + description — role_description has no content template anyway |
 | ✅ | 3 | `role_identity_postscript_template_visible` | Boolean | `true` | → content #3 |
 | ✅ | 4 | `role_expertise_postscript_visible` | Boolean | `true` | → content #6 |
 | ✅ | 5 | `identity_reminder_closing_template_visible` | Boolean | `false` | → content #7 |
@@ -64,7 +63,7 @@ BODY (in data field order):
   ✅ data.role_responsibility                SCALAR
        ✅ role_responsibility_declaration_template  "**Scope:** {{role_responsibility}}"
   ❌ data.role_description                   SCALAR (optional) — no content template, renders as bare text
-                                             [structure: fuse_role_identity_declaration_and_role_description = false]
+
 
   ✅ data.role_expertise                     LIST (4 items for agent-builder)
        ✅ role_expertise_label                 "**Your judgment is authoritative in:**"
@@ -85,7 +84,7 @@ CLOSING:
 
 ### ❌ ISSUE 1: `role_description` has no content template
 
-Data field `role_description` (optional, scalar prose) has two structure controls (`fuse_role_identity_declaration_and_role_description`, `bold_contrast_phrase_from_role_description_visible`) but NO content template. The trunk resolver renders it as bare text — no framing, no decoration.
+Data field `role_description` (optional, scalar prose) has no content template. Renders as bare text — no framing, no decoration.
 
 **Fix required:** Add a content template for `role_description` (e.g. `role_description_declaration_template`), or decide this field always renders bare.
 
@@ -93,6 +92,3 @@ Data field `role_description` (optional, scalar prose) has two structure control
 
 `title` is consumed by heading template `"AGENT: {{title}}"`. The trunk resolver also processes it as a scalar body field. `render_scalar_value` scans for `{{title}}` in content templates — may find the heading template and render it again in the body. Needs verification.
 
-### ⚠️ ISSUE 3: `fuse_role_identity_declaration_and_role_description` operates on unfilled content
-
-Structure toggle `fuse_role_identity_declaration_and_role_description = false` implies a fusion mode exists. But `role_description` has no content template, so even with `fuse = true` there is nothing to fuse the declaration with. The toggle is currently a no-op in both states.

@@ -50,6 +50,16 @@ def strip_display_control_suffix(name: str) -> str:
     )
 
 
+def extract_trunk(name: str) -> str:
+    """Extract the trunk name from any field on any axis.
+
+    Strips all control suffixes (structure, display) and modifiers
+    (content). Operations are idempotent — stripping a suffix that
+    isn't present is a no-op. No axis parameter needed.
+    """
+    return strip_modifiers(strip_display_control_suffix(strip_structure_control_suffix(name)))
+
+
 def has_heading_suffix(name: str) -> bool:
     """True if name's positional suffix is heading-slot (after stripping modifiers)."""
     return strip_modifiers(name).endswith("heading")
