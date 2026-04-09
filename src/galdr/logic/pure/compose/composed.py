@@ -13,11 +13,16 @@ format resolution happens at assembled level via render/composed.
 from pydantic import BaseModel
 
 from galdr.logic.pure.compose.primitive import (
+    has_closing_suffix,
     has_heading_suffix,
+    has_preamble_suffix,
+    strip_display_control_suffix,
+    strip_structure_control_suffix,
 )
 from galdr.logic.pure.compose.simple import (
     assemble_buffer,
     buffer_slot_for_field,
+    classify_content_slot,
     find_decoration,
     find_d1_content_table,
     find_enum_field_name,
@@ -479,3 +484,56 @@ def resolve_all_trunks(
         fragments.extend(render_trunk_body(shape, field_name, field_value, section_context))
         fragments.extend(render_decoration_after(field_name, decoration, section_context.structure, section_context.data_values))
     return fragments
+
+
+def place_structure_field(
+    name: str,
+    slots: dict[str, list[tuple[str, str]]],
+) -> list[tuple[str, tuple[str, str]]]:
+    """Determine which slot(s) a structure field belongs to.
+
+    Selectors are duplicated to every slot containing a matching content
+    variant (by prefix). Other structure fields are classified by
+    stripping their control suffix and classifying the remainder.
+    Returns list of (slot_name, (axis, field_name)) placements.
+    """
+    if name.endswith("_selector"):
+        selector_trunk = name.removesuffix("_selector")
+        return [
+            (slot_name, ("structure", name))
+            for slot_name, entries in slots.items()
+            if any(axis == "content" and fname.startswith(selector_trunk) for axis, fname in entries)
+        ]
+    trunk = strip_structure_control_suffix(name)
+    return [(classify_content_slot(trunk), ("structure", name))]
+
+
+def sort_into_slots(
+    content_section: BaseModel,
+    data_section: BaseModel,
+    structure_section: BaseModel,
+    display_section: BaseModel | None,
+) -> dict[str, list[tuple[str, str]]]:
+    """Sort all fields from all four axes into buffer slots.
+
+    Data first (all body), content second (by positional suffix),
+    structure third (by content trunk or selector duplication),
+    display last (all body).
+
+    Returns {slot: [(axis, field_name), ...]}.
+    """
+    slots: dict[str, list[tuple[str, str]]] = {
+        "heading": [], "preamble": [], "body": [], "closing": [],
+    }
+    for name in data_section.model_fields:
+        slots["body"].append(("data", name))
+    for name in content_section.model_fields:
+        slots[classify_content_slot(name)].append(("content", name))
+    for name in structure_section.model_fields:
+        for slot_name, entry in place_structure_field(name, slots):
+            slots[slot_name].append(entry)
+    if display_section is not None:
+        for name in display_section.model_fields:
+            trunk = strip_display_control_suffix(name)
+            slots[classify_content_slot(trunk)].append(("display", name))
+    return slots

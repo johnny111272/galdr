@@ -41,6 +41,12 @@ step_header_format = "bold"  # "bold" | "h3"
 # Step body visual container
 step_body_container = "none"  # "none" | "blockquote"
 
+# Mode label separator (between mode label and step header)
+step_mode_separator = "dash"
+
+# Suppress consecutive same-mode labels
+instruction_mode_restrict_to_transition = false
+
 # Scaffolding tier thresholds
 scaffolding_tier_lightweight_activation_threshold = 3
 scaffolding_tier_standard_activation_threshold = 7
@@ -68,7 +74,7 @@ rules_format = ["bulleted", "numbered"]
 rules_format_threshold = 6
 
 # Closing reinforcement activation threshold
-closing_compliance_reminder_visibility_threshold = 6
+compliance_reminder_closing_visibility_threshold = 6
 
 # Constraint count heading activation threshold
 constraint_count_heading_visibility_threshold = 6

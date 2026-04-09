@@ -41,36 +41,25 @@ discipline_over_helpfulness_body = "Being helpful here means being disciplined. 
 rule_count_awareness_preamble_template = "There are {{rule_count}} inviolable rules below. All must be followed."
 
 [instructions]
-step_count_preamble_template = "You will execute {{step_count}} steps."
-no_add_skip_reorder_preamble = "Do not add steps. Do not skip steps. Do not reorder steps."
-instruction_mode_preview_preamble = "Steps marked (exact) leave no room for interpretation. Steps marked (judgment) is where your reasoning matters."
-no_extra_operations_preamble = "Each instruction step is a complete specification. Do not supplement steps with general knowledge or add operations not specified."
+highlight_step_count_preamble_template = "You will execute {{step_count}} steps."
+sequence_integrity_preamble = "Do not add steps. Do not skip steps. Do not reorder steps."
+follow_strictly_preamble = "Each instruction step is a complete specification. Do not supplement steps with general knowledge or add operations not specified."
 step_done_when_postscript_template = "Done when: {{completion_condition}}"
 cross_step_dependency_label_template = "Uses output from: {{dependency_steps}}"
 reminder_midpoint_preamble_template = "You are past the halfway point. Steps 1-{{midpoint}} established the foundation. Steps {{midpoint_next}}-{{step_total}} build on that work."
-guardrail_closing_template = "These {{step_count}} steps constitute your complete task. Do not add additional steps."
+follow_strictly_closing_template = "These {{step_count}} steps constitute your complete task. Do not add additional steps."
 instruction_mode_recap_closing_template = "{{mode_recap_text}} There are no other steps."
+step_header_template = "Step {{step_n}} of {{step_total}}."
+step_header_n_only_template = "Step {{step_n}}."
 
 [instructions.heading_variant_template]
 default = "Instructions"
 procedure = "Procedure"
 steps_with_count = "Steps ({{step_count}} total)"
 
-[instructions.instruction_mode.header]
-deterministic = "**Step {{step_n}} of {{step_total}} (exact).**"
-probabilistic = "**Step {{step_n}} of {{step_total}} (judgment).**"
-
-[instructions.instruction_mode.header_n_only]
-deterministic = "**Step {{step_n}} (exact).**"
-probabilistic = "**Step {{step_n}} (judgment).**"
-
-[instructions.instruction_mode.body_prefix]
-deterministic = "EXECUTE EXACTLY:"
-probabilistic = "APPLY JUDGMENT:"
-
-[instructions.instruction_mode.signal_at_mode_change]
-deterministic = "The following step must be executed exactly."
-probabilistic = "The following step requires your judgment."
+[instructions.step_mode_label_variant]
+deterministic = "**EXACT**"
+probabilistic = "**JUDGMENT**"
 
 [instructions.instruction_mode_explanation_preamble_variant]
 mixed = "Steps marked (exact) must be followed precisely with no interpretation. Steps marked (judgment) require your reasoning and expertise."

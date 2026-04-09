@@ -21,7 +21,7 @@ fuse_role_identity_declaration_and_role_description = false
 role_identity_postscript_template_visible = true
 role_expertise_postscript_visible = true
 identity_reminder_closing_template_visible = false
-bold_contrast_phrase_from_role_description_visible = false
+
 
 [security_boundary]
 # Whether to fuse workspace_path with path-resolution instruction in a single sentence
@@ -31,13 +31,11 @@ fuse_workspace_path_and_resolver = true
 filesystem_permissions_label_visible = true
 
 # Whether to render a preamble between heading and entries
-section_preamble_visible = true
+framing_preamble_visible = true
 
 # Whether to render a closing after entries
 section_closing_visible = false
 
-# Whether to show tool names alongside paths (hooks enforce regardless)
-tool_names_visible = true
 
 # Framing paradigm: selects which content posture the section uses
 framing_selector = "territory"  # "territory" | "environmental" | "cage" — governs: framing_heading_variant, framing_declaration_variant_template, framing_preamble_variant
@@ -68,23 +66,20 @@ internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
 # Heading
 heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
 
-# Mode infrastructure
-instruction_mode_explanation_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
-instruction_mode_marker_placement = "header_fused"  # "header_fused" | "body_prefix" | "visual_formatting"
-signal_at_mode_change_visible = false
+# Mode explanation
+instruction_mode_explanation_preamble_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
 
 # Preamble components
-step_count_preamble_template_visible = true
-no_add_skip_reorder_preamble_visible = true
-instruction_mode_preview_preamble_visible = true
-no_extra_operations_preamble_visible = true
+highlight_step_count_preamble_template_visible = true
+sequence_integrity_preamble_visible = true
+follow_strictly_preamble_visible = true
 
 # Step structure
 step_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
 step_done_when_postscript_template_visible = false
 
 # Closing
-guardrail_closing_template_visible = true
+follow_strictly_closing_template_visible = true
 instruction_mode_recap_closing_template_visible = false
 
 # Dependency and progress
@@ -118,8 +113,8 @@ max_entries_rendered = 0
 
 section_preamble_visible = true
 constraints_are_not_steps_preamble_visible = true
-no_inferred_constraints_visible = true
-closing_compliance_reminder_visible = true
+no_inferred_constraints_preamble_visible = true
+compliance_reminder_closing_visible = true
 constraint_count_heading_template_visible = true
 hierarchy_tier_comparison_preamble_visible = true
 hierarchy_three_tier_explanation_preamble_visible = true

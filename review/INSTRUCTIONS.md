@@ -4,9 +4,9 @@
 
 ```
 Instructions
-  └─ steps: list of InstructionStep
-       .instruction_mode    InstructionMode (enum: deterministic/probabilistic)
-       .instruction_text    StringMarkdown (scalar)
+  steps: list of InstructionStep
+    .instruction_mode    InstructionMode (enum: deterministic/probabilistic)
+    .instruction_text    StringMarkdown (scalar)
 ```
 
 Agent-builder has 7 steps. Modes vary per step (mixed).
@@ -16,47 +16,47 @@ Agent-builder has 7 steps. Modes vary per step (mixed).
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
 | ✅ | 1 | `heading_variant_template` | BaseModel | `_variant_template` | heading | `{default: "Instructions", procedure: "Procedure", steps_with_count: "Steps ({{step_count}} total)"}` |
-| ✅ | 2 | `step_count_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"You will execute {{step_count}} steps."` |
-| ✅ | 3 | `no_add_skip_reorder_preamble` | StringProse | `_preamble` | preamble | `"Do not add steps. Do not skip steps. Do not reorder steps."` |
-| ✅ | 4 | `instruction_mode_preview_preamble` | StringProse | `_preamble` | preamble | `"Steps marked (exact) leave no room for interpretation..."` |
-| ✅ | 5 | `no_extra_operations_preamble` | StringProse | `_preamble` | preamble | `"Each instruction step is a complete specification..."` |
+| ✅ | 2 | `highlight_step_count_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"You will execute {{step_count}} steps."` |
+| ✅ | 3 | `sequence_integrity_preamble` | StringProse | `_preamble` | preamble | `"Do not add steps. Do not skip steps. Do not reorder steps."` |
+| ✅ | 4 | `follow_strictly_preamble` | StringProse | `_preamble` | preamble | `"Each instruction step is a complete specification..."` |
 | ✅ | 6 | `instruction_mode_explanation_preamble_variant` | BaseModel | `_preamble_variant` | preamble | `{mixed: "...", uniform_deterministic: "...", uniform_probabilistic: "..."}` |
-| ✅ | 7 | `step_done_when_postscript_template` | StringTemplate | `_postscript_template` | body | `"Done when: {{completion_condition}}"` |
-| ✅ | 8 | `cross_step_dependency_label_template` | StringTemplate | `_label_template` | body | `"Uses output from: {{dependency_steps}}"` |
-| ✅ | 9 | `reminder_midpoint_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"You are past the halfway point. Steps 1-{{midpoint}} established the foundation..."` |
-| ✅ | 10 | `guardrail_closing_template` | StringTemplate | `_closing_template` | closing | `"These {{step_count}} steps constitute your complete task. Do not add additional steps."` |
-| ✅ | 11 | `instruction_mode_recap_closing_template` | StringTemplate | `_closing_template` | closing | `"{{mode_recap_text}} There are no other steps."` |
-| ✅ | 12 | `instruction_mode` | BaseModel (D1 table) | sub-table | body | `{header: {deterministic: "...", probabilistic: "..."}, header_n_only: {...}, body_prefix: {...}, signal_at_mode_change: {...}}` |
+| ✅ | 7 | `reminder_midpoint_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"You are past the halfway point..."` |
+| ✅ | 8 | `step_header_template` | StringTemplate | `_template` | body | `"Step {{step_n}} of {{step_total}}."` |
+| ✅ | 9 | `step_header_n_only_template` | StringTemplate | `_template` | body | `"Step {{step_n}}."` |
+| ✅ | 10 | `step_mode_label_variant` | BaseModel | `_variant` | body | `{deterministic: "**EXACT**", probabilistic: "**JUDGMENT**"}` |
+| ✅ | 11 | `step_done_when_postscript_template` | StringTemplate | `_postscript_template` | body | `"Done when: {{completion_condition}}"` |
+| ✅ | 12 | `cross_step_dependency_label_template` | StringTemplate | `_label_template` | body | `"Uses output from: {{dependency_steps}}"` |
+| ✅ | 13 | `follow_strictly_closing_template` | StringTemplate | `_closing_template` | closing | `"These {{step_count}} steps constitute your complete task. Do not add additional steps."` |
+| ✅ | 14 | `instruction_mode_recap_closing_template` | StringTemplate | `_closing_template` | closing | `"{{mode_recap_text}} There are no other steps."` |
 
 ## Structure (InstructionsStructure)
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ✅ | 1 | `heading_selector` | InstructionsHeadingSelector | `"default"` | → content #1 variant key |
-| ⚠️ | 2 | `instruction_mode_explanation_visible` | VisibilityMode | `"auto"` | → content #6 (auto = render when mixed modes) — not implemented |
-| ⚠️ | 3 | `instruction_mode_marker_placement` | InstructionsInstructionModeMarkerPlacement | `"header_fused"` | how mode tags appear per-step — not implemented |
-| ⚠️ | 4 | `signal_at_mode_change_visible` | Boolean | `false` | → `instruction_mode.signal_at_mode_change` — not implemented |
-| ✅ | 5 | `step_count_preamble_template_visible` | Boolean | `true` | → content #2 |
-| ✅ | 6 | `no_add_skip_reorder_preamble_visible` | Boolean | `true` | → content #3 |
-| ✅ | 7 | `instruction_mode_preview_preamble_visible` | Boolean | `true` | → content #4 |
-| ✅ | 8 | `no_extra_operations_preamble_visible` | Boolean | `true` | → content #5 |
-| ⚠️ | 9 | `step_index_tracking` | InstructionsStepIndexTracking | `"n_of_m"` | `n_only` vs `n_of_m` in step headers — not implemented |
-| ✅ | 10 | `step_done_when_postscript_template_visible` | Boolean | `false` | → content #7 |
-| ✅ | 11 | `guardrail_closing_template_visible` | Boolean | `true` | → content #10 |
-| ✅ | 12 | `instruction_mode_recap_closing_template_visible` | Boolean | `false` | → content #11 |
-| ✅ | 13 | `cross_step_dependency_label_template_visible` | Boolean | `false` | → content #8 |
-| ✅ | 14 | `reminder_midpoint_preamble_template_visible` | Boolean | `false` | → content #9 |
-| ⚠️ | 15 | `scaffolding_tier_override` | InstructionsScaffoldingTierOverride | `"auto"` | tier selection — not implemented |
+| ✅ | 1 | `heading_selector` | InstructionsHeadingSelector (enum) | `"default"` | → selects key in content #1 |
+| ✅ | 2 | `instruction_mode_explanation_preamble_visible` | VisibilityMode | `"auto"` | → content #6 (auto = render when mixed modes) |
+| ✅ | 3 | `highlight_step_count_preamble_template_visible` | Boolean | `true` | → content #2 |
+| ✅ | 4 | `sequence_integrity_preamble_visible` | Boolean | `true` | → content #3 |
+| ✅ | 5 | `follow_strictly_preamble_visible` | Boolean | `true` | → content #5 |
+| ✅ | 6 | `step_index_tracking` | InstructionsStepIndexTracking (enum) | `"n_of_m"` | Selects `step_header_template` vs `step_header_n_only_template` |
+| ✅ | 7 | `step_done_when_postscript_template_visible` | Boolean | `false` | → content #11 |
+| ✅ | 8 | `follow_strictly_closing_template_visible` | Boolean | `true` | → content #13 |
+| ✅ | 9 | `instruction_mode_recap_closing_template_visible` | Boolean | `false` | → content #14 |
+| ✅ | 10 | `cross_step_dependency_label_template_visible` | Boolean | `false` | → content #12 |
+| ✅ | 11 | `reminder_midpoint_preamble_template_visible` | Boolean | `false` | → content #7 |
+| ⚠️ | 12 | `scaffolding_tier_override` | InstructionsScaffoldingTierOverride | `"auto"` | Meta-policy that computes visibility toggles from step count |
 
 ## Display (InstructionsDisplay)
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ⚠️ | 1 | `step_header_format` | HeadingFormat | `"bold"` | bold vs H3 for step headers — not wired |
-| ⚠️ | 2 | `step_body_container` | BodyContainer | `"none"` | none vs blockquote for step bodies — not wired |
-| ⚠️ | 3 | `scaffolding_tier_lightweight_activation_threshold` | Integer | `3` | tier threshold — not wired |
-| ⚠️ | 4 | `scaffolding_tier_standard_activation_threshold` | Integer | `7` | tier threshold — not wired |
-| ⚠️ | 5 | `instruction_mode_recap_format` | InstructionsInstructionModeRecapFormat | `"prose"` | prose vs tabular recap — not wired |
+| ✅ | 1 | `step_header_format` | HeadingFormat | `"bold"` | Step headers as bold/h3/h4 |
+| ✅ | 2 | `step_body_container` | BodyContainer | `"none"` | Step body wrapping (none/blockquote) |
+| ✅ | 3 | `step_mode_separator` | InlineSeparator (enum) | `"dash"` | Separator between mode label and step header (dash/colon/pipe/newline) |
+| ✅ | 4 | `instruction_mode_restrict_to_transition` | Boolean | `false` | When true, suppress mode labels on consecutive same-mode steps |
+| ⚠️ | 5 | `scaffolding_tier_lightweight_activation_threshold` | Integer | `3` | Step count threshold for lightweight tier |
+| ⚠️ | 6 | `scaffolding_tier_standard_activation_threshold` | Integer | `7` | Step count threshold for standard tier |
+| ✅ | 7 | `instruction_mode_recap_format` | InstructionModeRecapFormat | `"prose"` | Recap as prose/tabular |
 
 ---
 
@@ -64,33 +64,31 @@ Agent-builder has 7 steps. Modes vary per step (mixed).
 
 ```
 HEADING:
-  ✅ heading_variant_template               {selected by heading_selector = "default" → "Instructions"}
+  ✅ heading_variant_template               selected by heading_selector = "default" → "Instructions"
 
 PREAMBLE:
-  ✅ step_count_preamble_template           "You will execute {{step_count}} steps."
-                                             [visible: step_count_preamble_template_visible = true]
-  ✅ no_add_skip_reorder_preamble          "Do not add steps. Do not skip steps. Do not reorder steps."
-                                             [visible: no_add_skip_reorder_preamble_visible = true]
-  ✅ instruction_mode_preview_preamble     "Steps marked (exact) leave no room for interpretation..."
-                                             [visible: instruction_mode_preview_preamble_visible = true]
-  ✅ no_extra_operations_preamble          "Each instruction step is a complete specification..."
-                                             [visible: no_extra_operations_preamble_visible = true]
-  ⚠️ instruction_mode_explanation_preamble_variant  {variant selected by mode mix}
-                                             [visible: instruction_mode_explanation_visible = "auto" — not implemented]
-  ✅ reminder_midpoint_preamble_template   "You are past the halfway point. Steps 1-{{midpoint}}..."
+  ✅ highlight_step_count_preamble_template "You will execute {{step_count}} steps."
+                                             [visible: highlight_step_count_preamble_template_visible = true]
+  ✅ sequence_integrity_preamble            "Do not add steps. Do not skip steps. Do not reorder steps."
+                                             [visible: sequence_integrity_preamble_visible = true]
+  ✅ follow_strictly_preamble              "Each instruction step is a complete specification..."
+                                             [visible: follow_strictly_preamble_visible = true]
+  ⚠️ instruction_mode_explanation_preamble_variant
+                                             {selected by data condition: mixed/uniform modes}
+                                             [visible: instruction_mode_explanation_preamble_visible = "auto"]
+  ✅ reminder_midpoint_preamble_template   "You are past the halfway point..."
                                              [visible: reminder_midpoint_preamble_template_visible = false]
 
 BODY:
   For each InstructionStep:
-    .instruction_mode                      → GATE: controls step header variant
-    .instruction_text                      → render as markdown prose
-
-    ⚠️ step header                         "**Step N of M (exact/judgment).**"
-                                             [step_index_tracking = "n_of_m", instruction_mode_marker_placement = "header_fused"]
+    MODE LABEL:  step_mode_label_variant     selected by step's instruction_mode enum
+                                             [display: step_mode_separator = "dash"]
+                                             [display: instruction_mode_restrict_to_transition = false]
+    STEP HEADER: step_header_template        "Step {{step_n}} of {{step_total}}."
+                                             [structure: step_index_tracking = "n_of_m"]
                                              [display: step_header_format = "bold"]
+    STEP BODY:   instruction_text            rendered as markdown prose
                                              [display: step_body_container = "none"]
-
-  ✅ instruction_mode                      D1 table — step header templates (sub-table, no positional suffix)
 
   step_done_when_postscript_template       "Done when: {{completion_condition}}"
                                              [visible: step_done_when_postscript_template_visible = false]
@@ -98,8 +96,8 @@ BODY:
                                              [visible: cross_step_dependency_label_template_visible = false]
 
 CLOSING:
-  ✅ guardrail_closing_template            "These {{step_count}} steps constitute your complete task..."
-                                             [visible: guardrail_closing_template_visible = true]
+  ✅ follow_strictly_closing_template      "These {{step_count}} steps constitute your complete task..."
+                                             [visible: follow_strictly_closing_template_visible = true]
   ✅ instruction_mode_recap_closing_template  "{{mode_recap_text}} There are no other steps."
                                              [visible: instruction_mode_recap_closing_template_visible = false]
 ```
@@ -108,18 +106,18 @@ CLOSING:
 
 ## Issues
 
-### ⚠️ ISSUE 1: `instruction_mode` content table is a D1 sub-table — special handling needed
+### ⚠️ ISSUE 1: `instruction_mode_explanation_preamble_variant` has no structure selector
 
-The `[instructions.instruction_mode]` TOML block is a D1 dispatch table — it holds per-mode step header templates (`header`, `header_n_only`, `body_prefix`, `signal_at_mode_change`). It has no positional suffix because it drives per-step rendering logic, not section-level content slots. Requires special handling in the composition engine (per-item decoration lookup).
+Its variant key is computed from data (what modes are present in the steps), not from a structure selector. The engine needs to inspect the steps list to determine `mixed` vs `uniform_deterministic` vs `uniform_probabilistic`. No `_selector` field exists.
 
-### ⚠️ ISSUE 2: Per-step mode rendering entirely unimplemented
+### ⚠️ ISSUE 2: `scaffolding_tier_override` is a meta-policy
 
-Step header format (`instruction_mode_marker_placement`, `step_index_tracking`, `step_header_format`, `step_body_container`) all control per-step rendering. The engine currently has no per-item decoration mechanism. This is the core of the instructions section and is not yet built.
+A meta-control that computes which visibility toggles should be active based on step count and thresholds. Not directly processable by the generic engine — may need pre-processing that resolves the tier into individual toggle values before the engine runs.
 
-### ⚠️ ISSUE 3: `instruction_mode_explanation_visible = "auto"` not implemented
+### ⚠️ ISSUE 3: `step_index_tracking` selects between templates by non-matching names
 
-The `"auto"` mode should render the explanation only when step modes are mixed. Requires inspecting the steps list. Not implemented.
+`"n_of_m"` → use `step_header_template`, `"n_only"` → use `step_header_n_only_template`. The enum values don't match the content field names. The engine needs a mapping.
 
-### ⚠️ ISSUE 4: `scaffolding_tier_override` and display thresholds not wired
+### ⚠️ ISSUE 4: Computed placeholders
 
-Scaffolding tier affects which preamble components render based on step count. Structure and display thresholds exist but are not read by the engine.
+`{{step_count}}`, `{{step_n}}`, `{{step_total}}`, `{{midpoint}}`, `{{completion_condition}}`, `{{dependency_steps}}`, `{{mode_recap_text}}` are all computed values, not data fields. The engine needs to generate these before interpolation.

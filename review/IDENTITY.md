@@ -34,7 +34,6 @@ Agent-builder has all fields populated. `role_expertise` has 4 items. `role_desc
 | ✅ | 3 | `role_identity_postscript_template_visible` | Boolean | `true` | → content #3 |
 | ✅ | 4 | `role_expertise_postscript_visible` | Boolean | `true` | → content #6 |
 | ✅ | 5 | `identity_reminder_closing_template_visible` | Boolean | `false` | → content #7 |
-| ⚠️ | 6 | `bold_contrast_phrase_from_role_description_visible` | Boolean | `false` | → role_description rendering — role_description has no content template |
 
 ## Display (IdentityDisplay)
 
@@ -66,7 +65,7 @@ BODY (in data field order):
        ✅ role_responsibility_declaration_template  "**Scope:** {{role_responsibility}}"
   ❌ data.role_description                   SCALAR (optional) — no content template, renders as bare text
                                              [structure: fuse_role_identity_declaration_and_role_description = false]
-                                             [structure: bold_contrast_phrase_from_role_description_visible = false]
+
   ✅ data.role_expertise                     LIST (4 items for agent-builder)
        ✅ role_expertise_label                 "**Your judgment is authoritative in:**"
        ✅ [list items rendered here]

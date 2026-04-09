@@ -30,8 +30,8 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 | ✅ | 2 | `max_entries_rendered` | Integer | `0` | render all entries (0 = all) |
 | ⚠️ | 3 | `section_preamble_visible` | Boolean | `true` | → content #6 — not wired to variant |
 | ✅ | 4 | `constraints_are_not_steps_preamble_visible` | Boolean | `true` | → content #3 |
-| ⚠️ | 5 | `no_inferred_constraints_visible` | Boolean | `true` | → content #7 — not wired to variant |
-| ⚠️ | 6 | `closing_compliance_reminder_visible` | Boolean | `true` | → content #8 — not wired to variant |
+| ⚠️ | 5 | `no_inferred_constraints_preamble_visible` | Boolean | `true` | → content #7 — not wired to variant |
+| ⚠️ | 6 | `compliance_reminder_closing_visible` | Boolean | `true` | → content #8 — not wired to variant |
 | ✅ | 7 | `constraint_count_heading_template_visible` | Boolean | `true` | → content #2 |
 | ✅ | 8 | `hierarchy_tier_comparison_preamble_visible` | Boolean | `true` | → content #4 |
 | ✅ | 9 | `hierarchy_three_tier_explanation_preamble_visible` | Boolean | `true` | → content #5 |
@@ -45,7 +45,7 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `rules_format` | UnionFormatOrPair | `["bulleted", "numbered"]` | threshold-based list format — not wired |
 | ⚠️ | 2 | `rules_format_threshold` | Integer | `6` | switch to numbered above 6 items — not wired |
-| ⚠️ | 3 | `closing_compliance_reminder_visibility_threshold` | Integer | `6` | show closing above 6 items — not wired |
+| ⚠️ | 3 | `compliance_reminder_closing_visibility_threshold` | Integer | `6` | show closing above 6 items — not wired |
 | ⚠️ | 4 | `constraint_count_heading_visibility_threshold` | Integer | `6` | show count heading above 6 items — not wired |
 | ⚠️ | 5 | `must_vs_must_not_normalization` | ConstraintsMustVsMustNotNormalization | `"preserve_voice"` | MUST/MUST-NOT handling — not wired |
 | ⚠️ | 6 | `polarity_grouping_activation_threshold` | Integer | `11` | group positive/negative at 11+ items — not wired |
@@ -71,7 +71,7 @@ PREAMBLE:
   ⚠️ section_preamble_variant             {variant: "standalone" → "These constraints govern your execution..."}
                                              [visible: section_preamble_visible = true — not wired to variant]
   ⚠️ no_inferred_constraints_preamble_variant_template  {variant: "light" → "These are your operational constraints."}
-                                             [visible: no_inferred_constraints_visible = true — not wired to variant]
+                                             [visible: no_inferred_constraints_preamble_visible = true — not wired to variant]
 
 BODY:
   For each GuardrailsConstraint (RootModel[str]):
@@ -80,8 +80,8 @@ BODY:
 
 CLOSING:
   ⚠️ compliance_reminder_closing_variant_template  {variant: "evaluation_warning" → "Every constraint above is auditable..."}
-                                             [visible: closing_compliance_reminder_visible = true — not wired to variant]
-                                             ⚠️ threshold: closing_compliance_reminder_visibility_threshold = 6 — not wired
+                                             [visible: compliance_reminder_closing_visible = true — not wired to variant]
+                                             ⚠️ threshold: compliance_reminder_closing_visibility_threshold = 6 — not wired
 ```
 
 ---
@@ -94,11 +94,11 @@ The master `section_visible = true` toggle exists in structure but the engine do
 
 ### ⚠️ ISSUE 2: Variant visibility gates not connected to variant selectors
 
-`section_preamble_visible`, `no_inferred_constraints_visible`, and `closing_compliance_reminder_visible` are separate from their variant selectors (`section_preamble_selector`, `no_inferred_constraints_preamble_selector`, `compliance_reminder_closing_selector`). The engine needs to: (a) check the visibility gate, (b) use the variant selector to pick the correct string from the content table. These two steps are not yet connected.
+`section_preamble_visible`, `no_inferred_constraints_preamble_visible`, and `compliance_reminder_closing_visible` are separate from their variant selectors (`section_preamble_selector`, `no_inferred_constraints_preamble_selector`, `compliance_reminder_closing_selector`). The engine needs to: (a) check the visibility gate, (b) use the variant selector to pick the correct string from the content table. These two steps are not yet connected.
 
 ### ⚠️ ISSUE 3: Display thresholds not wired
 
-`rules_format_threshold`, `constraint_count_heading_visibility_threshold`, `closing_compliance_reminder_visibility_threshold`, and `polarity_grouping_activation_threshold` all require counting the rules list at render time and making conditional decisions. None are wired.
+`rules_format_threshold`, `constraint_count_heading_visibility_threshold`, `compliance_reminder_closing_visibility_threshold`, and `polarity_grouping_activation_threshold` all require counting the rules list at render time and making conditional decisions. None are wired.
 
 ### ⚠️ ISSUE 4: `must_vs_must_not_normalization` not wired
 

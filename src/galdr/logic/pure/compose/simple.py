@@ -17,11 +17,24 @@ from typing import Annotated, get_args, get_origin
 
 from pydantic import BaseModel, RootModel
 
-from galdr.logic.pure.compose.primitive import has_closing_suffix, has_preamble_suffix
+from galdr.logic.pure.compose.primitive import has_closing_suffix, has_heading_suffix, has_preamble_suffix
 from galdr.logic.pure.render.primitive import heading
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.gen.output_display import FormatPair, ListFormat
 from galdr.structure.model.section_buffer import SectionBuffer
+
+
+def classify_content_slot(name: str) -> str:
+    """Classify a content field into a buffer slot by positional suffix.
+
+    Checks heading, preamble, closing via suffix predicates (which strip
+    modifiers internally). Everything else is body.
+    """
+    classifiers = [(has_heading_suffix, "heading"), (has_preamble_suffix, "preamble"), (has_closing_suffix, "closing")]
+    for check, slot in classifiers:
+        if check(name):
+            return slot
+    return "body"
 
 
 def is_visible_by_mode(mode: str) -> bool:

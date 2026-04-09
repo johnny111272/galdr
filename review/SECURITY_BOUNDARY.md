@@ -30,10 +30,9 @@ Agent-builder has 7 display entries. Tool sets vary per entry (heterogeneous).
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `fuse_workspace_path_and_resolver` | Boolean | `true` | Merge workspace_path with path-resolution sentence — not implemented |
 | ✅ | 2 | `filesystem_permissions_label_visible` | Boolean | `true` | → content #1 visibility |
-| ✅ | 3 | `section_preamble_visible` | Boolean | `true` | → content #7 (framing_preamble_variant) visibility |
+| ✅ | 3 | `framing_preamble_visible` | Boolean | `true` | → content #7 (framing_preamble_variant) visibility |
 | ✅ | 4 | `section_closing_visible` | Boolean | `false` | → content #2 |
-| ⚠️ | 5 | `tool_names_visible` | Boolean | `true` | Controls tool display in entries — engine doesn't check this |
-| ✅ | 6 | `framing_selector` | SecurityBoundaryFramingVariant (enum) | `"territory"` | → selects key in content #5, #6, #7 |
+| ✅ | 5 | `framing_selector` | SecurityBoundaryFramingVariant (enum) | `"territory"` | → selects key in content #5, #6, #7 |
 
 ## Display (SecurityBoundaryDisplay)
 
@@ -61,7 +60,7 @@ HEADING:
 PREAMBLE:
   ✅ framing_preamble_variant              selected by structure.framing_selector = "territory"
                                              → "Within this workspace, you can access:"
-                                             [visible: section_preamble_visible = true]
+                                             [visible: framing_preamble_visible = true]
 
 BODY (in data field order):
   ✅ data.workspace_path                   SCALAR
@@ -80,7 +79,7 @@ BODY (in data field order):
             uniform_toolset_format = "grouped"
             heterogeneous_toolset_format = "per_entry_list"
             entry_list_format = "bullet"
-            tool_names_visible = true
+
 
 CLOSING:
   ✅ section_closing                        "If your task requires access to a path not listed above, report this in your return status."
@@ -105,8 +104,6 @@ The engine doesn't use any of the security_boundary display fields:
 - `entry_list_format` — always renders bulleted
 - `filesystem_permissions_label_visibility_threshold` — threshold field exists but engine doesn't compare entry count against it
 
-### ⚠️ ISSUE 3: `fuse_workspace_path_and_resolver` and `tool_names_visible` not implemented
+### ⚠️ ISSUE 3: `fuse_workspace_path_and_resolver` not implemented
 
 `fuse_workspace_path_and_resolver = true` should merge the workspace_path scalar with a path-resolution sentence into one framing declaration. Currently the framing_declaration_variant_template handles this text, but the fuse toggle itself has no engine implementation.
-
-`tool_names_visible = true` should gate whether tool names appear alongside paths. The engine doesn't read this toggle — tools always show if present in data.
