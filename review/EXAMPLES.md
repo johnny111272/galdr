@@ -6,14 +6,12 @@
 Examples
   └─ groups: list of ExampleGroup
        ├─ .example_group_name    ExampleGroupName (TitleString scalar)
-       ├─ .groups_display_headings   Boolean (optional) — per-group gate
-       ├─ .groups_max_number   Integer (optional) — per-group cap
        └─ .example_entries: list of ExampleEntry
             ├─ .example_heading   StringText (scalar)
             └─ .example_text      StringMarkdown (scalar)
 ```
 
-Agent-builder has 3 groups, each with 1-2 entries.
+Agent-builder has 3 groups, each with 1-2 entries. The display-headings and max-number controls live on the structure axis (`groups_display_headings`, `groups_max_number`), not as per-group data fields.
 
 ## Content (ExamplesContent)
 
@@ -30,9 +28,11 @@ Agent-builder has 3 groups, each with 1-2 entries.
 |---|---|-------|------|-------|----------|
 | ✅ | 1 | `section_preamble_visible` | Boolean | `true` | → content #2 |
 | ✅ | 2 | `groups_suppress_lone_heading` | Boolean | `true` | Skip group heading when only 1 group |
-| ⚠️ | 3 | `groups_display_headings_override` | Boolean | `false` | Override per-group gate — not implemented |
-| ⚠️ | 4 | `groups_max_number_override` | Boolean | `false` | Override per-group cap — not implemented |
-| ✅ | 5 | `group_framing_preamble_visible` | Boolean | `false` | → content #3 |
+| ⚠️ | 3 | `groups_display_headings` | Boolean (optional) | `true` (default) | Section-level gate: render entry headings within each group |
+| ⚠️ | 4 | `groups_max_number` | Integer (optional) | `0` (default, no cap) | Section-level cap: max entries rendered per group |
+| ⚠️ | 5 | `groups_display_headings_override` | Boolean | `false` | Override toggle for `groups_display_headings` — not implemented |
+| ⚠️ | 6 | `groups_max_number_override` | Boolean | `false` | Override toggle for `groups_max_number` — not implemented |
+| ✅ | 7 | `group_framing_preamble_visible` | Boolean | `false` | → content #3 |
 
 ## Display (ExamplesDisplay)
 
@@ -62,19 +62,18 @@ BODY:
     For each ExampleGroup:
       GROUP LEVEL:
         .example_group_name             → render as H3 (unless groups_suppress_lone_heading)
-        .groups_display_headings        → GATE: controls whether entry headings render
-        .groups_max_number              → GATE: caps number of entries rendered
         group_framing_preamble_template "The following examples demonstrate {{example_group_name}}:"
                                          [visible: group_framing_preamble_visible = false]
 
       ENTRY LEVEL (for each ExampleEntry):
         .example_heading                → render per display.groups_entry_heading_format (bold/H4)
-                                         only if groups_display_headings = true
+                                         only if structure.groups_display_headings = true
         .example_text                   → render as markdown prose
                                          [display: groups_entry_body_container]
         ---                             [display: groups_entry_separator between entries]
 
       === between groups ===            [display: groups_separator]
+                                         [structure: groups_max_number caps entries per group]
 
   [example_heading]
     ✅ example_heading_template         "{{example_heading}}" — body sub-heading template, wraps per-entry example_heading data field
@@ -87,20 +86,14 @@ CLOSING:
 
 ## Issues
 
-### ⚠️ ISSUE 1: `example_heading_template` content template in heading slot
-
-Content field `example_heading_template = "{{example_heading}}"` has `_heading_template` suffix → classified as heading slot. But it's a per-entry template, not a section heading. It wraps the per-entry `example_heading` data field. The buffer consumes it as a heading when it should be body-level per-item content.
-
-**Options:** Rename to something without `_heading` suffix (but what?). Or the data field `example_heading` itself ends in `_heading` — maybe the data field name should change.
-
-### ⚠️ ISSUE 2: `group_framing_preamble_template` needs per-group interpolation
+### ⚠️ ISSUE 1: `group_framing_preamble_template` needs per-group interpolation
 
 This template uses `{{example_group_name}}` but sits in the preamble slot (renders once at section level). It should render per-group, before each group's entries. The `_preamble_template` suffix routes it to section preamble, but its function is per-group.
 
-### ⚠️ ISSUE 3: Per-group gates and overrides not implemented
+### ⚠️ ISSUE 2: Section-level gates and overrides not implemented
 
-`groups_display_headings` (per-group boolean gate) and `groups_max_number` (per-group cap) control per-group rendering. Structure overrides exist. Engine doesn't check any of them.
+`groups_display_headings` (entry-heading gate) and `groups_max_number` (per-group cap) are section-level structure controls with corresponding override toggles. Engine doesn't check any of them.
 
-### ⚠️ ISSUE 4: Display controls not implemented
+### ⚠️ ISSUE 3: Display controls not implemented
 
 4 display fields control formatting but engine uses hardcoded defaults.
