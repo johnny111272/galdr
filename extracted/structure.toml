@@ -18,9 +18,9 @@ order = [
 [identity]
 pre_field_ordering = "identity_first"
 
-role_identity_postscript_template_visible = true
+role_identity_postscript_visible = true
 role_expertise_postscript_visible = true
-identity_reminder_closing_template_visible = false
+identity_reminder_closing_visible = false
 
 
 [security_boundary]
@@ -29,56 +29,56 @@ identity_reminder_closing_template_visible = false
 filesystem_permissions_label_visible = true
 
 # Whether to render a preamble between heading and entries
-framing_preamble_visible = true
+framing_section_preamble_visible = true
 
 # Whether to render a closing after entries
 section_closing_visible = false
 
 
 # Framing paradigm: selects which content posture the section uses
-framing_selector = "territory"  # "territory" | "environmental" | "cage" — governs: framing_heading_variant, framing_declaration_variant_template, framing_preamble_variant
+framing_selector = "territory"  # "territory" | "environmental" | "cage" — governs: framing_section_start_variant, framing_section_preamble_variant, framing_declaration_variant_template
 
 [critical_rules]
 # Prelude
 authority_preamble_visible = true
-rule_count_awareness_preamble_template_visible = "auto"       # "auto" | "always" | "never"
+rule_count_awareness_preamble_visible = "auto"       # "auto" | "always" | "never"
 rule_count_awareness_preamble_template_auto_threshold = 5
 
 # Universal rules
-workspace_confinement_declaration_template_visible = true
+workspace_confinement_visible = true
 fail_fast_body_visible = true
 input_is_your_only_source_body_visible = true
 no_invention_body_visible = true
 
 # Output tool rules (conditional on has_output_tool)
-output_tool_exclusivity_declaration_template_visible = true
-batch_discipline_declaration_template_visible = true                    # also requires batch_size
+output_tool_exclusivity_visible = true
+batch_discipline_visible = true                    # also requires batch_size
 # Experimental
 discipline_over_helpfulness_body_visible = false
 
 [instructions]
 # Heading
-section_heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
+section_start_selector = "default"                   # "default" | "procedure" | "steps_with_count"
 
 # Mode explanation
 instruction_mode_explanation_preamble_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
 
 # Preamble components
-highlight_step_count_preamble_template_visible = true
+highlight_step_count_preamble_visible = true
 sequence_integrity_preamble_visible = true
 follow_strictly_preamble_visible = true
 
 # Step structure
 steps_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
-steps_done_when_postscript_template_visible = false
+steps_done_when_postscript_visible = false
 
 # Closing
-follow_strictly_closing_template_visible = true
-instruction_mode_recap_closing_template_visible = false
+follow_strictly_closing_visible = true
+instruction_mode_recap_closing_visible = false
 
 # Dependency and progress
-steps_dependency_label_template_visible = false
-reminder_midpoint_preamble_template_visible = false
+steps_dependency_label_visible = false
+reminder_midpoint_preamble_visible = false
 
 # Scaffolding tier override (null = auto from step count)
 pre_scaffolding_tier_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
@@ -96,7 +96,7 @@ groups_display_headings_override = false
 groups_max_number_override = false
 
 # Whether a framing preamble renders between the group heading and first entry
-group_framing_preamble_template_visible = false
+group_framing_preamble_visible = false
 
 [constraints]
 # Visibility / activation
@@ -109,7 +109,7 @@ section_preamble_visible = true
 constraints_are_not_steps_preamble_visible = true
 no_inferred_constraints_preamble_visible = true
 compliance_reminder_closing_visible = true
-constraint_count_heading_template_visible = true
+constraint_count_heading_visible = true
 hierarchy_tier_comparison_preamble_visible = true
 hierarchy_three_tier_explanation_preamble_visible = true
 
@@ -180,10 +180,10 @@ abort_stance_selector = "obligation"  # "obligation" | "permission"
 
 [input]
 section_preamble_visible = true
-context_required_preamble_visible = true
+context_required_intro_visible = true
 parameters_transition_visible = true
 input_completeness_postscript_visible = false
-schema_label_template_visible = true
+schema_label_visible = true
 parameters_heading_visible = "auto"
 parameters_heading_auto_threshold = 2
 

@@ -19,8 +19,8 @@ from pydantic import BaseModel, RootModel
 
 from galdr.logic.pure.compose.primitive import (
     has_closing_suffix,
-    has_heading_suffix,
     has_preamble_suffix,
+    has_start_suffix,
     is_preprocessing_field,
     strip_display_control_suffix,
 )
@@ -36,7 +36,7 @@ def classify_content_slot(name: str) -> str:
     Checks heading, preamble, closing via suffix predicates (which strip
     modifiers internally). Everything else is body.
     """
-    classifiers = [(has_heading_suffix, "heading"), (has_preamble_suffix, "preamble"), (has_closing_suffix, "closing")]
+    classifiers = [(has_start_suffix, "heading"), (has_preamble_suffix, "preamble"), (has_closing_suffix, "closing")]
     for check, slot in classifiers:
         if check(name):
             return slot

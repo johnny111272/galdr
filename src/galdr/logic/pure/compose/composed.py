@@ -14,8 +14,8 @@ from pydantic import BaseModel
 
 from galdr.logic.pure.compose.primitive import (
     has_closing_suffix,
-    has_heading_suffix,
     has_preamble_suffix,
+    has_start_suffix,
     is_preprocessing_field,
     strip_structure_control_suffix,
 )
@@ -224,14 +224,14 @@ def resolve_heading_text(
 ) -> tuple[str | None, frozenset[str]]:
     """Resolve the section heading and track consumed heading variants.
 
-    Scans content for section_heading-suffixed fields; if the field is a
-    variant sub-table, selects via the matching structure selector.
-    Returns (heading_text, consumed_names).
+    Scans content for _start-suffixed fields (section-level heading);
+    if the field is a variant sub-table, selects via the matching
+    structure selector. Returns (heading_text, consumed_names).
     """
     result: str | None = None
     consumed: set[str] = set()
     for content_name, content_field_info in content_section.model_fields.items():
-        if not has_heading_suffix(content_name):
+        if not has_start_suffix(content_name):
             continue
         content_value = getattr(content_section, content_name)
         if content_value is None:
@@ -256,7 +256,7 @@ def populate_section_buffer(
 
     Single pass using terminal suffix classification. Each content field's
     suffix determines its buffer slot:
-    - section_heading → heading (handled by resolve_heading_text)
+    - _start → heading (handled by resolve_heading_text)
     - _preamble → preamble slot
     - _closing → closing (postscript) slot
     - Everything else → body (skipped, left for data walk)

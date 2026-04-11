@@ -40,7 +40,7 @@ pre_body_entry_separator_override = "double_newline"
 
 [instructions]
 # Step header formatting
-steps_header_format = "bold"  # "bold" | "h3"
+steps_heading_format = "bold"  # "bold" | "h3"
 
 # Step body visual container
 steps_body_container = "none"  # "none" | "blockquote"

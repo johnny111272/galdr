@@ -70,14 +70,15 @@ def is_preprocessing_field(name: str) -> bool:
     return name.startswith("pre_")
 
 
-def has_heading_suffix(name: str) -> bool:
-    """True if name's positional suffix is section-heading-slot (after stripping modifiers).
+def has_start_suffix(name: str) -> bool:
+    """True if name's positional suffix is section-start-slot (after stripping modifiers).
 
-    Only matches `section_heading` or names ending in `_section_heading`.
-    Other `_heading` suffixes are sub-block or per-item headings that
-    belong in body, not the section heading slot.
+    The `_start` suffix uniquely marks section-level heading fields.
+    It has no collision with other positional suffixes — nothing else
+    in the vocabulary ends in `_start`, so a single endswith check is
+    unambiguous and order-independent.
     """
-    return strip_modifiers(name).endswith("section_heading")
+    return strip_modifiers(name).endswith("_start")
 
 
 def has_preamble_suffix(name: str) -> bool:
