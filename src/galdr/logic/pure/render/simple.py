@@ -10,7 +10,7 @@ Display enum types are defined in structure/gen/output_display.py:
 """
 
 from galdr.logic.pure.render.primitive import bold, bullet_item, heading, numbered_item
-from galdr.structure.gen.output_display import HeadingFormat, InlineFormat
+from galdr.structure.gen.output_display import HeadingFormat, InlineFormat, SeparatorContent
 
 
 def render_bulleted(items: list[str]) -> str:
@@ -54,3 +54,18 @@ def format_heading(text: str, heading_format: HeadingFormat) -> str:
     if heading_format == HeadingFormat.h4:
         return heading(text, 4)
     return bold(text)
+
+
+def resolve_separator_content(separator: SeparatorContent) -> str:
+    """Map a SeparatorContent enum value to its rendered string.
+
+    The declarative separator enum expresses author intent; the renderer
+    translates that to the actual markdown characters.
+    """
+    mapping = {
+        SeparatorContent.newline: "\n",
+        SeparatorContent.double_newline: "\n\n",
+        SeparatorContent.horizontal_rule: "\n\n---\n\n",
+        SeparatorContent.blank_line: "\n\n",
+    }
+    return mapping[separator]

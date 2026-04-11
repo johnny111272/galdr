@@ -60,9 +60,24 @@ def extract_trunk(name: str) -> str:
     return strip_modifiers(strip_display_control_suffix(strip_structure_control_suffix(name)))
 
 
+def is_preprocessing_field(name: str) -> bool:
+    """True if a field name starts with the `pre_` prefix.
+
+    Pre-processing fields are consumed before slot sorting — they
+    control section-level behavior (skip section, truncate list,
+    expand tier preset) and never enter the bundling pipeline.
+    """
+    return name.startswith("pre_")
+
+
 def has_heading_suffix(name: str) -> bool:
-    """True if name's positional suffix is heading-slot (after stripping modifiers)."""
-    return strip_modifiers(name).endswith("heading")
+    """True if name's positional suffix is section-heading-slot (after stripping modifiers).
+
+    Only matches `section_heading` or names ending in `_section_heading`.
+    Other `_heading` suffixes are sub-block or per-item headings that
+    belong in body, not the section heading slot.
+    """
+    return strip_modifiers(name).endswith("section_heading")
 
 
 def has_preamble_suffix(name: str) -> bool:

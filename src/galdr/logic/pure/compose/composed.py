@@ -16,7 +16,7 @@ from galdr.logic.pure.compose.primitive import (
     has_closing_suffix,
     has_heading_suffix,
     has_preamble_suffix,
-    strip_display_control_suffix,
+    is_preprocessing_field,
     strip_structure_control_suffix,
 )
 from galdr.logic.pure.compose.simple import (
@@ -24,6 +24,7 @@ from galdr.logic.pure.compose.simple import (
     buffer_slot_for_field,
     classify_content_slot,
     find_decoration,
+    place_display_fields_into_slots,
     find_d1_content_table,
     find_enum_field_name,
     get_visibility_toggle,
@@ -45,6 +46,7 @@ from galdr.logic.pure.compose.simple import (
     unwrap_scalar_field,
 )
 from galdr.logic.pure.render.primitive import heading as render_heading_md
+from galdr.structure.model.preprocessing_fields import PreprocessingFields
 from galdr.structure.model.section_buffer import SectionBuffer
 from galdr.logic.pure.render.simple import render_bulleted
 from galdr.logic.pure.template.simple import interpolate
@@ -530,10 +532,30 @@ def sort_into_slots(
     for name in content_section.model_fields:
         slots[classify_content_slot(name)].append(("content", name))
     for name in structure_section.model_fields:
+        if is_preprocessing_field(name):
+            continue
         for slot_name, entry in place_structure_field(name, slots):
             slots[slot_name].append(entry)
     if display_section is not None:
-        for name in display_section.model_fields:
-            trunk = strip_display_control_suffix(name)
-            slots[classify_content_slot(trunk)].append(("display", name))
+        slots = place_display_fields_into_slots(display_section, slots)
     return slots
+
+
+def extract_preprocessing_fields(structure_section: BaseModel) -> PreprocessingFields:
+    """Extract pre-processing fields from a structure section into a typed model.
+
+    Pre-processing fields (pre_ prefix) are consumed before slot sorting.
+    Not every section has every field — missing fields fall back to defaults
+    on PreprocessingFields. Boolean/Integer wrappers unwrap via .root; enum
+    wrappers unwrap via .value to their string form.
+    """
+    visible = getattr(structure_section, "pre_section_visible", None)
+    max_entries = getattr(structure_section, "pre_max_entries_rendered", None)
+    ordering = getattr(structure_section, "pre_field_ordering", None)
+    tier = getattr(structure_section, "pre_scaffolding_tier_override", None)
+    return PreprocessingFields(
+        section_visible=visible.root if visible is not None else True,
+        max_entries_rendered=max_entries.root if max_entries is not None else None,
+        field_ordering=ordering.value if ordering is not None else None,
+        scaffolding_tier_override=tier.value if tier is not None else None,
+    )

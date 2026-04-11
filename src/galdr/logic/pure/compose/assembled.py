@@ -10,12 +10,12 @@ is CC=1, calls 12 functions, zero decisions.
 from pydantic import BaseModel
 
 from galdr.logic.pure.compose.composed import (
+    extract_preprocessing_fields,
     populate_section_buffer,
     resolve_all_trunks,
 )
 from galdr.logic.pure.compose.simple import (
     check_section_gate,
-    extract_section_visible,
     render_buffer,
 )
 from galdr.structure.model.section_context import SectionContext
@@ -30,11 +30,13 @@ def compose_section(
 ) -> str | None:
     """Generic section composer. Data drives, content decorates.
 
-    Populates a buffer with heading/preamble/postscript from content,
-    fills body from data walk, then renders the buffer in order.
-    Returns the section as a markdown string, or None if gated off.
+    Extracts typed pre-processing fields, then populates a buffer with
+    heading/preamble/postscript from content, fills body from the data
+    walk, and renders the buffer in order. Returns the section as a
+    markdown string, or None if gated off.
     """
-    if not check_section_gate(data_section, extract_section_visible(structure_section)):
+    pre_fields = extract_preprocessing_fields(structure_section)
+    if not check_section_gate(data_section, pre_fields.section_visible):
         return None
     section_context = SectionContext(
         content=content_section,

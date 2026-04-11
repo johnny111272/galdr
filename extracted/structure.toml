@@ -16,7 +16,7 @@ order = [
 ]
 
 [identity]
-field_ordering = "identity_first"
+pre_field_ordering = "identity_first"
 
 role_identity_postscript_template_visible = true
 role_expertise_postscript_visible = true
@@ -62,7 +62,7 @@ internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
 
 [instructions]
 # Heading
-heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
+section_heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
 
 # Mode explanation
 instruction_mode_explanation_preamble_visible = "auto" # "auto" (render when mixed modes) | "always" | "never"
@@ -73,41 +73,41 @@ sequence_integrity_preamble_visible = true
 follow_strictly_preamble_visible = true
 
 # Step structure
-step_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
-step_done_when_postscript_template_visible = false
+steps_index_tracking = "n_of_m"  # "n_only" | "n_of_m"
+steps_done_when_postscript_template_visible = false
 
 # Closing
 follow_strictly_closing_template_visible = true
 instruction_mode_recap_closing_template_visible = false
 
 # Dependency and progress
-cross_step_dependency_label_template_visible = false
+steps_dependency_label_template_visible = false
 reminder_midpoint_preamble_template_visible = false
 
 # Scaffolding tier override (null = auto from step count)
-scaffolding_tier_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
+pre_scaffolding_tier_override = "auto"  # "auto" | "lightweight" | "standard" | "heavy"
 
 [examples]
 section_preamble_visible = true
 
 # Group heading suppression for single-group agents
-suppress_lone_group_heading = true
+groups_suppress_lone_heading = true
 
-# Override for per-group example_display_headings from data
-example_display_headings_override = false
+# Override for per-group display_headings from data
+groups_display_headings_override = false
 
-# Override for per-group examples_max_number from data
-examples_max_number_override = false
+# Override for per-group max_number from data
+groups_max_number_override = false
 
 # Whether a framing preamble renders between the group heading and first entry
 group_framing_preamble_template_visible = false
 
 [constraints]
 # Visibility / activation
-section_visible = true
+pre_section_visible = true
 
 # Maximum entries to render (0 = render all)
-max_entries_rendered = 0
+pre_max_entries_rendered = 0
 
 section_preamble_visible = true
 constraints_are_not_steps_preamble_visible = true
@@ -124,10 +124,10 @@ compliance_reminder_closing_selector = "evaluation_warning"  # "evaluation_warni
 
 [anti_patterns]
 # Whether to render the section at all
-section_visible = true
+pre_section_visible = true
 
 # Maximum entries to render (0 = render all)
-max_entries_rendered = 0
+pre_max_entries_rendered = 0
 
 # Whether to include a preamble line before the pattern list
 section_preamble_visible = true
@@ -137,10 +137,10 @@ constraints_vs_anti_patterns_distinction_preamble_visible = true
 
 [success_criteria]
 # Master visibility toggle
-section_visible = true
+pre_section_visible = true
 
 # Maximum entries to render (0 = render all)
-max_entries_rendered = 0
+pre_max_entries_rendered = 0
 
 # Definition framing paradigm
 definition_declaration_selector = "declarative_assertion"
@@ -152,7 +152,7 @@ evidence_intro_selector = "properties"
 definition_to_evidence_transition_selector = "goal_then_criteria"
 
 # Evidence type handling
-evidence_type_handling = "undifferentiated"
+criteria_evidence_type_handling = "undifferentiated"
 
 # Voice paradigm
 output_vs_agent_voice = "output_centric"
@@ -164,14 +164,14 @@ success_failure_independence_statement_postscript_visible = true
 verification_guidance_postscript_visible = false
 
 # Multi-criteria relationship paradigm
-multi_criteria_relationship = "independent_blocks"
+criteria_relationship = "independent_blocks"
 
 [failure_criteria]
 # Master visibility toggle
-section_visible = true
+pre_section_visible = true
 
 # Maximum entries to render (0 = render all)
-max_entries_rendered = 0
+pre_max_entries_rendered = 0
 
 # Whether to render the behavioral preamble
 abort_stance_preamble_visible = true

@@ -17,7 +17,13 @@ from typing import Annotated, get_args, get_origin
 
 from pydantic import BaseModel, RootModel
 
-from galdr.logic.pure.compose.primitive import has_closing_suffix, has_heading_suffix, has_preamble_suffix
+from galdr.logic.pure.compose.primitive import (
+    has_closing_suffix,
+    has_heading_suffix,
+    has_preamble_suffix,
+    is_preprocessing_field,
+    strip_display_control_suffix,
+)
 from galdr.logic.pure.render.primitive import heading
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.gen.output_display import FormatPair, ListFormat
@@ -35,6 +41,25 @@ def classify_content_slot(name: str) -> str:
         if check(name):
             return slot
     return "body"
+
+
+def place_display_fields_into_slots(
+    display_section: BaseModel,
+    slots: dict[str, list[tuple[str, str]]],
+) -> dict[str, list[tuple[str, str]]]:
+    """Sort display-axis fields into slots by stripped trunk.
+
+    Pre-processing fields (pre_ prefix) are consumed elsewhere and
+    skipped. Remaining fields have their display control suffix
+    stripped, then the trunk is classified by positional suffix.
+    Returns the updated slots map.
+    """
+    for name in display_section.model_fields:
+        if is_preprocessing_field(name):
+            continue
+        trunk = strip_display_control_suffix(name)
+        slots[classify_content_slot(trunk)].append(("display", name))
+    return slots
 
 
 def is_visible_by_mode(mode: str) -> bool:
@@ -382,18 +407,6 @@ def extract_field_value(field_value: BaseModel | Enum) -> str | bool:
     if isinstance(field_value, Enum):
         return field_value.value
     return field_value.root
-
-
-def extract_section_visible(structure_section: BaseModel) -> bool:
-    """Get the section_visible toggle from structure, defaulting to True.
-
-    Only guardrails family sections have this toggle. All others default visible.
-    Structure toggle fields are RootModel wrappers — .root is always present.
-    """
-    toggle = getattr(structure_section, "section_visible", None)
-    if toggle is None:
-        return True
-    return bool(toggle.root)
 
 
 

@@ -17,6 +17,7 @@ import gate_output_structure_input
 
 from galdr.logic.impure.gates.simple import validate_input
 from galdr.logic.pure.compose.assembled import compose_section
+from galdr.logic.pure.render.simple import resolve_separator_content
 from galdr.logic.transform.data_unwrap.composed import unwrap_section_data
 from galdr.structure.gen.anthropic_render import AgentAnthropicRender
 from galdr.structure.gen.output_content import AgentOutputContent
@@ -92,7 +93,8 @@ def run(
         data_path, content_path, structure_path, display_path,
     )
     sections = compose_all_sections(data, content, structure, display)
-    output = "\n\n---\n\n".join(sections) if sections else None
+    inter_separator = resolve_separator_content(display.global_defaults.inter_section_separator)
+    output = inter_separator.join(sections) if sections else None
     if output:
         # TODO: replace with output gate when galdr output gate is built.
         # Raw write_text bypasses the gate pattern. Acceptable for bootstrap

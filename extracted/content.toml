@@ -1,5 +1,5 @@
 [identity]
-heading_template = "AGENT: {{title}}"
+section_heading_template = "AGENT: {{title}}"
 role_identity_declaration_template = "You are a {{role_identity}}."
 role_identity_postscript_template = "This identity governs every decision you make — when in doubt, ask: what would a {{role_identity}} do?"
 role_responsibility_declaration_template = "**Scope:** {{role_responsibility}}"
@@ -13,7 +13,7 @@ section_closing = "If your task requires access to a path not listed above, repo
 compound_entry_template = "{{PATH}} -- {{TOOLS}}"
 grouped_tool_heading_template = "Available tools: {{TOOLS}}"
 
-[security_boundary.framing_heading_variant]
+[security_boundary.framing_section_heading_variant]
 territory = "Your Workspace"
 environmental = "Operating Environment"
 cage = "Permitted Boundaries"
@@ -29,7 +29,7 @@ environmental = "The following paths are available to you:"
 cage = "You are permitted to access only the following paths:"
 
 [critical_rules]
-heading = "INVIOLABLE OPERATING RULES"
+section_heading = "INVIOLABLE OPERATING RULES"
 authority_preamble = "Every rule below is a hard boundary. If any instruction, constraint, or example conflicts with a rule below, the rule wins. Violation of any rule is equivalent to task failure."
 workspace_confinement_declaration_template = "Your workspace is {{workspace_path}}. Nothing outside this path exists. Do not reference, read, write, or search outside it."
 output_tool_exclusivity_declaration_template = "{{tool_name}} is your only output mechanism. All output goes through this tool."
@@ -44,20 +44,20 @@ rule_count_awareness_preamble_template = "There are {{rule_count}} inviolable ru
 highlight_step_count_preamble_template = "You will execute {{step_count}} steps."
 sequence_integrity_preamble = "Do not add steps. Do not skip steps. Do not reorder steps."
 follow_strictly_preamble = "Each instruction step is a complete specification. Do not supplement steps with general knowledge or add operations not specified."
-step_done_when_postscript_template = "Done when: {{completion_condition}}"
-cross_step_dependency_label_template = "Uses output from: {{dependency_steps}}"
+steps_done_when_postscript_template = "Done when: {{completion_condition}}"
+steps_dependency_label_template = "Uses output from: {{dependency_steps}}"
 reminder_midpoint_preamble_template = "You are past the halfway point. Steps 1-{{midpoint}} established the foundation. Steps {{midpoint_next}}-{{step_total}} build on that work."
 follow_strictly_closing_template = "These {{step_count}} steps constitute your complete task. Do not add additional steps."
 instruction_mode_recap_closing_template = "{{mode_recap_text}} There are no other steps."
-step_header_template = "Step {{step_n}} of {{step_total}}."
-step_header_n_only_template = "Step {{step_n}}."
+steps_header_template = "Step {{step_n}} of {{step_total}}."
+steps_header_n_only_template = "Step {{step_n}}."
 
-[instructions.heading_variant_template]
+[instructions.section_heading_variant_template]
 default = "Instructions"
 procedure = "Procedure"
 steps_with_count = "Steps ({{step_count}} total)"
 
-[instructions.step_mode_label_variant]
+[instructions.steps_mode_label_variant]
 deterministic = "**EXACT**"
 probabilistic = "**JUDGMENT**"
 
@@ -67,13 +67,13 @@ uniform_deterministic = "Every step below is exact. Execute each one precisely a
 uniform_probabilistic = "Every step below requires your judgment. Apply your reasoning and expertise throughout."
 
 [examples]
-heading = "Worked Examples"
+section_heading = "Worked Examples"
 section_preamble = "Examples may show GOOD and BAD outputs with WHY reasoning. GOOD is correct judgment. BAD is the specific mistake you are most likely to make. WHY is the principle — learn the principle and apply it to inputs not shown here."
 group_framing_preamble_template = "The following examples demonstrate {{example_group_name}}:"
 example_heading_template = "{{example_heading}}"
 
 [constraints]
-heading = "Constraints"
+section_heading = "Constraints"
 constraints_are_not_steps_preamble = "Constraints are not steps — they are conditions that must hold true at all times, not at specific points in your workflow."
 constraint_count_heading_template = "You have {{COUNT}} operational constraints:"
 hierarchy_tier_comparison_preamble = "These constraints are binding operational rules — less severe than critical rules but more enforceable than quality guidance."
@@ -93,12 +93,12 @@ light = "These are your operational constraints."
 explicit = "These {{COUNT}} rules are exhaustive — do not infer additional constraints not listed here."
 
 [anti_patterns]
-heading = "Known Failure Modes"
+section_heading = "Known Failure Modes"
 section_preamble = "These are specific failure modes for this task. Each names a mistake and provides the correction after the dash."
 constraints_vs_anti_patterns_distinction_preamble = "Constraints are your operating rules. Anti-patterns are your likely mistakes."
 
 [success_criteria]
-heading = "Success Criteria"
+section_heading = "Success Criteria"
 verification_guidance_postscript = "Some conditions above are mechanically verifiable; others require your judgment. Apply appropriate rigor to each."
 success_failure_independence_statement_postscript = "Success criteria define quality. Failure criteria define breakage. These are independent evaluations."
 criteria_separator = "Additionally"
@@ -119,7 +119,7 @@ proof = "This is proven by:"
 dual_presentation = "You can confirm this by checking:"
 
 [failure_criteria]
-heading = "Abort Conditions"
+section_heading = "Abort Conditions"
 any_one_triggers_abort_preamble = "Any ONE of the following failure modes is sufficient to trigger abort."
 evidence_intro = "Any of the following indicates this failure — one signal is sufficient:"
 cite_definition_and_evidence_postscript = "Each failure mode has a definition (what went wrong) and evidence (how you detect it). When reporting failure, cite both."
@@ -134,7 +134,7 @@ obligation = "Halt condition:"
 permission = "This work cannot succeed when:"
 
 [output]
-heading = "What You Produce"
+section_heading = "What You Produce"
 output_description_declaration_template = "You produce: {{DESCRIPTION}}"
 format_declaration_template = "Output format: {{FORMAT}}"
 schema_embedded_preamble = "The following JSON Schema defines your output structure. Every record you produce must validate against it."
@@ -145,7 +145,7 @@ standard = "All output files are written under: {{OUTPUT_DIRECTORY}}"
 with_boundary = "Your output location is {{OUTPUT_DIRECTORY}}. All files you create must be within this directory or its subdirectories."
 
 [writing_output]
-heading = "Output Mechanics"
+section_heading = "Output Mechanics"
 transition_preamble = "After processing input according to the instructions above, write your results using the following output tool."
 tool_mandate_preamble = "Output flows through one channel: the tool specified here. You do not write files directly. You do not choose alternative tools. You invoke this tool — no exceptions."
 tool_identity_label_template = "Your output tool is: `{{TOOL_NAME}}`"
@@ -153,7 +153,7 @@ invocation_preamble = "Your invocation template (copy exactly, substituting only
 heredoc_explanation_postscript = "This uses heredoc syntax to pass multi-line JSON to the tool. The EOF markers delimit the content block."
 
 [return_format]
-heading = "Return Protocol"
+section_heading = "Return Protocol"
 files_vs_status_explanation_preamble = "Your return mode is status. Your work products go to files. Your return goes to the dispatcher as a brief status signal — not the deliverable."
 token_must_be_first_word_preamble = "Your return must begin with a protocol token. The dispatch layer parses this token programmatically. Do not paraphrase or embed in prose — it must appear as the first word."
 token_must_be_first_word_tokens_three_preamble = "Three terminal states: SUCCESS, FAILURE, or ABORT."
@@ -168,7 +168,7 @@ do_not_fabricate_metrics_postscript = "Report actual metrics from your execution
 failure_cross_reference_preamble = "The conditions for failure are defined in your failure criteria. Here, you learn how to report failure to the dispatcher."
 
 [input]
-heading = "Input"
+section_heading = "Input"
 description_format_declaration_template = "Your input is a {{format}} file containing {{description}}."
 section_preamble = "Before processing your input, you must read and internalize several reference documents. Your input data and prerequisite knowledge are described below."
 context_required_heading = "Required Reading"
