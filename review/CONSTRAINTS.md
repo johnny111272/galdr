@@ -49,6 +49,8 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 | ⚠️ | 4 | `constraint_count_heading_visibility_threshold` | Integer | `6` | show count heading above 6 items — not wired |
 | ⚠️ | 5 | `rules_polarity_normalization` | ConstraintsRulesPolarityNormalization | `"preserve_voice"` | MUST/MUST-NOT handling — not wired |
 | ⚠️ | 6 | `rules_polarity_grouping_threshold` | Integer | `11` | group positive/negative at 11+ items — not wired |
+| ⚠️ | 7 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 8 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

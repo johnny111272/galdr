@@ -42,6 +42,8 @@ Agent-builder has 3 groups, each with 1-2 entries.
 | ⚠️ | 2 | `groups_entry_body_container` | enum | `"bare_with_endmarker"` | How entry body is contained — not wired |
 | ⚠️ | 3 | `groups_entry_separator` | enum | `"horizontal_rule"` | Between entries when headings off — not wired |
 | ⚠️ | 4 | `groups_separator` | enum | `"horizontal_rule"` | Between groups — not wired |
+| ⚠️ | 5 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 6 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

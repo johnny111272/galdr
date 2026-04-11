@@ -57,6 +57,8 @@ Agent-builder has 7 steps. Modes vary per step (mixed).
 | ⚠️ | 5 | `steps_scaffolding_lightweight_threshold` | Integer | `3` | Step count threshold for lightweight tier |
 | ⚠️ | 6 | `steps_scaffolding_standard_threshold` | Integer | `7` | Step count threshold for standard tier |
 | ✅ | 7 | `steps_mode_recap_format` | InstructionModeRecapFormat | `"prose"` | Recap as prose/tabular |
+| ⚠️ | 8 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 9 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

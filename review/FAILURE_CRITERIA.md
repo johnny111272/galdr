@@ -39,6 +39,8 @@ Agent-builder has 1 FailureItem. Each item has a definition string and a list of
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `criteria_evidence_format` | ListFormat | `"bare"` | evidence list rendering style — not wired |
+| ⚠️ | 2 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 3 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

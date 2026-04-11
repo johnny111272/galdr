@@ -42,6 +42,8 @@ Agent-builder has 7 filesystem_permissions entries. Tool sets vary per entry (he
 | ⚠️ | 3 | `filesystem_permissions_toolset_format` | enum | `"per_entry_list"` | When entries have different tools: per-entry format — not wired |
 | ✅ | 4 | `filesystem_permissions_label_visibility_threshold` | Integer | `4` | Entry count threshold for showing the label (7 entries → label shows) |
 | ⚠️ | 5 | `filesystem_permissions_list_format` | enum | `"bullet"` | List marker style — engine uses bulleted regardless |
+| ⚠️ | 6 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 7 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

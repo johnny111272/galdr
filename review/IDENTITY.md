@@ -40,6 +40,8 @@ Agent-builder has all fields populated. `role_expertise` has 4 items. `role_desc
 |---|---|-------|------|-------|----------|
 | ✅ | 1 | `role_expertise_format` | FormatPair | `["bulleted", "inline"]` | → data.role_expertise list format (bulleted above threshold, inline at/below) |
 | ✅ | 2 | `role_expertise_format_threshold` | Integer | `3` | → switch at 3 items (4 items → bulleted) |
+| ⚠️ | 3 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 4 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

@@ -31,6 +31,8 @@ Agent-builder has 5 anti-pattern entries. Each is a `RootModel[str]` — unwrapp
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `patterns_format` | AntiPatternsPatternsFormat | `"bare_bullets"` | list rendering style — not wired |
+| ⚠️ | 2 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 3 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

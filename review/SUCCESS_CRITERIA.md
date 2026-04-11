@@ -43,6 +43,8 @@ Agent-builder has 1 SuccessItem. Each item has a definition string and a list of
 |---|---|-------|------|-------|----------|
 | ⚠️ | 1 | `criteria_evidence_format` | UnionFormatOrPair | `["bulleted", "numbered"]` | threshold-based evidence list format — not wired |
 | ⚠️ | 2 | `criteria_evidence_format_threshold` | Integer | `5` | switch to numbered above 5 items — not wired |
+| ⚠️ | 3 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 4 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

@@ -51,7 +51,8 @@ Agent-builder: `has_output_tool = False`, tool fields absent.
 | ⚠️ | 2 | `tool_name_format` | InlineFormat | `"backtick"` | wrap `{{tool_name}}` in backticks — not wired |
 | ⚠️ | 3 | `tool_name_repetition` | CriticalRulesToolNameRepetition | `"repeat"` | full name vs shorthand — not wired |
 | ⚠️ | 4 | `batch_size_format` | InlineFormat | `"plain"` | batch size rendering style — not wired |
-| ⚠️ | 5 | `pre_body_entry_separator_override` | CriticalRulesRuleSeparator | `"double_newline"` | spacing between rules — not wired |
+| ⚠️ | 5 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `"double_newline"` | Body-entry separator override — not wired |
+| ⚠️ | 6 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
 
 ---
 

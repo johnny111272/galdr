@@ -58,6 +58,8 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 | ⚠️ | 2 | `context_available_format` | ListFormat | `"bulleted"` | context_available list format — not wired |
 | ⚠️ | 3 | `parameters_format` | UnionFormatOrPair | `["bulleted", "prose"]` | threshold-based parameter list format — not wired |
 | ⚠️ | 4 | `parameters_format_threshold` | Integer | `2` | switch to prose below 2 items — not wired |
+| ⚠️ | 5 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 6 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 

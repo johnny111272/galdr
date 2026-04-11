@@ -37,7 +37,10 @@ Agent-builder: `format = "text"`, `name_known = "unknown"`, `output_directory` p
 
 ## Display (OutputDisplay)
 
-No display fields for this section in `display.toml`.
+| | # | Field | Type | Value | Controls |
+|---|---|-------|------|-------|----------|
+| ⚠️ | 1 | `pre_section_divider_override` | SeparatorContent (optional) | `null` | Section-level divider override — not wired |
+| ⚠️ | 2 | `pre_body_entry_separator_override` | SeparatorContent (optional) | `null` | Body-entry separator override — not wired |
 
 ---
 
