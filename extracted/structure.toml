@@ -56,10 +56,6 @@ batch_discipline_declaration_template_visible = true                    # also r
 # Experimental
 discipline_over_helpfulness_body_visible = false
 
-# Presentation
-rule_presentation = "single_sentence"  # "single_sentence" | "heading_plus_body"
-internal_hierarchy = "flat"            # "flat" | "universal_then_output_tool"
-
 [instructions]
 # Heading
 section_heading_selector = "default"                   # "default" | "procedure" | "steps_with_count"
@@ -153,9 +149,6 @@ definition_to_evidence_transition_selector = "goal_then_criteria"
 
 # Evidence type handling
 criteria_evidence_type_handling = "undifferentiated"
-
-# Voice paradigm
-output_vs_agent_voice = "output_centric"
 
 # Whether to include explicit statement that success != not-failing
 success_failure_independence_statement_postscript_visible = true

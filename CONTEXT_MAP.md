@@ -30,8 +30,8 @@ Galdr is the composition engine — the final stage of the agent build pipeline 
 | Trunk Resolver Design | `smidja/galdr/TRUNK_RESOLVER_DESIGN.md` | Funnel design, five shapes, shape detection, D1 sub-table pattern, co-occurrence matrix | **Current** |
 | Quickstart | `smidja/galdr/QUICKSTART.md` | CLI, pipeline, IO contract, section table | **Mostly current.** Says "Three Input Axes" — should be four (data + structure + content + display). Style references are pre-split. |
 | Custom Write Tool | `smidja/galdr/CUSTOM_WRITE_TOOL.md` | How enforcement output tools work end-to-end | Current |
-| TOML Architecture | `smidja/galdr/agent_control_surfaces/TOML_ARCHITECTURE.md` | Design of the three control surface TOML files | **Needs update.** Positional suffix convention expanded. Shared variants eliminated. `_x_variant` slot letters added. `_intro`, `_separator` suffixes added. |
-| Cross Section Patterns | `smidja/galdr/agent_control_surfaces/CROSS_SECTION_PATTERNS.md` | Patterns that span multiple sections (visibility cascades, variant co-selection) | **Needs update.** Shared variant concept no longer exists — all variants are per-slot simple variants. |
+| TOML Architecture | `smidja/galdr/redesign/TOML_ARCHITECTURE.md` | Design of the three control surface TOML files | Current |
+| Cross Section Patterns | `smidja/galdr/agent_control_surfaces/CROSS_SECTION_PATTERNS.md` | Patterns that span multiple sections (visibility cascades, variant co-selection) | **Needs update.** |
 
 ### Control Surface Analysis (per-section)
 
@@ -228,7 +228,7 @@ The first agents that need to go through the full pipeline:
 | **What galdr does and the four axes** | `AGENT_BUILD_SYSTEM.md` — the canonical design spec |
 | **How the generic composition engine works** | `COMPOSITION_ENGINE_DESIGN.md` — five operations, assembly order, no per-section code |
 | **How the trunk resolver works (shapes, D1 sub-tables)** | `TRUNK_RESOLVER_DESIGN.md` — funnel design, five shapes, co-occurrence matrix, renderer signatures |
-| **Positional suffix convention** | This CONTEXT_MAP §7 "Positional Suffix Convention" — suffix-to-slot mapping, variant slot letters |
+| **Positional suffix convention** | This CONTEXT_MAP §7 "Positional Suffix Convention" — suffix-to-slot mapping |
 | **How to run galdr** | `QUICKSTART.md` — CLI, pipeline, IO paths |
 | **The v2 zone architecture (imports, levels, CC)** | `~/.ai/smidja/nornir/core/gleipnir_core/V2_ZONE_ARCHITECTURE.md` |
 | **The TOML field patterns and naming conventions** | `agent_control_surfaces/TOML_ARCHITECTURE.md` — field interface patterns, assembly order, naming rules |
@@ -259,20 +259,20 @@ The first agents that need to go through the full pipeline:
 All 7 test files in `tests/` import from `galdr.structures.*` and `galdr.functions.*` — both paths no longer exist after the v2 restructure. Tests need rewriting against new import paths (`galdr.structure.*`, `galdr.logic.*`). The old tests tested the old OOP renderer which has been scrapped.
 
 ### Naming Alignment — Completed (2026-04-04)
-Cross-axis trunk alignment completed in earlier sessions. Positional suffix alignment completed in Session 3: all content fields now have terminal positional suffixes. Shared variants split into per-slot simple variants. `_x_variant` slot letters added. Analysis docs in `analysis/` are now outdated — they reference pre-rename field names.
+Cross-axis trunk alignment completed in earlier sessions. Positional suffix alignment completed in Session 3: all content fields now have terminal positional suffixes. Analysis docs in `analysis/` are now outdated — they reference pre-rename field names.
 
 ### Positional Suffix Convention — Established (2026-04-04)
 Every content field declares its buffer slot via terminal suffix:
-- `_heading` → heading slot. `_preamble` → preamble slot. `_closing` → postscript slot.
-- `_label`, `_intro`, `_declaration`, `_entry_template`, `_postscript`, `_transition`, `_separator` → body slot.
-- `_x_variant` (h/p/b/c) → slot determined by letter. Plain `_variant` no longer used.
+- `section_heading` → heading slot (only section-level; non-section `_heading` is a body sub-heading).
+- `_preamble` → preamble slot. `_closing` → closing slot.
+- `_label`, `_intro`, `_declaration`, `_entry_template`, `_postscript`, `_transition`, `_separator`, `_body` → body slot.
+- `_variant` and `_template` are modifier suffixes stripped before classification — the underlying positional suffix determines the slot.
 - D1 template tables (e.g., `instruction_mode`) have no `_variant` suffix — body by default.
 - Unsuffixed fields (e.g., CriticalRules rule items) are body content by default.
 Engine uses suffix-based buffer classification. Heuristic classification deleted.
 
 ### Schema Changes — Completed (2026-04-04)
 - All content fields renamed with terminal positional suffixes
-- Per-slot variant convention (`_h/_p/_b/_c_variant`) replaces old shared variants
 - Instruction mode flat fields → `instruction_mode` sub-table group
 - `workspace_path` added to CriticalRules data model (cross-section fix)
 

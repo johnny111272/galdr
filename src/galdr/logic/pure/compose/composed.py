@@ -224,8 +224,9 @@ def resolve_heading_text(
 ) -> tuple[str | None, frozenset[str]]:
     """Resolve the section heading and track consumed heading variants.
 
-    Scans for heading_h_variant (overrides plain heading if present).
-    Falls back to bare 'heading' field. Returns (heading_text, consumed_names).
+    Scans content for section_heading-suffixed fields; if the field is a
+    variant sub-table, selects via the matching structure selector.
+    Returns (heading_text, consumed_names).
     """
     result: str | None = None
     consumed: set[str] = set()
@@ -255,9 +256,9 @@ def populate_section_buffer(
 
     Single pass using terminal suffix classification. Each content field's
     suffix determines its buffer slot:
-    - _heading / _h_variant → heading (handled by resolve_heading_text)
-    - _preamble / _p_variant → preamble slot
-    - _closing / _c_variant → closing (postscript) slot
+    - section_heading → heading (handled by resolve_heading_text)
+    - _preamble → preamble slot
+    - _closing → closing (postscript) slot
     - Everything else → body (skipped, left for data walk)
 
     Returns the buffer AND consumed variant names (for body walk).

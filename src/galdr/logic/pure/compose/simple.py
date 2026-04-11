@@ -358,8 +358,8 @@ def assemble_buffer(
 def buffer_slot_for_field(content_name: str) -> str | None:
     """Return buffer slot for a non-heading content field, or None if body-consumed.
 
-    Uses terminal suffix: _preamble/_p_variant → 'preamble',
-    _closing/_c_variant → 'postscript'. Everything else → None (body).
+    Uses terminal suffix: _preamble → 'preamble', _closing → 'postscript'.
+    Everything else → None (body).
     """
     if has_preamble_suffix(content_name):
         return "preamble"

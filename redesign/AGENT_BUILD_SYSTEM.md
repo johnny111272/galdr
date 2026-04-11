@@ -88,7 +88,7 @@ identity_reminder_closing_visible = false
 [constraints]
 section_visible = true
 max_entries_rendered = 0
-section_preamble_p_variant = "standalone"
+section_preamble_selector = "standalone"
 ```
 
 Structure is stable — it defines the shape of what renders. Experiments typically change content or display, not structure.

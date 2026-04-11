@@ -1,24 +1,26 @@
 """Compose assembled — section composition wiring.
 
-CC=1-2. Wires composed-level processors into a complete section render.
-One guard (section gate), then pure wiring calls. Zero other decisions.
+CC=1-2. Wires composed-level processors into a stage-1 section inspection.
+One guard (data + content presence), then two composed calls: preprocessor
+and slot sorter. Zero other decisions.
 
-Pattern: regin/logic/transform/section_regroup/assembled.py — regroup()
-is CC=1, calls 12 functions, zero decisions.
+STAGE 1 ONLY. The hourglass pipeline has four stages (chunk, gather,
+resolve+render, buffer). Only stage 1 is implemented. compose_section
+returns the raw slot dict plus the extracted preprocessing fields for
+inspection — no bundling, no resolution, no rendering.
+
+The walker-based composition (populate_section_buffer, resolve_all_trunks,
+render_buffer) has been disconnected. Those functions remain in composed.py
+as orphaned code until their hourglass replacements land.
 """
 
 from pydantic import BaseModel
 
 from galdr.logic.pure.compose.composed import (
     extract_preprocessing_fields,
-    populate_section_buffer,
-    resolve_all_trunks,
+    sort_into_slots,
 )
-from galdr.logic.pure.compose.simple import (
-    check_section_gate,
-    render_buffer,
-)
-from galdr.structure.model.section_context import SectionContext
+from galdr.structure.model.preprocessing_fields import PreprocessingFields
 
 
 def compose_section(
@@ -26,26 +28,18 @@ def compose_section(
     structure_section: BaseModel,
     content_section: BaseModel,
     display_section: BaseModel | None,
-    data_values: dict[str, str],
-) -> str | None:
-    """Generic section composer. Data drives, content decorates.
+) -> tuple[PreprocessingFields, dict[str, list[tuple[str, str]]]]:
+    """Run stage 1 of the hourglass pipeline for one section.
 
-    Extracts typed pre-processing fields, then populates a buffer with
-    heading/preamble/postscript from content, fills body from the data
-    walk, and renders the buffer in order. Returns the section as a
-    markdown string, or None if gated off.
+    Preprocessor extracts pre_* fields into a typed state. Slot sorter
+    classifies every remaining field into heading/preamble/body/closing
+    by terminal suffix. Returns both — preprocessor state and the raw
+    slot dict — for inspection.
+
+    The slot dict is intentionally untyped: the shape discovery is
+    ongoing, so we don't commit to a Pydantic model until we know what
+    a bundle actually contains.
     """
     pre_fields = extract_preprocessing_fields(structure_section)
-    if not check_section_gate(data_section, pre_fields.section_visible):
-        return None
-    section_context = SectionContext(
-        content=content_section,
-        structure=structure_section,
-        display=display_section,
-        data_values=data_values,
-    )
-    data_field_names = frozenset(data_section.model_fields.keys())
-    buffer, consumed_variants = populate_section_buffer(content_section, data_field_names, structure_section, data_values)
-    body = resolve_all_trunks(data_section, section_context, consumed_variants)
-    filled = buffer.model_copy(update={"body": tuple(body)})
-    return render_buffer(filled)
+    slots = sort_into_slots(content_section, data_section, structure_section, display_section)
+    return pre_fields, slots

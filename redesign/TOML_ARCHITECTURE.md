@@ -75,7 +75,6 @@ Not every block has all five elements — most skip some. But when elements exis
 | `_postscript` | After data | Reinforces or constrains what was just presented. | `role_expertise_is_strictly_limited_postscript = "Your expertise is strictly limited..."` |
 | `_transition` | Pre-label | Renders before the next field's block. | `parameters_transition = "With this knowledge internalized..."` |
 | `_closing` | Section end | Section-level closing prose. | `identity_reminder_closing = "Remember: you are a {{role_identity}}."` |
-| `_x_variant` | Slot by letter | Variant with slot: h=heading, p=preamble, b=body, c=closing. | `framing_heading_h_variant` |
 | `_body` | Body | Standalone prose not tied to a data field. | (CriticalRules rule items) |
 
 This sequence applies at two levels:
@@ -158,7 +157,7 @@ The structure field is `identity_reminder_closing_visible` (boolean). The conten
 
 ## Field Interface Patterns
 
-Five patterns, each identified by suffix. A naive reader encountering any field can identify the pattern from its name.
+Four patterns, each identified by suffix. A naive reader encountering any field can identify the pattern from its name.
 
 ### 1. `_visible` — Fragment Visibility
 
@@ -198,34 +197,7 @@ examples_max_number = 0                        # 0 = no truncation, N = cap. Onl
 
 The sibling value matches the data's type. No mixed-type fields, no string sentinels.
 
-### 3. `_x_variant` — Content Variant Selection
-
-Selects among named prose alternatives in content.toml. Each variant has a slot letter (h/p/b/c) indicating which buffer slot the resolved text goes to.
-
-```toml
-# structure.toml
-framing_variant = "territory"   # one selector can drive multiple content variants
-
-# content.toml
-[security_boundary.framing_heading_h_variant]     # → heading slot
-territory = "Your Workspace"
-environmental = "Operating Environment"
-cage = "Permitted Boundaries"
-
-[security_boundary.framing_preamble_p_variant]     # → preamble slot
-territory = "Within this workspace, you can access:"
-environmental = "The following paths are available to you:"
-cage = "You are permitted to access only the following paths:"
-
-[security_boundary.framing_declaration_b_variant]  # → body slot
-territory = "Your workspace is {{WORKSPACE_PATH}}..."
-environmental = "You operate within {{WORKSPACE_PATH}}..."
-cage = "You are confined to {{WORKSPACE_PATH}}..."
-```
-
-Variant slot letters: `_h_variant` (heading), `_p_variant` (preamble), `_b_variant` (body), `_c_variant` (closing). One structure selector can drive multiple per-slot variants — they share a selector but each declares its own slot.
-
-### 4. `_format` + `_format_threshold` — Display Format
+### 3. `_format` + `_format_threshold` — Display Format
 
 Controls HOW data renders (bullets, inline, numbered, etc). Lives in display.toml.
 
@@ -236,7 +208,7 @@ expertise_format_threshold = 3
 
 Tuple = conditional (above threshold, at-or-below). Plain string = always that format.
 
-### 5. Plain Enums (no suffix convention)
+### 4. Plain Enums (no suffix convention)
 
 Structure selectors that don't fit the above — presentation paradigms, organizational modes.
 
