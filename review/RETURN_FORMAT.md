@@ -17,7 +17,7 @@ Agent-builder: `mode = "status"`, `status_instruction` present (return SUCCESS w
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ✅ | 1 | `heading` | StringText | `heading` | heading | `"Return Protocol"` |
+| ✅ | 1 | `section_start` | StringText | `section_start` | heading | `"Return Protocol"` |
 | ✅ | 2 | `files_vs_status_explanation_preamble` | StringProse | `_preamble` | preamble | `"Your return mode is status. Your work products go to files. Your return goes to the dispatcher as a brief status signal — not the deliverable."` |
 | ✅ | 3 | `token_must_be_first_word_preamble` | StringProse | `_preamble` | preamble | `"Your return must begin with a protocol token. The dispatch layer parses this token programmatically. Do not paraphrase or embed in prose — it must appear as the first word."` |
 | ✅ | 4 | `token_must_be_first_word_tokens_three_preamble` | StringProse | `_preamble` | preamble | `"Three terminal states: SUCCESS, FAILURE, or ABORT."` |
@@ -54,7 +54,7 @@ No display fields for this section in `display.toml`.
 
 ```
 HEADING:
-  ✅ heading                               "Return Protocol"
+  ✅ section_start                         "Return Protocol"
 
 PREAMBLE:
   ✅ files_vs_status_explanation_preamble  "Your return mode is status. Your work products go to files..."

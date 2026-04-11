@@ -21,7 +21,7 @@ Agent-builder: this section is only rendered when `has_output_tool = true`. For 
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ✅ | 1 | `heading` | StringText | `heading` | heading | `"Output Mechanics"` |
+| ✅ | 1 | `section_start` | StringText | `section_start` | heading | `"Output Mechanics"` |
 | ✅ | 2 | `transition_preamble` | StringProse | `_preamble` | preamble | `"After processing input according to the instructions above, write your results using the following output tool."` |
 | ✅ | 3 | `tool_mandate_preamble` | StringProse | `_preamble` | preamble | `"Output flows through one channel: the tool specified here. You do not write files directly. You do not choose alternative tools. You invoke this tool — no exceptions."` |
 | ✅ | 4 | `invocation_preamble` | StringProse | `_preamble` | preamble | `"Your invocation template (copy exactly, substituting only the marked placeholders):"` |
@@ -46,7 +46,7 @@ No display fields for this section in `display.toml`.
 
 ```
 HEADING:
-  ✅ heading                               "Output Mechanics"
+  ✅ section_start                         "Output Mechanics"
 
 PREAMBLE:
   ✅ transition_preamble                   "After processing input according to the instructions above..."

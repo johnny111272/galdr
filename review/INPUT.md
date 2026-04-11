@@ -25,16 +25,16 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ✅ | 1 | `heading` | TitleString | `heading` | heading | `"Input"` |
+| ✅ | 1 | `section_start` | TitleString | `section_start` | heading | `"Input"` |
 | ✅ | 2 | `section_preamble` | StringProse | `_preamble` | preamble | `"Before processing your input, you must read and internalize several reference documents..."` |
 | ✅ | 3 | `context_required_heading` | StringText | `_heading` | heading | `"Required Reading"` |
-| ✅ | 4 | `context_required_preamble` | StringProse | `_preamble` | preamble | `"These are not reference materials to consult during work. They are foundational knowledge you must absorb before starting."` |
+| ✅ | 4 | `context_required_intro` | StringProse | `_intro` | body | `"These are not reference materials to consult during work. They are foundational knowledge you must absorb before starting."` |
 | ✅ | 5 | `context_required_entry_template` | StringTemplate | `_entry_template` | body | `"**{{context_label}}**: Read \`{{context_path}}\`"` |
 | ✅ | 6 | `context_available_heading` | StringText | `_heading` | heading | `"Available Resources"` |
 | ✅ | 7 | `parameters_transition` | StringProse | `_transition` | body | `"With this knowledge internalized, here is your input data:"` |
 | ✅ | 8 | `parameters_heading` | TitleString | `_heading` | heading | `"Parameters"` |
 | ✅ | 9 | `parameters_entry_template` | StringTemplate | `_entry_template` | body | `` "`{{param_name}}` ({{param_type}}): {{param_description}}" `` |
-| ✅ | 10 | `description_format_declaration_template` | StringTemplate | `_declaration_template` | body | `"Your input is a {{format}} file containing {{description}}."` |
+| ✅ | 10 | `description_format_template` | StringTemplate | `_template` | body | `"Your input is a {{format}} file containing {{description}}."` |
 | ✅ | 11 | `input_completeness_postscript` | StringProse | `_postscript` | body | `"Your input and required reading together constitute your complete input. Do not seek additional sources."` |
 | ✅ | 12 | `schema_label_template` | StringTemplate | `_label_template` | body | `` "Input validates against: `{{input_schema}}`" `` |
 
@@ -43,10 +43,10 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ✅ | 1 | `section_preamble_visible` | Boolean | `true` | → content #2 |
-| ✅ | 2 | `context_required_preamble_visible` | Boolean | `true` | → content #4 |
+| ✅ | 2 | `context_required_intro_visible` | Boolean | `true` | → content #4 |
 | ✅ | 3 | `parameters_transition_visible` | Boolean | `true` | → content #7 |
 | ✅ | 4 | `input_completeness_postscript_visible` | Boolean | `false` | → content #11 |
-| ✅ | 5 | `schema_label_template_visible` | Boolean | `true` | → content #12 |
+| ✅ | 5 | `schema_label_visible` | Boolean | `true` | → content #12 |
 | ✅ | 6 | `parameters_heading_visible` | VisibilityMode | `"auto"` | → content #8 (auto = show when parameters count ≥ threshold) |
 | ✅ | 7 | `parameters_heading_auto_threshold` | Integer | `2` | threshold for above |
 
@@ -65,7 +65,7 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 
 ```
 HEADING:
-  ✅ heading                               "Input"
+  ✅ section_start                         "Input"
   ✅ context_required_heading              "Required Reading"
                                              [renders only if context_required data is present]
   ✅ context_available_heading             "Available Resources"
@@ -76,14 +76,14 @@ HEADING:
 PREAMBLE:
   ✅ section_preamble                      "Before processing your input, you must read and internalize..."
                                              [visible: section_preamble_visible = true]
-  ✅ context_required_preamble             "These are not reference materials to consult during work..."
-                                             [visible: context_required_preamble_visible = true]
+  ✅ context_required_intro                "These are not reference materials to consult during work..."
+                                             [visible: context_required_intro_visible = true]
                                              [renders only if context_required data is present]
 
 BODY:
-  [GATE] format                            → interpolated into description_format_declaration_template
+  [GATE] format                            → interpolated into description_format_template
   [GATE] delivery                          → used for conditional rendering of delivery-mode-specific content
-  ✅ description_format_declaration_template  "Your input is a {{format}} file containing {{description}}."
+  ✅ description_format_template           "Your input is a {{format}} file containing {{description}}."
                                              interpolates .format and .description
 
   [NESTED] context_required                ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
@@ -104,7 +104,7 @@ BODY:
 
   [SCALAR] input_schema                    → interpolated into schema_label_template
   ✅ schema_label_template                 "Input validates against: `{{input_schema}}`"
-                                             [visible: schema_label_template_visible = true]
+                                             [visible: schema_label_visible = true]
 
   input_completeness_postscript            "Your input and required reading together constitute your complete input."
                                              [visible: input_completeness_postscript_visible = false]
@@ -119,7 +119,7 @@ CLOSING:
 
 ### ⚠️ ISSUE 1: `context_required` and `context_available` are NESTED BaseModel — skipped entirely
 
-Both context fields hold `list of ContextItem` where `ContextItem` is a nested BaseModel (not a `RootModel`). The data unwrap only handles scalar fields and `RootModel` lists. The entire context rendering path is skipped — `context_required_entry_template` is never used, `context_required_heading` and `context_required_preamble` are orphaned content.
+Both context fields hold `list of ContextItem` where `ContextItem` is a nested BaseModel (not a `RootModel`). The data unwrap only handles scalar fields and `RootModel` lists. The entire context rendering path is skipped — `context_required_entry_template` is never used, `context_required_heading` and `context_required_intro` are orphaned content.
 
 **Fix required:** Either (a) add nested BaseModel traversal to the engine, or (b) define ContextItem as `RootModel[str]` with a pre-formatted string. Option (b) is simpler but moves formatting logic into the data.
 

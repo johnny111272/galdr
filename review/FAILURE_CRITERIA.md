@@ -15,7 +15,7 @@ Agent-builder has 1 FailureItem. Each item has a definition string and a list of
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ✅ | 1 | `heading` | StringText | `heading` | heading | `"Abort Conditions"` |
+| ✅ | 1 | `section_start` | StringText | `section_start` | heading | `"Abort Conditions"` |
 | ✅ | 2 | `any_one_triggers_abort_preamble` | StringProse | `_preamble` | preamble | `"Any ONE of the following failure modes is sufficient to trigger abort."` |
 | ✅ | 3 | `abort_stance_preamble_variant` | BaseModel | `_preamble_variant` | preamble | `{obligation: "The following conditions make valid output impossible...", permission: "Not every task can be completed..."}` |
 | ✅ | 4 | `evidence_intro` | StringProse | `_intro` | body | `"Any of the following indicates this failure — one signal is sufficient:"` |
@@ -27,8 +27,8 @@ Agent-builder has 1 FailureItem. Each item has a definition string and a list of
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ⚠️ | 1 | `section_visible` | Boolean | `true` | master section toggle — not checked by engine |
-| ✅ | 2 | `max_entries_rendered` | Integer | `0` | render all entries (0 = all) |
+| ⚠️ | 1 | `pre_section_visible` | Boolean | `true` | master section toggle — not checked by engine |
+| ✅ | 2 | `pre_max_entries_rendered` | Integer | `0` | render all entries (0 = all) |
 | ⚠️ | 3 | `abort_stance_preamble_visible` | Boolean | `true` | → content #3 — not wired to variant |
 | ✅ | 4 | `cite_definition_and_evidence_postscript_visible` | Boolean | `false` | → content #6 |
 | ✅ | 5 | `check_before_and_during_postscript_visible` | Boolean | `false` | → content #7 |
@@ -38,7 +38,7 @@ Agent-builder has 1 FailureItem. Each item has a definition string and a list of
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ⚠️ | 1 | `evidence_format` | ListFormat | `"bare"` | evidence list rendering style — not wired |
+| ⚠️ | 1 | `criteria_evidence_format` | ListFormat | `"bare"` | evidence list rendering style — not wired |
 
 ---
 
@@ -46,7 +46,7 @@ Agent-builder has 1 FailureItem. Each item has a definition string and a list of
 
 ```
 HEADING:
-  ✅ heading                               "Abort Conditions"
+  ✅ section_start                         "Abort Conditions"
 
 PREAMBLE:
   ✅ any_one_triggers_abort_preamble       "Any ONE of the following failure modes is sufficient to trigger abort."
@@ -64,7 +64,7 @@ BODY:
     evidence_intro                         "Any of the following indicates this failure — one signal is sufficient:"
                                              [visible: implicit — renders per-item before evidence list]
     ⚠️ evidence list                       renders failure_evidence items
-                                             [display: evidence_format = "bare" — not wired]
+                                             [display: criteria_evidence_format = "bare" — not wired]
 
   cite_definition_and_evidence_postscript  "Each failure mode has a definition..."
                                              [visible: cite_definition_and_evidence_postscript_visible = false]
@@ -87,7 +87,7 @@ CLOSING:
 
 `abort_stance_preamble_visible` (Boolean gate) and `abort_stance_selector` (variant key) are separate but both must be consulted together: check visibility, then select variant. Currently not wired.
 
-### ⚠️ ISSUE 3: `evidence_format = "bare"` not wired
+### ⚠️ ISSUE 3: `criteria_evidence_format = "bare"` not wired
 
 Display control for evidence list format (`"bare"`) is not read by the engine. Items render with hardcoded bullet formatting.
 
@@ -95,6 +95,6 @@ Display control for evidence list format (`"bare"`) is not read by the engine. I
 
 `evidence_intro` has `_intro` suffix — classified as body slot. But it renders once per failure item, before that item's evidence list, not once per section. The engine renders body-slot content once. If multiple failure items exist, the intro would be misplaced.
 
-### ⚠️ ISSUE 5: `section_visible` master toggle not checked by engine
+### ⚠️ ISSUE 5: `pre_section_visible` master toggle not checked by engine
 
 Same as other sections — section-skip decision not implemented at orchestrate level.

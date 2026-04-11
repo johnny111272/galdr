@@ -53,7 +53,7 @@ Map all structured fields from the requirements to definition fields...
 These 7 steps constitute your complete task. Do not add additional steps.
 ```
 
-With `instruction_mode_restrict_to_transition = true` (suppress consecutive same-mode labels):
+With `steps_mode_restrict_to_transition = true` (suppress consecutive same-mode labels):
 
 ```markdown
 **EXACT** — **Step 1 of 7.**
@@ -101,10 +101,10 @@ Each step is composed from three independent parts:
 
 | Part | Source | Control |
 |------|--------|---------|
-| MODE_LABEL | content `step_mode_label_variant` keyed by step's `instruction_mode` | display `instruction_mode_restrict_to_transition` can suppress |
-| SEPARATOR | display `step_mode_separator` enum (dash/colon/pipe/newline) | Only rendered when both MODE_LABEL and STEP_HEADER present |
-| STEP_HEADER | content `step_header_template` or `step_header_n_only_template` | structure `step_index_tracking` selects which |
-| STEP_BODY | data `instruction_text` | display `step_body_container` wraps it |
+| MODE_LABEL | content `steps_mode_label_variant` keyed by step's `instruction_mode` | display `steps_mode_restrict_to_transition` can suppress |
+| SEPARATOR | display `steps_mode_separator` enum (dash/colon/pipe/newline) | Only rendered when both MODE_LABEL and STEP_HEADER present |
+| STEP_HEADER | content `steps_heading_template` or `steps_heading_n_only_template` | structure `steps_index_tracking` selects which |
+| STEP_BODY | data `instruction_text` | display `steps_body_container` wraps it |
 
 Each concern is on its own axis:
 - Content controls the TEXT (mode label wording, header template)
@@ -116,6 +116,6 @@ Each concern is on its own axis:
 ## Remaining Issues
 
 1. **`instruction_mode_explanation_preamble_variant`** — variant key computed from data (mode mix), no structure selector
-2. **`scaffolding_tier_override`** — meta-policy computing visibility toggles, not directly processable
-3. **`step_index_tracking`** — enum values (`n_of_m`/`n_only`) don't match content field names (`step_header_template`/`step_header_n_only_template`)
+2. **`pre_scaffolding_tier_override`** — meta-policy computing visibility toggles, not directly processable
+3. **`steps_index_tracking`** — enum values (`n_of_m`/`n_only`) don't match content field names (`steps_heading_template`/`steps_heading_n_only_template`)
 4. **Computed placeholders** — `{{step_count}}`, `{{step_n}}`, `{{step_total}}`, etc. need generation before interpolation

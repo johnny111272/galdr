@@ -6,8 +6,8 @@
 Examples
   └─ groups: list of ExampleGroup
        ├─ .example_group_name    ExampleGroupName (TitleString scalar)
-       ├─ .example_display_headings   Boolean (optional) — per-group gate
-       ├─ .examples_max_number   Integer (optional) — per-group cap
+       ├─ .groups_display_headings   Boolean (optional) — per-group gate
+       ├─ .groups_max_number   Integer (optional) — per-group cap
        └─ .example_entries: list of ExampleEntry
             ├─ .example_heading   StringText (scalar)
             └─ .example_text      StringMarkdown (scalar)
@@ -19,7 +19,7 @@ Agent-builder has 3 groups, each with 1-2 entries.
 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
-| ✅ | 1 | `heading` | StringText | `heading` | heading | `"Worked Examples"` |
+| ✅ | 1 | `section_start` | StringText | `section_start` | heading | `"Worked Examples"` |
 | ✅ | 2 | `section_preamble` | StringProse | `_preamble` | preamble | `"Examples may show GOOD and BAD outputs with WHY reasoning..."` |
 | ✅ | 3 | `group_framing_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"The following examples demonstrate {{example_group_name}}:"` |
 | ⚠️ | 4 | `example_heading_template` | StringTemplate | `_heading_template` | heading | `"{{example_heading}}"` — template wrapping a per-entry field |
@@ -29,19 +29,19 @@ Agent-builder has 3 groups, each with 1-2 entries.
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
 | ✅ | 1 | `section_preamble_visible` | Boolean | `true` | → content #2 |
-| ✅ | 2 | `suppress_lone_group_heading` | Boolean | `true` | Skip group heading when only 1 group |
-| ⚠️ | 3 | `example_display_headings_override` | Boolean | `false` | Override per-group gate — not implemented |
-| ⚠️ | 4 | `examples_max_number_override` | Boolean | `false` | Override per-group cap — not implemented |
-| ✅ | 5 | `group_framing_preamble_template_visible` | Boolean | `false` | → content #3 |
+| ✅ | 2 | `groups_suppress_lone_heading` | Boolean | `true` | Skip group heading when only 1 group |
+| ⚠️ | 3 | `groups_display_headings_override` | Boolean | `false` | Override per-group gate — not implemented |
+| ⚠️ | 4 | `groups_max_number_override` | Boolean | `false` | Override per-group cap — not implemented |
+| ✅ | 5 | `group_framing_preamble_visible` | Boolean | `false` | → content #3 |
 
 ## Display (ExamplesDisplay)
 
 | | # | Field | Type | Value | Controls |
 |---|---|-------|------|-------|----------|
-| ⚠️ | 1 | `example_heading_format` | enum | `"bold"` | Entry heading as bold vs H4 — not wired |
-| ⚠️ | 2 | `example_body_container` | enum | `"bare_with_endmarker"` | How entry body is contained — not wired |
-| ⚠️ | 3 | `example_separator` | enum | `"horizontal_rule"` | Between entries when headings off — not wired |
-| ⚠️ | 4 | `multi_group_separator` | enum | `"horizontal_rule"` | Between groups — not wired |
+| ⚠️ | 1 | `groups_entry_heading_format` | enum | `"bold"` | Entry heading as bold vs H4 — not wired |
+| ⚠️ | 2 | `groups_entry_body_container` | enum | `"bare_with_endmarker"` | How entry body is contained — not wired |
+| ⚠️ | 3 | `groups_entry_separator` | enum | `"horizontal_rule"` | Between entries when headings off — not wired |
+| ⚠️ | 4 | `groups_separator` | enum | `"horizontal_rule"` | Between groups — not wired |
 
 ---
 
@@ -49,7 +49,7 @@ Agent-builder has 3 groups, each with 1-2 entries.
 
 ```
 HEADING:
-  ✅ heading                            "Worked Examples"
+  ✅ section_start                      "Worked Examples"
   ⚠️ example_heading_template           "{{example_heading}}" — per-entry, NOT section heading
 
 PREAMBLE:
@@ -59,20 +59,20 @@ PREAMBLE:
 BODY:
   For each ExampleGroup:
     GROUP LEVEL:
-      .example_group_name               → render as H3 (unless suppress_lone_group_heading)
-      .example_display_headings         → GATE: controls whether entry headings render
-      .examples_max_number              → GATE: caps number of entries rendered
+      .example_group_name               → render as H3 (unless groups_suppress_lone_heading)
+      .groups_display_headings          → GATE: controls whether entry headings render
+      .groups_max_number                → GATE: caps number of entries rendered
       group_framing_preamble_template   "The following examples demonstrate {{example_group_name}}:"
-                                         [visible: group_framing_preamble_template_visible = false]
+                                         [visible: group_framing_preamble_visible = false]
 
     ENTRY LEVEL (for each ExampleEntry):
-      .example_heading                  → render per display.example_heading_format (bold/H4)
-                                         only if example_display_headings = true
+      .example_heading                  → render per display.groups_entry_heading_format (bold/H4)
+                                         only if groups_display_headings = true
       .example_text                     → render as markdown prose
-                                         [display: example_body_container]
-      ---                               [display: example_separator between entries]
+                                         [display: groups_entry_body_container]
+      ---                               [display: groups_entry_separator between entries]
 
-    === between groups ===              [display: multi_group_separator]
+    === between groups ===              [display: groups_separator]
 
 CLOSING:
   (none)
@@ -94,7 +94,7 @@ This template uses `{{example_group_name}}` but sits in the preamble slot (rende
 
 ### ⚠️ ISSUE 3: Per-group gates and overrides not implemented
 
-`example_display_headings` (per-group boolean gate) and `examples_max_number` (per-group cap) control per-group rendering. Structure overrides exist. Engine doesn't check any of them.
+`groups_display_headings` (per-group boolean gate) and `groups_max_number` (per-group cap) control per-group rendering. Structure overrides exist. Engine doesn't check any of them.
 
 ### ⚠️ ISSUE 4: Display controls not implemented
 
