@@ -33,10 +33,9 @@ Agent-builder has 1 SuccessItem. Each item has a definition string and a list of
 | ✅ | 4 | `evidence_intro_selector` | SuccessCriteriaEvidenceIntroSelector | `"properties"` | → selects key in content #6 |
 | ✅ | 5 | `definition_to_evidence_transition_selector` | SuccessCriteriaDefinitionToEvidenceTransitionSelector | `"goal_then_criteria"` | → selects key in content #7 |
 | ⚠️ | 6 | `criteria_evidence_type_handling` | SuccessCriteriaEvidenceTypeHandling | `"undifferentiated"` | per-item evidence classification — not implemented |
-| ⚠️ | 7 | `output_vs_agent_voice` | SuccessCriteriaOutputVsAgentVoice | `"output_centric"` | voice paradigm — not implemented |
-| ✅ | 8 | `success_failure_independence_statement_postscript_visible` | Boolean | `true` | → content #4 |
-| ✅ | 9 | `verification_guidance_postscript_visible` | Boolean | `false` | → content #3 |
-| ⚠️ | 10 | `criteria_relationship` | SuccessCriteriaMultiCriteriaRelationship | `"independent_blocks"` | how multiple criteria relate visually — not implemented |
+| ✅ | 7 | `success_failure_independence_statement_postscript_visible` | Boolean | `true` | → content #4 |
+| ✅ | 8 | `verification_guidance_postscript_visible` | Boolean | `false` | → content #3 |
+| ⚠️ | 9 | `criteria_relationship` | SuccessCriteriaMultiCriteriaRelationship | `"independent_blocks"` | how multiple criteria relate visually — not implemented |
 
 ## Display (SuccessCriteriaDisplay)
 
@@ -87,9 +86,9 @@ CLOSING:
 
 The three variant fields (`definition_declaration_variant_template`, `definition_to_evidence_transition_variant`, `evidence_intro_variant`) are body-slot content that need to be applied per criteria item. They are classified correctly by suffix but the engine's per-item rendering loop does not yet use them as decoration templates around each item's data.
 
-### ⚠️ ISSUE 2: `criteria_evidence_type_handling` and `output_vs_agent_voice` not implemented
+### ⚠️ ISSUE 2: `criteria_evidence_type_handling` not implemented
 
-Structure controls for evidence classification (`"undifferentiated"`) and voice paradigm (`"output_centric"`) exist but are not read.
+Structure control for per-item evidence classification (`"undifferentiated"`) exists but is not read.
 
 ### ⚠️ ISSUE 3: `criteria_relationship` not implemented
 
@@ -102,3 +101,7 @@ Evidence list format switches between bulleted and numbered based on count vs th
 ### ⚠️ ISSUE 5: `pre_section_visible` master toggle not checked by engine
 
 Same as other sections — section-skip decision not implemented at orchestrate level.
+
+---
+
+See `plans/DEFERRED_RENDERING_FEATURES.md` for deferred rendering features (`output_vs_agent_voice`) that were unlinked from the schema pending engine support.

@@ -42,8 +42,6 @@ Agent-builder: `has_output_tool = False`, tool fields absent.
 | ✅ | 8 | `output_tool_exclusivity_visible` | Boolean | `true` | → content #5 |
 | ✅ | 9 | `batch_discipline_visible` | Boolean | `true` | → content #6 (also requires batch_size) |
 | ✅ | 10 | `discipline_over_helpfulness_body_visible` | Boolean | `false` | → content #10 |
-| ⚠️ | 11 | `rule_presentation` | CriticalRulesRulePresentation | `"single_sentence"` | rule rendering style — not implemented |
-| ⚠️ | 12 | `internal_hierarchy` | CriticalRulesInternalHierarchy | `"flat"` | grouping order — not implemented |
 
 ## Display (CriticalRulesDisplay)
 
@@ -105,10 +103,10 @@ CLOSING:
 
 **Fix required:** Determine whether `name_needed` should be exposed in this section at all, or if it is only used by `writing_output`.
 
-### ⚠️ ISSUE 3: `rule_presentation` and `internal_hierarchy` not implemented
-
-Structure controls `rule_presentation = "single_sentence"` and `internal_hierarchy = "flat"` affect how rules are formatted and grouped but the engine does not read them.
-
-### ⚠️ ISSUE 4: All display controls not wired
+### ⚠️ ISSUE 3: All display controls not wired
 
 Five display fields control inline formatting (backtick wrapping, repetition, separators). None are read by the engine. Rules currently render with hardcoded defaults.
+
+---
+
+See `plans/DEFERRED_RENDERING_FEATURES.md` for deferred rendering features (`rule_presentation`, `internal_hierarchy`) that were unlinked from the schema pending engine support.
