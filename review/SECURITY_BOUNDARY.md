@@ -19,7 +19,7 @@ Agent-builder has 7 filesystem_permissions entries. Tool sets vary per entry (he
 | ✅ | 1 | `filesystem_permissions_label` | StringText | `_label` | body | `"Your filesystem map:"` |
 | ✅ | 2 | `section_closing` | StringProse | `_closing` | closing | `"If your task requires access to a path not listed above, report this in your return status."` |
 | ✅ | 3 | `compound_entry_template` | StringTemplate | `_template` | body | `"{{PATH}} -- {{TOOLS}}"` — per-item interpolation |
-| ⚠️ | 4 | `grouped_tool_heading_template` | StringTemplate | `_heading_template` | heading | `"Available tools: {{TOOLS}}"` — `{{TOOLS}}` is a per-item aggregate, not a section scalar |
+| ⚠️ | 4 | `grouped_tool_heading_template` | StringTemplate | `_heading_template` | body | `"Available tools: {{TOOLS}}"` — `{{TOOLS}}` is a per-item aggregate, not a section scalar |
 | ✅ | 5 | `framing_section_start_variant` | BaseModel | `_section_start_variant` | heading | `{territory: "Your Workspace", environmental: "Operating Environment", cage: "Permitted Boundaries"}` |
 | ✅ | 6 | `framing_declaration_variant_template` | BaseModel | `_declaration_variant_template` | body | `{territory: "Your workspace is {{WORKSPACE_PATH}}...", environmental: "...", cage: "..."}` |
 | ✅ | 7 | `framing_section_preamble_variant` | BaseModel | `_section_preamble_variant` | preamble | `{territory: "Within this workspace, you can access:", environmental: "...", cage: "..."}` |
@@ -49,39 +49,51 @@ Agent-builder has 7 filesystem_permissions entries. Tool sets vary per entry (he
 
 ```
 HEADING:
-  ✅ framing_section_start_variant         selected by structure.framing_selector = "territory"
+  [framing_section_start]
+    ✅ framing_section_start_variant        selected by structure.framing_selector = "territory"
                                              → "Your Workspace"
-  ⚠️ grouped_tool_heading_template         "Available tools: {{TOOLS}}"
+    ✅ framing_selector                      (duplicated: drives heading + preamble + body variants)
+
+PREAMBLE:
+  [framing_section_preamble]
+    ✅ framing_section_preamble_variant     selected by structure.framing_selector = "territory"
+                                             → "Within this workspace, you can access:"
+                                             [visible: framing_section_preamble_visible = true]
+    ✅ framing_selector                      (duplicated)
+
+BODY (per-trunk, matches BUNDLE_INSPECTION.md):
+  [workspace_path]
+    ✅ data.workspace_path                  SCALAR (interpolated into {{WORKSPACE_PATH}} via section-wide dict)
+
+  [filesystem_permissions]
+    ✅ data.filesystem_permissions          LIST (7 FilesystemPermission items)
+    ✅ filesystem_permissions_label         "Your filesystem map:"
+                                             [visible: filesystem_permissions_label_visible = true]
+                                             [threshold: filesystem_permissions_label_visibility_threshold = 4 → 7 entries, would show]
+    ⚠️ filesystem_permissions_path_style   "relative_dotslash" — not wired
+    ⚠️ filesystem_permissions_toolset_format  "per_entry_list" — not wired
+    ⚠️ filesystem_permissions_list_format   "bullet" — not wired
+
+  [compound_entry]
+    ✅ compound_entry_template              "{{PATH}} -- {{TOOLS}}" — per-item interpolation
+                                             ← FilesystemPermission.path via {{PATH}}
+                                             ← FilesystemPermission.tools via {{TOOLS}}
+
+  [grouped_tool_heading]
+    ⚠️ grouped_tool_heading_template        "Available tools: {{TOOLS}}" — body sub-heading
                                              {{TOOLS}} is not a section scalar — it's a per-item aggregate
                                              only renders when filesystem_permissions_toolset_format = "grouped"
                                              (agent-builder has heterogeneous tools — wouldn't render anyway)
 
-PREAMBLE:
-  ✅ framing_section_preamble_variant      selected by structure.framing_selector = "territory"
-                                             → "Within this workspace, you can access:"
-                                             [visible: framing_section_preamble_visible = true]
-
-BODY (in data field order):
-  ✅ data.workspace_path                   SCALAR
-       ✅ framing_declaration_variant_template  selected by structure.framing_selector = "territory"
+  [framing_declaration]
+    ✅ framing_declaration_variant_template selected by structure.framing_selector = "territory"
                                              → "Your workspace is {{WORKSPACE_PATH}}. All paths in this prompt are relative to this root."
-                                             ← data.workspace_path via {{WORKSPACE_PATH}}
-  ✅ data.filesystem_permissions                           LIST (7 FilesystemPermission items)
-       ✅ filesystem_permissions_label       "Your filesystem map:"
-                                             [visible: filesystem_permissions_label_visible = true]
-                                             [threshold: filesystem_permissions_label_visibility_threshold = 4 → 7 entries, would show]
-       ✅ compound_entry_template            "{{PATH}} -- {{TOOLS}}" — per-item interpolation
-                                             ← FilesystemPermission.path via {{PATH}}
-                                             ← FilesystemPermission.tools via {{TOOLS}}
-       ⚠️ [display controls not wired]
-            filesystem_permissions_path_style = "relative_dotslash"
-            filesystem_permissions_toolset_format = "grouped"
-            filesystem_permissions_toolset_format = "per_entry_list"
-            filesystem_permissions_list_format = "bullet"
-
+                                             ← data.workspace_path via {{WORKSPACE_PATH}} (section-wide dict)
+    ✅ framing_selector                      (duplicated)
 
 CLOSING:
-  ✅ section_closing                        "If your task requires access to a path not listed above, report this in your return status."
+  [section_closing]
+    ✅ section_closing                       "If your task requires access to a path not listed above, report this in your return status."
                                              [visible: section_closing_visible = false]
 ```
 

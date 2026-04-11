@@ -14,7 +14,7 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 | | # | Field | Type | Suffix | Slot | Value |
 |---|---|-------|------|--------|------|-------|
 | ✅ | 1 | `section_start` | TitleString | `section_start` | heading | `"Constraints"` |
-| ✅ | 2 | `constraint_count_heading_template` | StringTemplate | `_heading_template` | heading | `"You have {{COUNT}} operational constraints:"` |
+| ✅ | 2 | `constraint_count_heading_template` | StringTemplate | `_heading_template` | body | `"You have {{COUNT}} operational constraints:"` — body sub-heading wrapping rules list count |
 | ✅ | 3 | `constraints_are_not_steps_preamble` | StringProse | `_preamble` | preamble | `"Constraints are not steps — they are conditions that must hold true at all times..."` |
 | ✅ | 4 | `hierarchy_tier_comparison_preamble` | StringProse | `_preamble` | preamble | `"These constraints are binding operational rules — less severe than critical rules..."` |
 | ✅ | 5 | `hierarchy_three_tier_explanation_preamble` | StringProse | `_preamble` | preamble | `"You operate under three tiers of behavioral rules: critical rules (hard failures)..."` |
@@ -57,9 +57,6 @@ Agent-builder has 10 constraint rules. Each is a `RootModel[str]` — unwrapped 
 ```
 HEADING:
   ✅ section_start                         "Constraints"
-  ✅ constraint_count_heading_template     "You have {{COUNT}} operational constraints:"
-                                             [visible: constraint_count_heading_visible = true]
-                                             ⚠️ threshold: constraint_count_heading_visibility_threshold = 6 — not wired
 
 PREAMBLE:
   ✅ constraints_are_not_steps_preamble    "Constraints are not steps — they are conditions..."
@@ -74,9 +71,15 @@ PREAMBLE:
                                              [visible: no_inferred_constraints_preamble_visible = true — not wired to variant]
 
 BODY:
-  For each GuardrailsConstraint (RootModel[str]):
-    .root                                  → unwrapped prose string
-    ⚠️ format: rules_format = ["bulleted", "numbered"], threshold = 6 — not wired
+  [constraint_count_heading]
+    ✅ constraint_count_heading_template   "You have {{COUNT}} operational constraints:" (body sub-heading)
+                                             [visible: constraint_count_heading_visible = true]
+                                             ⚠️ threshold: constraint_count_heading_visibility_threshold = 6 — not wired
+
+  [rules]
+    For each GuardrailsConstraint (RootModel[str]):
+      .root                                → unwrapped prose string
+      ⚠️ format: rules_format = ["bulleted", "numbered"], threshold = 6 — not wired
 
 CLOSING:
   ⚠️ compliance_reminder_closing_variant_template  {variant: "evaluation_warning" → "Every constraint above is auditable..."}

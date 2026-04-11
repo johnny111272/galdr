@@ -27,12 +27,12 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 |---|---|-------|------|--------|------|-------|
 | ✅ | 1 | `section_start` | TitleString | `section_start` | heading | `"Input"` |
 | ✅ | 2 | `section_preamble` | StringProse | `_preamble` | preamble | `"Before processing your input, you must read and internalize several reference documents..."` |
-| ✅ | 3 | `context_required_heading` | StringText | `_heading` | heading | `"Required Reading"` |
+| ✅ | 3 | `context_required_heading` | StringText | `_heading` | body | `"Required Reading"` (sub-heading within `[context]` body trunk) |
 | ✅ | 4 | `context_required_intro` | StringProse | `_intro` | body | `"These are not reference materials to consult during work. They are foundational knowledge you must absorb before starting."` |
 | ✅ | 5 | `context_required_entry_template` | StringTemplate | `_entry_template` | body | `"**{{context_label}}**: Read \`{{context_path}}\`"` |
-| ✅ | 6 | `context_available_heading` | StringText | `_heading` | heading | `"Available Resources"` |
+| ✅ | 6 | `context_available_heading` | StringText | `_heading` | body | `"Available Resources"` (sub-heading within `[context]` body trunk) |
 | ✅ | 7 | `parameters_transition` | StringProse | `_transition` | body | `"With this knowledge internalized, here is your input data:"` |
-| ✅ | 8 | `parameters_heading` | TitleString | `_heading` | heading | `"Parameters"` |
+| ✅ | 8 | `parameters_heading` | TitleString | `_heading` | body | `"Parameters"` (sub-heading within `[parameters]` body trunk) |
 | ✅ | 9 | `parameters_entry_template` | StringTemplate | `_entry_template` | body | `` "`{{param_name}}` ({{param_type}}): {{param_description}}" `` |
 | ✅ | 10 | `description_format_template` | StringTemplate | `_template` | body | `"Your input is a {{format}} file containing {{description}}."` |
 | ✅ | 11 | `input_completeness_postscript` | StringProse | `_postscript` | body | `"Your input and required reading together constitute your complete input. Do not seek additional sources."` |
@@ -66,48 +66,52 @@ Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context 
 ```
 HEADING:
   ✅ section_start                         "Input"
-  ✅ context_required_heading              "Required Reading"
-                                             [renders only if context_required data is present]
-  ✅ context_available_heading             "Available Resources"
-                                             [renders only if context_available data is present]
-  ✅ parameters_heading                    "Parameters"
-                                             [visible: parameters_heading_visible = "auto", threshold = 2]
 
 PREAMBLE:
   ✅ section_preamble                      "Before processing your input, you must read and internalize..."
                                              [visible: section_preamble_visible = true]
-  ✅ context_required_intro                "These are not reference materials to consult during work..."
-                                             [visible: context_required_intro_visible = true]
-                                             [renders only if context_required data is present]
 
 BODY:
-  [GATE] format                            → interpolated into description_format_template
-  [GATE] delivery                          → used for conditional rendering of delivery-mode-specific content
-  ✅ description_format_template           "Your input is a {{format}} file containing {{description}}."
+  [description]
+    [GATE] format                          → interpolated into description_format_template
+    [GATE] delivery                        → used for conditional rendering of delivery-mode-specific content
+    ✅ description_format_template         "Your input is a {{format}} file containing {{description}}."
                                              interpolates .format and .description
 
-  [NESTED] context_required                ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
-    Would render: context_required_entry_template per item
-                                             [display: context_required_format = "numbered"]
-  [NESTED] context_available               ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
-
-  ✅ parameters_transition                 "With this knowledge internalized, here is your input data:"
+  [parameters]
+    ✅ parameters_transition               "With this knowledge internalized, here is your input data:"
                                              [visible: parameters_transition_visible = true]
-
-  [LIST] parameters                        For each ParameterItem:
-    .param_name                            → interpolated into parameters_entry_template
-    .param_type                            → interpolated into parameters_entry_template
-    .param_description                     → interpolated into parameters_entry_template
-    ⚠️ parameters_entry_template           "`{{param_name}}` ({{param_type}}): {{param_description}}"
+    ✅ parameters_heading                  "Parameters" (sub-heading)
+                                             [visible: parameters_heading_visible = "auto", threshold = 2]
+    [LIST] parameters                      For each ParameterItem:
+      .param_name                          → interpolated into parameters_entry_template
+      .param_type                          → interpolated into parameters_entry_template
+      .param_description                   → interpolated into parameters_entry_template
+      ⚠️ parameters_entry_template         "`{{param_name}}` ({{param_type}}): {{param_description}}"
                                              per-item template — interpolation with per-item data not wired
-    ⚠️ format                              [display: parameters_format = ["bulleted", "prose"], threshold = 2]
+      ⚠️ format                            [display: parameters_format = ["bulleted", "prose"], threshold = 2]
 
-  [SCALAR] input_schema                    → interpolated into schema_label_template
-  ✅ schema_label_template                 "Input validates against: `{{input_schema}}`"
-                                             [visible: schema_label_visible = true]
+  [context]
+    ✅ context_required_heading            "Required Reading" (sub-heading)
+                                             [renders only if context_required data is present]
+    ✅ context_required_intro              "These are not reference materials to consult during work..."
+                                             [visible: context_required_intro_visible = true]
+                                             [renders only if context_required data is present]
+    [NESTED] context_required              ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
+      Would render: context_required_entry_template per item
+                                             [display: context_required_format = "numbered"]
+    ✅ context_available_heading           "Available Resources" (sub-heading)
+                                             [renders only if context_available data is present]
+    [NESTED] context_available             ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
 
-  input_completeness_postscript            "Your input and required reading together constitute your complete input."
+  [input_completeness_postscript]
+    ✅ input_completeness_postscript       "Your input and required reading together constitute your complete input."
                                              [visible: input_completeness_postscript_visible = false]
+
+  [schema_label]
+    [SCALAR] input_schema                  → interpolated into schema_label_template
+    ✅ schema_label_template               "Input validates against: `{{input_schema}}`"
+                                             [visible: schema_label_visible = true]
 
 CLOSING:
   (none)

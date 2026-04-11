@@ -22,7 +22,7 @@ Agent-builder has 3 groups, each with 1-2 entries.
 | ✅ | 1 | `section_start` | StringText | `section_start` | heading | `"Worked Examples"` |
 | ✅ | 2 | `section_preamble` | StringProse | `_preamble` | preamble | `"Examples may show GOOD and BAD outputs with WHY reasoning..."` |
 | ✅ | 3 | `group_framing_preamble_template` | StringTemplate | `_preamble_template` | preamble | `"The following examples demonstrate {{example_group_name}}:"` |
-| ⚠️ | 4 | `example_heading_template` | StringTemplate | `_heading_template` | heading | `"{{example_heading}}"` — template wrapping a per-entry field |
+| ✅ | 4 | `example_heading_template` | StringTemplate | `_heading_template` | body | `"{{example_heading}}"` — template wrapping a per-entry field (body sub-heading per `has_start_suffix`) |
 
 ## Structure (ExamplesStructure)
 
@@ -50,29 +50,32 @@ Agent-builder has 3 groups, each with 1-2 entries.
 ```
 HEADING:
   ✅ section_start                      "Worked Examples"
-  ⚠️ example_heading_template           "{{example_heading}}" — per-entry, NOT section heading
 
 PREAMBLE:
   ✅ section_preamble                   "Examples may show GOOD and BAD..."
                                          [visible: section_preamble_visible = true]
 
 BODY:
-  For each ExampleGroup:
-    GROUP LEVEL:
-      .example_group_name               → render as H3 (unless groups_suppress_lone_heading)
-      .groups_display_headings          → GATE: controls whether entry headings render
-      .groups_max_number                → GATE: caps number of entries rendered
-      group_framing_preamble_template   "The following examples demonstrate {{example_group_name}}:"
+  [groups]
+    For each ExampleGroup:
+      GROUP LEVEL:
+        .example_group_name             → render as H3 (unless groups_suppress_lone_heading)
+        .groups_display_headings        → GATE: controls whether entry headings render
+        .groups_max_number              → GATE: caps number of entries rendered
+        group_framing_preamble_template "The following examples demonstrate {{example_group_name}}:"
                                          [visible: group_framing_preamble_visible = false]
 
-    ENTRY LEVEL (for each ExampleEntry):
-      .example_heading                  → render per display.groups_entry_heading_format (bold/H4)
+      ENTRY LEVEL (for each ExampleEntry):
+        .example_heading                → render per display.groups_entry_heading_format (bold/H4)
                                          only if groups_display_headings = true
-      .example_text                     → render as markdown prose
+        .example_text                   → render as markdown prose
                                          [display: groups_entry_body_container]
-      ---                               [display: groups_entry_separator between entries]
+        ---                             [display: groups_entry_separator between entries]
 
-    === between groups ===              [display: groups_separator]
+      === between groups ===            [display: groups_separator]
+
+  [example_heading]
+    ✅ example_heading_template         "{{example_heading}}" — body sub-heading template, wraps per-entry example_heading data field
 
 CLOSING:
   (none)

@@ -67,20 +67,52 @@ PREAMBLE:
   ✅ rule_count_awareness_preamble_template "There are {{rule_count}} inviolable rules below..."
                                              [visible: rule_count_awareness_preamble_visible = "auto", threshold = 5]
 
-BODY (rules, in visibility order):
-  .workspace_path                          → GATE drives workspace_confinement_template rule
-  .has_output_tool                         → GATE drives output_tool_exclusivity_template and batch_discipline_template
-  .tool_name                               → interpolated into output_tool_exclusivity_template and batch_discipline_template
-  .batch_size                              → interpolated into batch_discipline_template
-                                             NOTE: batch_size is RootModel[int] — unwrap doesn't handle int
+BODY (per-trunk, matches BUNDLE_INSPECTION.md):
+  [workspace_path]
+    ✅ data.workspace_path                  SCALAR (interpolated into {{workspace_path}})
+    ⚠️ workspace_path_format                "backtick" — not wired
 
-  ✅ workspace_confinement_template        "Your workspace is {{workspace_path}}..."
-  ✅ output_tool_exclusivity_template      "{{tool_name}} is your only output mechanism..."
-  ✅ batch_discipline_template             "Process in batches of {{batch_size}}..."
-  ✅ fail_fast_body                               "On error: return FAILURE immediately..."
-  ✅ input_is_your_only_source_body              "Your input defines your world..."
-  ✅ no_invention_body                            "Every claim in your output..."
-  ✅ discipline_over_helpfulness_body             "Being helpful here means being disciplined..."
+  [has_output_tool]
+    ✅ data.has_output_tool                 GATE (drives output_tool_exclusivity + batch_discipline visibility)
+
+  [tool_name]
+    ✅ data.tool_name                       SCALAR (interpolated into {{tool_name}})
+    ⚠️ tool_name_format                     "backtick" — not wired
+    ⚠️ tool_name_repetition                 "repeat" — not wired
+
+  [name_needed]
+    ⚠️ data.name_needed                     SCALAR — no content field references it (see ISSUE 2)
+
+  [batch_size]
+    ⚠️ data.batch_size                      SCALAR (RootModel[int] — unwrap not handled, see ISSUE 1)
+    ⚠️ batch_size_format                    "plain" — not wired
+
+  [workspace_confinement]
+    ✅ workspace_confinement_template       "Your workspace is {{workspace_path}}. Nothing outside this path exists..."
+                                             [visible: workspace_confinement_visible = true]
+
+  [output_tool_exclusivity]
+    ✅ output_tool_exclusivity_template     "{{tool_name}} is your only output mechanism..."
+                                             [visible: output_tool_exclusivity_visible = true]
+
+  [batch_discipline]
+    ✅ batch_discipline_template            "Process in batches of {{batch_size}}..."
+                                             [visible: batch_discipline_visible = true]
+
+  [fail_fast_body]
+    ✅ fail_fast_body                       "On error: return FAILURE immediately..."
+                                             [visible: fail_fast_body_visible = true]
+
+  [input_is_your_only_source_body]
+    ✅ input_is_your_only_source_body       "Your input defines your world..."
+                                             [visible: input_is_your_only_source_body_visible = true]
+
+  [no_invention_body]
+    ✅ no_invention_body                    "Every claim in your output must trace to your input..."
+                                             [visible: no_invention_body_visible = true]
+
+  [discipline_over_helpfulness_body]
+    ✅ discipline_over_helpfulness_body     "Being helpful here means being disciplined..."
                                              [visible: discipline_over_helpfulness_body_visible = false]
 
 CLOSING:
