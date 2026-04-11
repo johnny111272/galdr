@@ -13,13 +13,16 @@ Input
        .param_type          ParamType
        .param_required      Boolean
        .param_description   ParamDescription (optional)
-  .context_required     list of ContextItem (optional, NESTED BaseModel — currently skipped)
-       .context_label       TitleString
-       .context_path        PathAbsolute
-  .context_available    list of ContextItem (optional, NESTED BaseModel — currently skipped)
+  .context              ContextResources (BaseModel wrapper, optional)
+       .context_required    ContextRequired (RootModel[list[ContextItem]], optional)
+            [each ContextItem is a NESTED BaseModel — engine cannot traverse]
+              .context_label       ContextLabel (TitleString scalar)
+              .context_path        ContextPathAbs (scalar)
+       .context_available   ContextAvailable (RootModel[list[ContextItem]], optional)
+            [same ContextItem shape as above]
 ```
 
-Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter, context fields are nested BaseModel (skipped by engine).
+Agent-builder: `format = "text"`, `delivery = "tempfile"`, 1 parameter. The `context` wrapper holds two RootModel lists; each item is a nested ContextItem BaseModel that the data unwrap cannot traverse.
 
 ## Content (InputContent)
 
@@ -94,17 +97,20 @@ BODY:
       ⚠️ format                            [display: parameters_format = ["bulleted", "prose"], threshold = 2]
 
   [context]
+    ✅ data.context                         WRAPPER (BaseModel, holds two RootModel children)
     ✅ context_required_heading            "Required Reading" (sub-heading)
-                                             [renders only if context_required data is present]
+                                             [renders only if data.context.context_required is present]
     ✅ context_required_intro              "These are not reference materials to consult during work..."
                                              [visible: context_required_intro_visible = true]
-                                             [renders only if context_required data is present]
-    [NESTED] context_required              ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
+                                             [renders only if data.context.context_required is present]
+    [LIST] data.context.context_required    RootModel[list[ContextItem]]
+                                             ⚠️ each ContextItem is a nested BaseModel — engine cannot traverse
       Would render: context_required_entry_template per item
                                              [display: context_required_format = "numbered"]
     ✅ context_available_heading           "Available Resources" (sub-heading)
-                                             [renders only if context_available data is present]
-    [NESTED] context_available             ⚠️ SKIPPED — nested BaseModel, engine cannot traverse
+                                             [renders only if data.context.context_available is present]
+    [LIST] data.context.context_available   RootModel[list[ContextItem]]
+                                             ⚠️ each ContextItem is a nested BaseModel — engine cannot traverse
 
   [input_completeness_postscript]
     ✅ input_completeness_postscript       "Your input and required reading together constitute your complete input."
@@ -123,11 +129,11 @@ CLOSING:
 
 ## Issues
 
-### ⚠️ ISSUE 1: `context_required` and `context_available` are NESTED BaseModel — skipped entirely
+### ⚠️ ISSUE 1: `ContextItem` is a nested BaseModel — context entries skipped entirely
 
-Both context fields hold `list of ContextItem` where `ContextItem` is a nested BaseModel (not a `RootModel`). The data unwrap only handles scalar fields and `RootModel` lists. The entire context rendering path is skipped — `context_required_entry_template` is never used, `context_required_heading` and `context_required_intro` are orphaned content.
+The `context` wrapper (`ContextResources`) holds two `RootModel[list[ContextItem]]` children — `context_required` and `context_available`. The wrapper itself and its RootModel children are walkable, but each `ContextItem` is a nested BaseModel with `context_label` + `context_path` fields. The data unwrap only handles scalar fields and `RootModel` lists wrapping scalars; it cannot traverse into a nested BaseModel to pull per-item fields. Result: `context_required_entry_template` is never used, `context_required_heading` and `context_required_intro` are orphaned content.
 
-**Fix required:** Either (a) add nested BaseModel traversal to the engine, or (b) define ContextItem as `RootModel[str]` with a pre-formatted string. Option (b) is simpler but moves formatting logic into the data.
+**Fix required:** Either (a) add nested BaseModel traversal to the engine, or (b) redefine `ContextItem` as `RootModel[str]` with a pre-formatted string. Option (b) is simpler but moves formatting logic into the data.
 
 ### ⚠️ ISSUE 2: `parameters_entry_template` needs per-item interpolation
 
