@@ -2,4 +2,11 @@
 __pycache__/
 *.egg-info/
 .ruff_cache/
+.DS_Store
+.claude/
+.gleipnir/
+.pytest_cache/
 uv.lock
+archive/
+probe/
+analysis/
