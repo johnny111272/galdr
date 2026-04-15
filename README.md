@@ -42,6 +42,14 @@ From a single gate-validated agent definition:
 
 Both are fully determined by the four input axes. The same inputs always produce the same outputs.
 
+## Supervision Contract Export (Projected)
+
+As the enforcement infrastructure migrates from vendor-dependent hooks to the [Bifrost](https://github.com/johnny111272/nornir) traffic-layer proxy, Galdr will produce a third output: a **Bifrost supervision schema** derived from the same agent definition.
+
+This schema defines the agent's behavioural boundaries, alignment signals for context management, security policy with graduated enforcement thresholds, and operational envelope metrics (API budget, request rate limits, time bounds). Because it derives from the same source definition as the agent itself, the supervision contract cannot diverge from what the agent is configured to do — deploying an agent without deploying its monitoring contract becomes structurally impossible.
+
+The agent definition already contains the information needed to derive minimum permissions, expected operational patterns, and security boundaries. Galdr is the natural place to export this because it already has access to the fully resolved, gate-validated agent data and produces all other deployment artifacts.
+
 ## Design Documentation
 
 The `redesign/` directory contains the current architecture:
