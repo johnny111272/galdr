@@ -150,3 +150,36 @@ After ANY compaction, ask yourself:
 ## Dynamic Orientation
 
 @./CONTEXT_MAP.md
+
+---
+
+<!-- Salvaged memory residue routed into galdr (see Recovery Sources). Additive only. -->
+
+## You Will Get These Things Wrong (salvaged)
+
+### Auditing One Naming Aspect at a Time
+**Detection:** If a naming audit checks positional suffixes but not trunk alignment, or trunk alignment but not placeholder matching.
+**Why it's wrong:** The composition engine uses field names mechanically — suffix determines buffer slot, trunk determines data-content linking, placeholder names determine interpolation. Wrong names cause wrong *rendering*, not just style. The engine needs ALL naming conventions to hold simultaneously; past audits each fixed one and missed the others.
+**Recovery:** When changing any field name, check all three at once: suffix declares the right slot, trunk matches its data field, placeholders match data field names. See `redesign/TOML_ARCHITECTURE.md`.
+
+### Prototyping in /tmp
+**Detection:** If you reach for `Write` with a `/tmp/*.py` path for an inspection or experiment script.
+**Why it's wrong:** `/tmp/` scripts evaporate on session end/compaction. A full session of positional-classification prototyping was lost this way — git had nothing, the user remembered "we had that working," and it was unrecoverable. `/tmp/` is only for destination output files the CLI already writes there, never for source/work.
+**Recovery:** Put experimental/inspection code in the project — a CLI subcommand, a `scratch/`/`inspect/` module at the right level, or an orchestrate flow writing to a user-specified path. "Wire in" means wire into the real tree, not a scratch script.
+
+### Analyzing Cross-Axis Alignment in Isolation
+**Detection:** If you analyze data/content/structure/display alignment alone and present conclusions instead of the raw interleaved mapping.
+**Why it's wrong:** The user designed the patterns across axes and needs to SEE the actual data interleaved per section to find where patterns hold and where they break. Four independent inputs will never magically align through one pattern. The fix for a break is usually a schema/naming change to complete the pattern — NOT engine code to work around it. ~20 hours were wasted declaring patterns "complete" without showing the user the data.
+**Recovery:** When analyzing cross-axis alignment, always produce interleaved views (data + content + structure + display together, per section), present them, and let the user identify patterns and breaks. Reshape data, then write a simple engine — don't write a complex engine for messy data.
+
+## Recovery Sources (salvaged)
+
+- **Old renderer code is intentionally retained as reference.** The orphaned walker-based renderer and other old code is deliberately kept — do NOT delete it and do NOT try to wire it back in using old patterns. It is non-normative for new work (see "Using the Old Code as Reference" above) but is not garbage to be cleaned up.
+
+## Project Notes (salvaged)
+
+- **General docs must stay valid for two weeks.** At this project's pace, anything specific goes stale in hours. Keep concepts, principles, architectural decisions, processing models, and data-flow descriptions in general docs. Keep function names, module paths, field-name examples, "what's built" inventories, and implementation status OUT of them — put those in volatile docs (`plans/`, `review/`) that are expected to change. Concise-and-correct beats comprehensive. Before writing a doc line, ask: will this still be true in two weeks?
+
+- **Reshape the schema instead of complicating the engine.** The output schemas (agent-output-content/structure/display) are tail-end — no downstream cascade beyond galdr — so changing them costs only a mechanical regen (verdandi YAML → draupnir → gates → galdr models). When engine code gets complex to handle an awkward data format, reshape the schema (e.g. into sub-tables) rather than building substring scanning / position-marker detection. The engine discovers the right shape during implementation; the schema then captures it.
+
+- **Wire in small batches, verify, then decompose.** Add ~3 smallish additions, get them working together and verify the output actually changed, THEN take a guardrail/decomposition pass. Decomposing for CC compliance before seeing the logic work is optimizing blind — sessions have burned hours decomposing code that was architecturally wrong. Don't skip verification to save time; don't leave decomposition too long either.
