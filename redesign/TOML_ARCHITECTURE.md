@@ -49,7 +49,7 @@ Load order: structure → content → display → override (override replaces ma
 
 Purpose: experiment with specific knobs without copying entire files. The override IS the experiment description — read it and see exactly what's different.
 
-May evolve into CLI field access: `galdr render --set content.identity.declaration="..."` or `galdr sweep --field display.identity.expertise_format --values bulleted,inline,numbered`.
+May evolve into CLI field access: `galdr render --set content.identity.role_identity_template="..."` or `galdr sweep --field display.identity.role_expertise_format --values bulleted,inline,numbered`.
 
 ---
 
@@ -65,17 +65,20 @@ Not every block has all five elements — most skip some. But when elements exis
 
 | Suffix | Position | Purpose | Example |
 |---|---|---|---|
-| `_heading` | First | Names the block. Rendered as H2/H3. | `context_required_heading = "Required Reading"` |
-| `_preamble` | After heading | Sets context before any data. | `context_required_preamble = "These are not reference materials..."` |
+| `_start` | First | The section heading. Rendered as H2 (H3 inside a group). Section-level only — chosen because no other suffix ends in `_start`, so classification is a single unambiguous endswith check. | `section_start_template = "AGENT: {{title}}"` |
+| `_preamble` | After heading | Sets context before any data. | `authority_preamble = "Every rule below is a hard boundary..."` |
+| `_heading` | Body | A sub-heading *within* the body — never the section heading. | `context_required_heading = "Required Reading"` |
 | `_label` | Before data | Introduces a data field or list. | `role_expertise_label = "**Your judgment is authoritative in:**"` |
-| `_declaration` | Data rendering | Template that renders data as a statement. | `role_identity_declaration = "You are a {{role_identity}}."` |
+| `_declaration` | Data rendering | Template that renders data as a statement. | `framing_declaration_variant_template` |
 | `_intro` | Before sub-block | Per-item preamble within compound items. | `evidence_intro = "Any of the following indicates..."` |
-| `_entry_template` | Per-item | Template for each list item. | `compound_entry_template = "{{PATH}} -- {{TOOLS}}"` |
+| `_entry_template` | Per-item | Template for each list item. Compound suffix — must be recognized before modifier stripping (stripping would reduce it to `_entry`). | `compound_entry_template = "{{PATH}} -- {{TOOLS}}"` |
 | `_separator` | Between items | Inter-item prose for lists. | `criteria_separator = "Additionally"` |
-| `_postscript` | After data | Reinforces or constrains what was just presented. | `role_expertise_is_strictly_limited_postscript = "Your expertise is strictly limited..."` |
+| `_postscript` | After data | Reinforces or constrains what was just presented. | `role_expertise_postscript = "Your expertise is strictly limited..."` |
 | `_transition` | Pre-label | Renders before the next field's block. | `parameters_transition = "With this knowledge internalized..."` |
-| `_closing` | Section end | Section-level closing prose. | `identity_reminder_closing = "Remember: you are a {{role_identity}}."` |
-| `_body` | Body | Standalone prose not tied to a data field. | (CriticalRules rule items) |
+| `_closing` | Section end | Section-level closing prose. | `identity_reminder_closing_template = "Remember: you are a {{role_identity}}."` |
+| `_body` | Body | Standalone prose not tied to a data field. | `fail_fast_body` |
+
+Two modifier suffixes — `_template` (contains `{{placeholder}}` holes) and `_variant` (a sub-table of alternatives) — are stripped before positional classification. They declare type, not position: the underlying positional suffix determines the slot.
 
 This sequence applies at two levels:
 
@@ -98,7 +101,7 @@ Wrong name → wrong language → broken rendering. `expertise_is_strictly_limit
 Pure prose. No data references. Swappable.
 
 ```toml
-expertise_postscript = "Your expertise is strictly limited to the areas listed above."
+role_expertise_postscript = "Your expertise is strictly limited to the areas listed above."
 ```
 
 ### Template Blobs
@@ -106,8 +109,8 @@ expertise_postscript = "Your expertise is strictly limited to the areas listed a
 Prose with `{{DATA}}` holes. The template is the knob; the data is fixed.
 
 ```toml
-declaration = "You are a {{role_identity}}."
-role_responsibility_declaration = "**Scope:** {{role_responsibility}}"
+role_identity_template = "You are a {{role_identity}}."
+role_responsibility_template = "**Scope:** {{role_responsibility}}"
 ```
 
 ### Array Display (handled by display.toml, not content)
@@ -170,14 +173,14 @@ preamble_visible = true
 
 **Auto with count threshold** — renderer decides based on a count:
 ```toml
-rule_count_awareness_prelude_visible = "auto"   # "auto" | "always" | "never"
-rule_count_awareness_prelude_auto_threshold = 5
+rule_count_awareness_preamble_visible = "auto"   # "auto" | "always" | "never"
+rule_count_awareness_preamble_template_auto_threshold = 5
 ```
 `"auto"` applies the threshold. `"always"` and `"never"` override it.
 
 **Auto with data condition** — renderer decides based on a boolean data property, not a count:
 ```toml
-exact_vs_judgment_explanation_visible = "auto"  # "auto" (render when mixed modes) | "always" | "never"
+instruction_mode_explanation_preamble_visible = "auto"  # "auto" (render when mixed modes) | "always" | "never"
 ```
 No `_auto_threshold` — the auto condition is binary (e.g., "are instruction modes mixed?"), not count-based. The field comment documents what "auto" means. When the auto condition is a data property rather than a count, a numeric threshold is semantically inappropriate and is omitted.
 
@@ -188,11 +191,11 @@ The definition data carries a value. The rendering layer can substitute it.
 `_override = false` → data passes through unchanged. `_override = true` → use the sibling value instead.
 
 ```toml
-example_display_headings_override = false
-example_display_headings = true                # only applies when override = true
+groups_display_headings_override = false
+groups_display_headings = true                 # only applies when override = true
 
-examples_max_number_override = false
-examples_max_number = 0                        # 0 = no truncation, N = cap. Only when override = true
+groups_max_number_override = false
+groups_max_number = 0                          # 0 = no truncation, N = cap. Only when override = true
 ```
 
 The sibling value matches the data's type. No mixed-type fields, no string sentinels.
@@ -202,8 +205,8 @@ The sibling value matches the data's type. No mixed-type fields, no string senti
 Controls HOW data renders (bullets, inline, numbered, etc). Lives in display.toml.
 
 ```toml
-expertise_format = ["bulleted", "inline"]
-expertise_format_threshold = 3
+role_expertise_format = ["bulleted", "inline"]
+role_expertise_format_threshold = 3
 ```
 
 Tuple = conditional (above threshold, at-or-below). Plain string = always that format.
@@ -213,8 +216,8 @@ Tuple = conditional (above threshold, at-or-below). Plain string = always that f
 Structure selectors that don't fit the above — presentation paradigms, organizational modes.
 
 ```toml
-rule_presentation = "single_sentence"          # "single_sentence" | "heading_plus_body"
-internal_hierarchy = "flat"                     # "flat" | "universal_then_output_tool"
+steps_index_tracking = "n_of_m"                # "n_only" | "n_of_m"
+criteria_relationship = "independent_blocks"    # "independent_blocks" | "numbered_dimensions"
 ```
 
 These are rare and section-specific.
@@ -226,8 +229,8 @@ These are rare and section-specific.
 Count-based format switches use a tuple convention: `[above_threshold_format, at_or_below_threshold_format]`.
 
 ```toml
-expertise_format = ["bulleted", "inline"]
-expertise_format_threshold = 3
+role_expertise_format = ["bulleted", "inline"]
+role_expertise_format_threshold = 3
 ```
 
 Reads as: "bulleted above 3, inline at or below 3."
@@ -235,7 +238,7 @@ Reads as: "bulleted above 3, inline at or below 3."
 When there is no threshold — single format always applies — use a plain string:
 
 ```toml
-expertise_format = "bulleted"
+role_expertise_format = "bulleted"
 ```
 
 Type tells behavior: array = conditional switch, string = always this format.
@@ -322,51 +325,16 @@ Only things that VARY are knobs. Only knobs live in TOML.
 
 ---
 
-## Worked Example: IDENTITY Section
+## Worked Example
 
-### structure.toml — `[identity]`
+The live control-surface files ARE the worked example: `extracted/content.toml`,
+`extracted/structure.toml`, `extracted/display.toml`. Read any one section across all
+three files to see the conventions in this document applied together. A hand-copied
+example here would drift from those files; they cannot drift from themselves.
 
-```toml
-[identity]
-field_ordering = "identity_first"
-fuse_declaration_and_role_description = false
-expertise_is_strictly_limited_visible = true
-identity_reminder_closing_visible = false
-```
-
-### content.toml — `[identity]`
-
-```toml
-[identity]
-heading = "AGENT: {{title}}"
-declaration = "You are a {{role_identity}}."
-role_responsibility_declaration = "**Scope:** {{role_responsibility}}"
-role_expertise_label = "**Your judgment is authoritative in:**"
-expertise_is_strictly_limited_postscript = "Your expertise is strictly limited to the areas listed above."
-identity_reminder_closing = "Remember: you are a {{role_identity}}."
-```
-
-### display.toml — `[identity]`
-
-```toml
-[identity]
-expertise_format = ["bulleted", "inline"]
-expertise_format_threshold = 3
-responsibility_format = ["bulleted", "prose"]
-responsibility_format_threshold = 3
-```
-
-### Example override.toml
-
-```toml
-[identity]
-declaration = "You are a {{role_identity}} — not a debugger, not a reviewer, not a creative writer."
-role_responsibility_declaration = "**You are done when:** {{role_responsibility}}"
-role_expertise_label = "**Pay special attention to:**"
-identity_reminder_closing_visible = true
-```
-
-Note: the override sets `identity_reminder_closing_visible = true` (structure concern — toggle visibility) without changing the text (content concern — stays as defined in content.toml). Override can contain fields from any of the three base files.
+Override semantics worth noting: an override file may set a structure concern (e.g. a
+`_visible` toggle) without touching the content concern (the prose stays as defined in
+content.toml) — an override can contain fields from any of the three base files.
 
 ---
 

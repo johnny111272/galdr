@@ -19,7 +19,7 @@ Verdandi → Draupnir → Nornir → Regin → Galdr
  (types)   (schemas)  (gates)  (resolver) (composer)
 ```
 
-Everything upstream of Galdr exists to produce one clean, typed, gate-validated Pydantic model: the `anthropic_render` data structure. By the time data reaches Galdr, it has 14 top-level sections — each corresponding to one section of the final agent prompt.
+Everything upstream of Galdr exists to produce one clean, typed, gate-validated Pydantic model: the `anthropic_render` data structure — one top-level section per section of the final agent prompt, plus frontmatter and dispatcher.
 
 Galdr's job is simple: combine data with structure, content, and display choices to produce markdown.
 
@@ -44,26 +44,9 @@ An optional **override.toml** applies deltas on top of the base three, allowing 
 
 ## Data Axis
 
-The data model is produced by the Regin pipeline and validated by a Nornir gate. It is a Pydantic model with 14 top-level sections:
+The data model is produced by the Regin pipeline and validated by a Nornir gate. It is a single Pydantic model carrying one top-level section per section of the rendered prompt, plus two special-path sections: `frontmatter` (YAML metadata, not body prose) and `dispatcher` (feeds the separate skill generation path).
 
-| Section | Content |
-|---------|---------|
-| `frontmatter` | name, description, model, permission_mode, tools, hooks |
-| `identity` | title, role_identity, role_description, role_expertise, role_responsibility |
-| `security_boundary` | display entries (path + tools grants) |
-| `input` | description, format, delivery, parameters, context, input_schema |
-| `instructions` | steps (mode + text) |
-| `examples` | groups → entries (heading + text) |
-| `output` | description, format, schema_path, file/directory paths |
-| `writing_output` | invocation_display |
-| `constraints` | rules (string list) |
-| `anti_patterns` | patterns (string list) |
-| `success_criteria` | criteria → items (definition + evidence) |
-| `failure_criteria` | criteria → items (definition + evidence) |
-| `return_format` | mode, status/metrics/output instructions |
-| `critical_rules` | has_output_tool, tool_name, batch_size |
-
-Plus `dispatcher` which feeds a separate skill generation path.
+The generated model — `structure/gen/anthropic_render.py` — IS the authoritative section list and field inventory. Read it; do not work from a remembered census. It regenerates whenever the upstream schema changes, so it cannot drift.
 
 No reshaping. The gate-validated Pydantic model IS the data. Field names are used directly.
 
