@@ -59,6 +59,7 @@ not oriented — go back and read.
 | data / content / structure / display model shapes | `src/galdr/structure/gen/*.py` (generated — never edit) |
 | the live control-surface TOMLs | `extracted/content.toml`, `extracted/structure.toml`, `extracted/display.toml` |
 | how to run | `src/galdr/cli.py` — the CLI is the truth; `uv run galdr --help` |
+| a live data input to run against | produced by regin, in bragi: `~/.ai/spaces/bragi/definitions/agents/{name}/anthropic_render.toml` |
 | gate pattern / orchestrate wiring reference | `~/.ai/smidja/regin/src/regin/logic/` |
 | level progression reference | `~/.ai/smidja/draupnir/src/draupnir/logic/` |
 | current state / what's left to build | read live: the code + `git log`. Nothing is stored. |

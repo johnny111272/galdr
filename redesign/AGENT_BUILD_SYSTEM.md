@@ -48,6 +48,8 @@ The data model is produced by the Regin pipeline and validated by a Nornir gate.
 
 The generated model — `structure/gen/anthropic_render.py` — IS the authoritative section list and field inventory. Read it; do not work from a remembered census. It regenerates whenever the upstream schema changes, so it cannot drift.
 
+Live data instances are not stored in this repo. They are produced by running regin on an agent definition and land in the bragi space, one per agent, alongside the definition that produced them: `~/.ai/spaces/bragi/definitions/agents/{agent-name}/anthropic_render.toml`. To get a fresh one, run regin on any agent definition there.
+
 No reshaping. The gate-validated Pydantic model IS the data. Field names are used directly.
 
 ---
@@ -57,7 +59,7 @@ No reshaping. The gate-validated Pydantic model IS the data. Field names are use
 Structure.toml controls what renders without affecting how it's worded or formatted:
 
 - **Visibility toggles** (`_visible` suffix) — show/hide prose fragments
-- **Variant selectors** (`_variant` suffix) — choose among content alternatives
+- **Variant selectors** (`_selector` suffix) — choose among content variant sub-tables
 - **Override patterns** (`_override` suffix) — substitute data values at the rendering layer
 - **Section ordering** — `section_order` array controlling inter-section sequence
 - **Plain enums** — presentation paradigms, organizational modes

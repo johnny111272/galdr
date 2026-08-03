@@ -1,8 +1,10 @@
 """Galdr CLI — compose agent prompts from four-axis inputs.
 
 Takes a gate-validated anthropic_render.toml (data axis) plus three
-control surface TOMLs (content, structure, display) and produces
-a deployable agent prompt (.md).
+control surface TOMLs (content, structure, display). Runs the
+composition pipeline as far as it is built — see
+logic/orchestrate/compose/orchestrate.py for what the pipeline
+currently produces.
 
 Usage:
     galdr /path/to/anthropic_render.toml
@@ -26,7 +28,7 @@ def compose(
     display: Path = typer.Option("extracted/display.toml", help="Path to display.toml"),
     output: Path = typer.Option("staging/output.md", "-o", help="Path for output markdown"),
 ) -> None:
-    """Compose an agent prompt from four-axis TOML inputs."""
+    """Run the composition pipeline on four-axis TOML inputs."""
     raise SystemExit(run(data, content, structure, display, output))
 
 

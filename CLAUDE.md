@@ -74,8 +74,8 @@ None of them felt uncertain while doing it.
 **Recovery:** Re-read `redesign/COMPOSITION_ENGINE_DESIGN.md` — especially "Core Principle."
 
 ### Using the Old Code as Reference
-**Detection:** If you're studying the disconnected walker functions in `compose/composed.py`, the `archive/` directory, or git history of deleted code to learn "how it's done"...
-**Why it's wrong:** The old walker-based composition was disconnected deliberately — it is retained on purpose, but it is non-normative for new work. Do NOT delete it, do NOT wire it back in, and do NOT copy its patterns. The current design is the hourglass pipeline in `redesign/`.
+**Detection:** If you're studying the orphaned walker functions in `compose/composed.py` — `populate_section_buffer`, `resolve_all_trunks`, `render_buffer` and the render helpers only they call — the `archive/` directory, or git history of deleted code to learn "how it's done"...
+**Why it's wrong:** The old walker-based composition was disconnected deliberately — it is retained on purpose, but it is non-normative for new work. Do NOT delete it, do NOT wire it back in, and do NOT copy its patterns. Note `composed.py` is a MIXED file: the live stage-1 engine (`sort_into_slots`, `extract_preprocessing_fields`) also lives there — this rule covers the orphaned walker functions, not the file. The current design is the hourglass pipeline in `redesign/`.
 **Recovery:** Re-read `redesign/01_PROCESSING_FLOW.md` and `redesign/04_HOURGLASS_RESOLVER.md` for the current design.
 
 ### Auditing One Naming Aspect at a Time
