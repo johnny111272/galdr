@@ -9,7 +9,7 @@ Display enum types are defined in structure/gen/output_display.py:
   HeadingFormat: bold, h3, h4
 """
 
-from galdr.logic.pure.render.primitive import bold, bullet_item, heading, numbered_item
+from galdr.logic.pure.markdown_render.primitive import bold, bullet_item, heading, numbered_item
 from galdr.structure.gen.output_display import HeadingFormat, InlineFormat, SeparatorContent
 
 

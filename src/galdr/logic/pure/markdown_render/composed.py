@@ -10,7 +10,7 @@ Display TOML uses a tuple convention for count-based switching:
 See structure/gen/output_display.py for FormatPair and UnionFormatOrPair.
 """
 
-from galdr.logic.pure.render.simple import (
+from galdr.logic.pure.markdown_render.simple import (
     render_bare_list,
     render_bulleted,
     render_inline_list,

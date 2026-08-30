@@ -33,11 +33,25 @@ Galdr is the composition engine — the final stage of the agent pipeline (Verda
 2. `redesign/COMPOSITION_ENGINE_DESIGN.md` — the generic engine: one `compose_section()` for all sections, buffer slots, data gates, zero per-section code.
 3. `redesign/01_PROCESSING_FLOW.md` — the four-stage pipeline (chunk, gather, resolve+render, buffer) and why each stage shrinks the problem.
 4. `redesign/TOML_ARCHITECTURE.md` — the naming law: positional suffixes, field interface patterns, threshold types, section categories. The engine reads names mechanically; this doc is the authority on what names mean.
-5. `~/.ai/smidja/nornir/core/gleipnir_core/V2_ZONE_ARCHITECTURE.md` — the import law: zones, levels, CC bands, the gravity rule. Where code is allowed to live.
+> The next four are read by you, personally, in this context — never delegated
+> to a subagent, never absorbed via a summary.
 
-**Proof:** before writing anything, state three project-specific constraints that
-diverge from how you'd normally do this work, with reasons. If you can't, you are
-not oriented — go back and read.
+5. `WHY_THIS_FEELS_WRONG.md` — the frame: what this environment is, and why it
+   will feel over-constrained until you understand it
+6. `EVERY_CHECK_IS_A_PROXY.md` — why the feedback steers where it steers; what
+   each constraint is a proxy for. Read before doc 7, so the level system reads
+   as engineering rather than as limits.
+7. `THE_LEVEL_SYSTEM.md` — zones, levels, and the decision procedure for where
+   every piece of code lives. Prerequisite to writing anything.
+8. `HOW_DATA_ENTERS.md` — the boundary: how external data becomes typed, and
+   why unknown data never gets in. Prerequisite to reading any file.
+
+**Proof:** before writing anything: (a) state three project-specific constraints
+that diverge from how you'd normally do this work, with reasons; (b) from the
+four environment docs, state the one item you found most interesting, the one
+that most surprised you, and the one you are most eager to put into practice —
+chosen by you, in your own words. Generic acknowledgment means you are not
+oriented — go back and read.
 
 ---
 
@@ -45,6 +59,8 @@ not oriented — go back and read.
 
 | Need | Read |
 |------|------|
+| where does this function go / what zone / what level | `THE_LEVEL_SYSTEM.md` |
+| how external data becomes typed / a shape has no model | `HOW_DATA_ENTERS.md` |
 | bundle container design | `redesign/02_INTERMEDIATE_CONTAINER.md` |
 | chunking / slot assignment | `redesign/03_CHUNKING.md` |
 | hourglass resolver (visibility, variants, interpolation, suppress-on-incomplete) | `redesign/04_HOURGLASS_RESOLVER.md` |
@@ -53,10 +69,10 @@ not oriented — go back and read.
 | trunk matching (content↔data linking) | `redesign/07_TRUNK_MATCHING.md` |
 | naming rules in one page | `redesign/08_NAMING_REQUIREMENTS.md` |
 | enforcement output tools, end to end | `redesign/CUSTOM_WRITE_TOOL.md` |
-| per-section four-axis field inventory | `review/{SECTION}.md` — audit sheets; verify any wiring claim against the code before relying on it |
-| current bundle snapshot + probes | `review/BUNDLE_INSPECTION.md`, `probe/*.py` (regenerate, don't trust old output) |
+| per-section four-axis field inventory | `review/{SECTION}.md` |
+| bundle snapshot + probes | `review/BUNDLE_INSPECTION.md`, `probe/*.py` |
 | deferred rendering features | `plans/DEFERRED_RENDERING_FEATURES.md` |
-| data / content / structure / display model shapes | `src/galdr/structure/gen/*.py` (generated — never edit) |
+| data / content / structure / display model shapes | `src/galdr/structure/gen/*.py` |
 | the live control-surface TOMLs | `extracted/content.toml`, `extracted/structure.toml`, `extracted/display.toml` |
 | how to run | `src/galdr/cli.py` — the CLI is the truth; `uv run galdr --help` |
 | a live data input to run against | produced by regin, in bragi: `~/.ai/spaces/bragi/definitions/agents/{name}/anthropic_render.toml` |

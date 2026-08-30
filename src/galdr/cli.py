@@ -15,7 +15,7 @@ from pathlib import Path
 
 import typer
 
-from galdr.logic.orchestrate.compose.orchestrate import run
+from galdr.logic.orchestrate.section_compose.orchestrate import run
 
 app = typer.Typer(help="Compose agent prompts from four-axis inputs.")
 

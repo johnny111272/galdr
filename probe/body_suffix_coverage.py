@@ -45,9 +45,9 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 sys.path.insert(0, str(Path.home() / ".ai" / "tools" / "lib"))
 
-from galdr.logic.orchestrate.compose.orchestrate import load_all_inputs
-from galdr.logic.pure.compose.composed import sort_into_slots
-from galdr.logic.pure.compose.primitive import (
+from galdr.logic.orchestrate.section_compose.orchestrate import load_all_inputs
+from galdr.logic.pure.section_compose.composed import sort_into_slots
+from galdr.logic.pure.section_compose.primitive import (
     strip_display_control_suffix,
     strip_modifiers,
     strip_structure_control_suffix,

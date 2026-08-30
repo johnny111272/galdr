@@ -22,12 +22,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 sys.path.insert(0, str(Path.home() / ".ai" / "tools" / "lib"))
 
-from galdr.logic.orchestrate.compose.orchestrate import load_all_inputs
-from galdr.logic.pure.compose.primitive import (
+from galdr.logic.orchestrate.section_compose.orchestrate import load_all_inputs
+from galdr.logic.pure.section_compose.primitive import (
     extract_trunk,
     is_preprocessing_field,
 )
-from galdr.logic.pure.compose.simple import classify_content_slot
+from galdr.logic.pure.section_compose.simple import classify_content_slot
 from galdr.structure.gen.output_content import AgentOutputContent
 
 DEFAULT_DATA_PATH = Path.home() / ".ai" / "spaces" / "bragi" / "definitions" / "agents" / "agent-builder" / "anthropic_render.toml"

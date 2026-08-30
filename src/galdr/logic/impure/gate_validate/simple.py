@@ -2,12 +2,12 @@
 
 CC=2-3. Validates gate results and formats errors. Calls FFI layer
 for the actual Rust invocation — never calls gate.validate() directly.
-See gates/ffi.py for the NornirGate type alias and FFI bindings.
+See gate_validate/ffi.py for the NornirGate type alias and FFI bindings.
 """
 
 from pathlib import Path
 
-from galdr.logic.impure.gates.ffi import NornirGate, call_input_gate
+from galdr.logic.impure.gate_validate.ffi import NornirGate, call_input_gate
 from galdr.structure.model.gate_types import GateResult
 
 

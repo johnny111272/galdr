@@ -16,7 +16,7 @@ as orphaned code until their hourglass replacements land.
 
 from pydantic import BaseModel
 
-from galdr.logic.pure.compose.composed import (
+from galdr.logic.pure.section_compose.composed import (
     extract_preprocessing_fields,
     sort_into_slots,
 )

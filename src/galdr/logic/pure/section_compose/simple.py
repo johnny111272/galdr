@@ -17,14 +17,14 @@ from typing import Annotated, get_args, get_origin
 
 from pydantic import BaseModel, RootModel
 
-from galdr.logic.pure.compose.primitive import (
+from galdr.logic.pure.section_compose.primitive import (
     has_closing_suffix,
     has_preamble_suffix,
     has_start_suffix,
     is_preprocessing_field,
     strip_display_control_suffix,
 )
-from galdr.logic.pure.render.primitive import heading
+from galdr.logic.pure.markdown_render.primitive import heading
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.gen.output_display import FormatPair, ListFormat
 from galdr.structure.model.section_buffer import SectionBuffer

@@ -2,7 +2,7 @@
 
 CC=1. These are the only functions that call into compiled Rust gate
 modules. The internals are a black box — purity is asserted by placement
-in impure/gates/ffi.py.
+in impure/gate_validate/ffi.py.
 
 NornirGate is a type alias for compiled Rust/PyO3 gate modules (.so files
 at ~/.ai/tools/lib/gate_*.cpython-313-darwin.so). Each gate module has a

@@ -6,20 +6,20 @@ process section-level content, walk data fields with decoration.
 Architecture: data drives, content decorates. See
 COMPOSITION_ENGINE_DESIGN.md "Processing Order."
 
-List rendering uses render/simple (bulleted default). Display-aware
-format resolution happens at assembled level via render/composed.
+List rendering uses markdown_render/simple (bulleted default). Display-aware
+format resolution happens at assembled level via markdown_render/composed.
 """
 
 from pydantic import BaseModel
 
-from galdr.logic.pure.compose.primitive import (
+from galdr.logic.pure.section_compose.primitive import (
     has_closing_suffix,
     has_preamble_suffix,
     has_start_suffix,
     is_preprocessing_field,
     strip_structure_control_suffix,
 )
-from galdr.logic.pure.compose.simple import (
+from galdr.logic.pure.section_compose.simple import (
     assemble_buffer,
     buffer_slot_for_field,
     classify_content_slot,
@@ -45,11 +45,11 @@ from galdr.logic.pure.compose.simple import (
     strip_optional_annotation,
     unwrap_scalar_field,
 )
-from galdr.logic.pure.render.primitive import heading as render_heading_md
+from galdr.logic.pure.markdown_render.primitive import heading as render_heading_md
 from galdr.structure.model.preprocessing_fields import PreprocessingFields
 from galdr.structure.model.section_buffer import SectionBuffer
-from galdr.logic.pure.render.simple import render_bulleted
-from galdr.logic.pure.template.simple import interpolate
+from galdr.logic.pure.markdown_render.simple import render_bulleted
+from galdr.logic.pure.template_interpolate.simple import interpolate
 from galdr.structure.gen.output_content import StringTemplate
 from galdr.structure.model.section_context import SectionContext
 
