@@ -29,21 +29,29 @@ Galdr is the composition engine — the final stage of the agent pipeline (Verda
 
 ## Orientation gate — read these, in this order, to be oriented
 
-1. `redesign/FOUR_AXIS_SPEC.md` — the four-axis model and the benchmarking matrix: what each axis contains, and why entangling any two of them destroys the product.
-2. `redesign/COMPOSITION_ENGINE_DESIGN.md` — the generic engine: one `compose_section()` for all sections, buffer slots, data gates, zero per-section code.
-3. `redesign/01_PROCESSING_FLOW.md` — the four-stage pipeline (chunk, gather, resolve+render, buffer) and why each stage shrinks the problem.
-4. `redesign/TOML_ARCHITECTURE.md` — the naming law: positional suffixes, field interface patterns, threshold types, section categories. The engine reads names mechanically; this doc is the authority on what names mean.
+> Start with `context/`. It answers *why this system exists* — which is the one thing that
+> cannot be recovered from the tree, and the thing every previous session got wrong by
+> inferring it from the structure. Read the map, then the element document for wherever you
+> are working. Everything after it will land differently.
+
+1. `context/AGENT_BUILD_SYSTEM.md` — the pipeline-wide map: what the whole system is for, why determinism is the goal, and the double gate that makes LLM-written transformation safe. Wikilinked to the five element documents; follow them as needed.
+2. `context/GALDR_ELEMENT.md` — Galdr itself: the four axes, the invariance test that decides where a field belongs, how names carry the mechanism, and **what of the engine actually exists today** (stage 1; stages 2–4 are not built).
+3. `context/GALDR_CHALLENGES.md` — volatile companion. Its C, D and E sections are *requirements for the unbuilt waist*, not a bug list; A, B, F and G are live. Its own header says how to read it — do not skip that.
+4. `redesign/FOUR_AXIS_SPEC.md` — the four-axis model and the benchmarking matrix: what each axis contains, and why entangling any two of them destroys the product.
+5. `redesign/COMPOSITION_ENGINE_DESIGN.md` — the generic engine: one `compose_section()` for all sections, buffer slots, data gates, zero per-section code.
+6. `redesign/01_PROCESSING_FLOW.md` — the four-stage pipeline (chunk, gather, resolve+render, buffer) and why each stage shrinks the problem.
+7. `redesign/TOML_ARCHITECTURE.md` — the naming law: positional suffixes, field interface patterns, threshold types, section categories. The engine reads names mechanically; this doc is the authority on what names mean.
 > The next four are read by you, personally, in this context — never delegated
 > to a subagent, never absorbed via a summary.
 
-5. `WHY_THIS_FEELS_WRONG.md` — the frame: what this environment is, and why it
+8. `WHY_THIS_FEELS_WRONG.md` — the frame: what this environment is, and why it
    will feel over-constrained until you understand it
-6. `EVERY_CHECK_IS_A_PROXY.md` — why the feedback steers where it steers; what
-   each constraint is a proxy for. Read before doc 7, so the level system reads
+9. `EVERY_CHECK_IS_A_PROXY.md` — why the feedback steers where it steers; what
+   each constraint is a proxy for. Read before doc 10, so the level system reads
    as engineering rather than as limits.
-7. `THE_LEVEL_SYSTEM.md` — zones, levels, and the decision procedure for where
+10. `THE_LEVEL_SYSTEM.md` — zones, levels, and the decision procedure for where
    every piece of code lives. Prerequisite to writing anything.
-8. `HOW_DATA_ENTERS.md` — the boundary: how external data becomes typed, and
+11. `HOW_DATA_ENTERS.md` — the boundary: how external data becomes typed, and
    why unknown data never gets in. Prerequisite to reading any file.
 
 **Proof:** before writing anything: (a) state three project-specific constraints
@@ -59,6 +67,9 @@ oriented — go back and read.
 
 | Need | Read |
 |------|------|
+| why any of this exists / what a stage is for | `context/AGENT_BUILD_SYSTEM.md` and the element doc for that stage |
+| what an upstream stage does and why | `context/{VERDANDI,DRAUPNIR,NORNIR_GATES,REGIN}_ELEMENT.md` |
+| what of the engine is actually built | `context/GALDR_ELEMENT.md` § What exists today |
 | where does this function go / what zone / what level | `THE_LEVEL_SYSTEM.md` |
 | how external data becomes typed / a shape has no model | `HOW_DATA_ENTERS.md` |
 | bundle container design | `redesign/02_INTERMEDIATE_CONTAINER.md` |

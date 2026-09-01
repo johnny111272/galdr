@@ -58,10 +58,10 @@ None of them felt uncertain while doing it.
 **Why it's wrong:** The engine is GENERIC. One `compose_section()` processes all sections. Section-specific knowledge lives in the models and TOML, not in code. Field-name suffixes encode position; trunk matching links content to data. There is no per-section code. This mistake has been made twice before — once with OOP classes, once with per-section composer functions.
 **Recovery:** Re-read `redesign/COMPOSITION_ENGINE_DESIGN.md` — especially "Core Principle."
 
-### Using the Old Code as Reference
-**Detection:** If you're studying the orphaned walker functions in `section_compose/composed.py` — `populate_section_buffer`, `resolve_all_trunks`, `render_buffer` and the render helpers only they call — the `archive/` directory, or git history of deleted code to learn "how it's done"...
-**Why it's wrong:** The old walker-based composition was disconnected deliberately — it is retained on purpose, but it is non-normative for new work. Do NOT delete it, do NOT wire it back in, and do NOT copy its patterns. Note `composed.py` is a MIXED file: the live stage-1 engine (`sort_into_slots`, `extract_preprocessing_fields`) also lives there — this rule covers the orphaned walker functions, not the file. The current design is the hourglass pipeline in `redesign/`.
-**Recovery:** Re-read `redesign/01_PROCESSING_FLOW.md` and `redesign/04_HOURGLASS_RESOLVER.md` for the current design.
+### Recovering Deleted Code to Learn From It
+**Detection:** If you reach for `git show`, `git log -S`, or a branch to recover the old walker-based composition, the `archive/` directory, or any deleted implementation — to see "how it was done."
+**Why it's wrong:** Those were deleted deliberately, not lost. The walker, `markdown_render/`, `template_interpolate/` and `data_unwrap/` came out together; `archive/` held a rename plan, nine audit iterations and thirty superseded section analyses. Code you know is wrong still pulls you toward it, and reading it "just for reference" is the mechanism by which the scrapped design comes back. What was worth keeping is already recorded in `context/GALDR_CHALLENGES.md` under *Decided — do not re-open*.
+**Recovery:** Read `context/GALDR_ELEMENT.md` for what exists now (stage 1 only), and `redesign/01_PROCESSING_FLOW.md` plus `redesign/04_HOURGLASS_RESOLVER.md` for the design being built toward.
 
 ### Auditing One Naming Aspect at a Time
 **Detection:** If a naming audit checks positional suffixes but not trunk alignment, or trunk alignment but not placeholder matching.
