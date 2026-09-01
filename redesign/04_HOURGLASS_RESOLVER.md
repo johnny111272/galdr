@@ -16,7 +16,15 @@ The same resolution process applies to every bundle regardless of which slot it'
 
 2. **Variant selection** — if this is a variant, look up the selector value and pick the matching alternative. The selected text becomes the content for the remaining steps.
 
-3. **Template interpolation** — if the content has `{{placeholder}}` markers, fill them from data values. The interpolation dict is section-wide: all scalar data values from the entire section, not just the bundle's own data field. This is how a heading template can reference `{{title}}` even though the heading bundle isn't "about" the title data field — `title` is in the section's data values. For compound list renderers, per-item values get merged on top of the section dict. If any placeholders remain unfilled after interpolation, return nothing — the required data isn't available. This is the generic gate mechanism: missing data suppresses the content silently.
+3. **Template interpolation** — if the content has `{{placeholder}}` markers, fill them from a **scope chain of three layers**, not a flat dict:
+
+   - **section-wide** — all scalar data values from the entire section, not just the bundle's own data field. This is how a heading template can reference `{{title}}` even though the heading bundle isn't "about" the title data field.
+   - **per-item** — for compound list renderers, the current item's fields, merged on top of the section layer.
+   - **engine-computed** — values no data field will ever supply: `{{step_n}}`, `{{step_total}}`, `{{rule_count}}`, `{{midpoint}}`. Derived from the list in scope and the current index, and from each other. **This vocabulary must be a closed set** — otherwise a placeholder naming nothing and a typo are indistinguishable, and nothing can count them.
+
+   If any placeholder remains unfilled after interpolation, return nothing — the required data isn't available. This is the generic gate mechanism: missing data suppresses the content silently.
+
+   > **Know what that costs.** Suppression cannot tell an absent-by-design field from a misspelled one. Both leave an unfilled placeholder; both vanish. So the mechanism that makes conditionality free also swallows every naming error at this layer, exactly as standalone-content-versus-mistyped-trunk does at the trunk layer. The closed computed vocabulary is what keeps one of the three cases detectable.
 
 4. **Type determination** — based on the bundle's shape, determine which renderer handles the output.
 

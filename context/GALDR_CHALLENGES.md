@@ -115,7 +115,21 @@ intention; a field definition records the contract. When they disagree, the fiel
 definition wins.
 
 Cascade B therefore has no remaining work. Every data-model change from that era is either
-done or void, and **no item in this document now requires a full pipeline cascade.**
+done or void, and **no item in this document now requires a data-schema cascade.**
+
+**Two different cascades, and the document previously conflated them.** Say which you mean:
+
+> **Data-schema cascade** (`agent-builder`) — Verdandi → Draupnir → rebuild gates → **re-run
+> Regin** → Galdr. Invalidates every stored intermediate and re-derives data for all agent
+> definitions. Wide blast radius. This is what "cascade" means above.
+>
+> **Surface-schema regeneration** (`agent-output`) — edit YAML → `draupnir --project
+> agent-output` → rebuild the three output gates → `generate_structures.py` → re-run Galdr.
+> Mechanical, tail-end, no Regin, no effect on any definition.
+
+B1 and E2 need the second, not the first. Both are cheap; neither is free. The misreading has
+teeth — taken as "no regeneration," B1 looks like a TOML edit, and the gate rejects `"auto"`
+where a Boolean is declared, because the gate embeds the schema it was built with.
 
 ### A2 — Two groups landed without achieving the plan's own goal
 
@@ -330,8 +344,12 @@ signal, and it must be read by a person.
 Both carry `_preamble`, so both land in the same slot, and nothing selects between them —
 which means the waist would emit both. `review/RETURN_FORMAT.md` ISSUE 3 names the two
 candidate resolutions: per-field visibility toggles, or merge into one `_preamble_variant`
-table keyed on `mode`. The second is consistent with how every other variant works, and this
-is fixable in the TOML today without waiting on the engine.
+table keyed on `mode`. The second is consistent with how every other variant works, and it
+does not wait on the engine.
+
+It is **not** a TOML-only edit, though — all the fields involved are schema-declared, so this
+needs the surface-schema regeneration described in A1. (The review sheet names two siblings;
+the model carries a third. Check the generated model, not the sheet.)
 
 ### E3 — `title` may reach two slots
 

@@ -35,8 +35,8 @@ None of them felt uncertain while doing it.
 
 ### Putting IO in Python Code
 **Detection:** If you find `Path.read_text()`, `open()`, `write()`, or any filesystem access in logic code...
-**Why it's wrong:** Gates handle ALL file IO. Input gates read TOML and return validated JSON. Output gates take JSON and write validated TOML/markdown. Python between gates transforms typed data. The only IO in galdr Python is gate invocation (in `logic/impure/`) — never raw filesystem calls.
-**Recovery:** Re-read regin's `logic/impure/gates/` — `primitive.py` and `simple.py` are the pattern galdr's `logic/impure/gate_validate/` follows.
+**Why it's wrong:** Gates own all file IO. Python between gates transforms typed data and nothing else. Treat this as an obligation you maintain rather than a guarantee you inherit — `open()` still exists in every namespace, and there is a known standing violation in the output path that is not a pattern to copy.
+**Recovery:** `context/NORNIR_GATES_ELEMENT.md` for what a gate is and the four call patterns; then the gate wrappers in regin's `logic/impure/`, which are the reference this project follows.
 
 ### Writing a Module Without Reading Its Reference Implementation
 **Detection:** If you're writing a module without first re-reading the specific draupnir/regin pattern for what you're building — a gate wrapper, a transform, an orchestrate wiring...
@@ -60,13 +60,13 @@ None of them felt uncertain while doing it.
 
 ### Recovering Deleted Code to Learn From It
 **Detection:** If you reach for `git show`, `git log -S`, or a branch to recover the old walker-based composition, the `archive/` directory, or any deleted implementation — to see "how it was done."
-**Why it's wrong:** Those were deleted deliberately, not lost. The walker, `markdown_render/`, `template_interpolate/` and `data_unwrap/` came out together; `archive/` held a rename plan, nine audit iterations and thirty superseded section analyses. Code you know is wrong still pulls you toward it, and reading it "just for reference" is the mechanism by which the scrapped design comes back. What was worth keeping is already recorded in `context/GALDR_CHALLENGES.md` under *Decided — do not re-open*.
-**Recovery:** Read `context/GALDR_ELEMENT.md` for what exists now (stage 1 only), and `redesign/01_PROCESSING_FLOW.md` plus `redesign/04_HOURGLASS_RESOLVER.md` for the design being built toward.
+**Why it's wrong:** Whatever is missing was deleted deliberately, not lost. Code you know is wrong still pulls you toward it, and reading it "just for reference" is the mechanism by which a scrapped design comes back. Anything worth keeping from it was extracted before the deletion.
+**Recovery:** `context/GALDR_ELEMENT.md` for what exists now and why the removed things were removed; `context/GALDR_CHALLENGES.md` § *Decided — do not re-open* for the calls already made.
 
 ### Auditing One Naming Aspect at a Time
 **Detection:** If a naming audit checks positional suffixes but not trunk alignment, or trunk alignment but not placeholder matching.
-**Why it's wrong:** The composition engine uses field names mechanically — suffix determines buffer slot, trunk determines data-content linking, placeholder names determine interpolation. Wrong names cause wrong *rendering*, not just style. All three conventions must hold simultaneously; past audits each fixed one and missed the others.
-**Recovery:** When changing any field name, check all three at once: suffix declares the right slot, trunk matches its data field, placeholders match data field names. Re-read `redesign/TOML_ARCHITECTURE.md`.
+**Why it's wrong:** The engine reads field names mechanically — suffix, trunk and placeholder each drive a different mechanism. Wrong names cause wrong *rendering*, not wrong style, and every one of them fails open and silent. All three conventions must hold at once; past audits each fixed one and declared success with the other two still broken.
+**Recovery:** `redesign/TOML_ARCHITECTURE.md` for what the names mean, and `context/GALDR_ELEMENT.md` for how the three conventions differ — note that placeholders do *not* all resolve to data fields, so "matches a data field" is the wrong test for that third one.
 
 ### Prototyping in /tmp
 **Detection:** If you reach for `Write` with a `/tmp/*.py` path for an inspection or experiment script.

@@ -9,9 +9,9 @@ resolve+render, buffer). Only stage 1 is implemented. compose_section
 returns the raw slot dict plus the extracted preprocessing fields for
 inspection — no bundling, no resolution, no rendering.
 
-The walker-based composition (populate_section_buffer, resolve_all_trunks,
-render_buffer) has been disconnected. Those functions remain in composed.py
-as orphaned code until their hourglass replacements land.
+The walker-based composition that preceded this was disconnected, then
+deleted. Nothing of it remains to consult, deliberately — see
+context/GALDR_ELEMENT.md, "Why the old walker code is gone."
 """
 
 from pydantic import BaseModel
