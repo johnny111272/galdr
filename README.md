@@ -54,7 +54,7 @@ The agent definition already contains the information needed to derive minimum p
 
 The `redesign/` directory contains the current architecture:
 
-- `AGENT_BUILD_SYSTEM.md` — the four-axis model, axis boundaries, benchmarking matrix
+- `FOUR_AXIS_SPEC.md` — the four-axis model, axis boundaries, benchmarking matrix
 - `COMPOSITION_ENGINE_DESIGN.md` — recipe architecture, section mapping, rendering pipeline
 - `01_PROCESSING_FLOW.md` through `08_NAMING_REQUIREMENTS.md` — detailed design decisions
 

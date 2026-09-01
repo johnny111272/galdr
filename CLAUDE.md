@@ -31,7 +31,7 @@ None of them felt uncertain while doing it.
 ### Entangling the Four Axes
 **Detection:** If you find yourself putting a heading string, a list format choice, or a visibility toggle inside the data model... or reading a structure toggle from the content config... or anything that makes one axis depend on another...
 **Why it's wrong:** Galdr exists to multiply one agent definition across content × structure × display variants for benchmarking. If axes are entangled, swapping one changes the others. The benchmarking matrix collapses.
-**Recovery:** Re-read `redesign/AGENT_BUILD_SYSTEM.md` — the four-axis section defines the boundaries.
+**Recovery:** Re-read `redesign/FOUR_AXIS_SPEC.md` — the four-axis section defines the boundaries.
 
 ### Putting IO in Python Code
 **Detection:** If you find `Path.read_text()`, `open()`, `write()`, or any filesystem access in logic code...

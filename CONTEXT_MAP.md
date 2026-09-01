@@ -29,7 +29,7 @@ Galdr is the composition engine — the final stage of the agent pipeline (Verda
 
 ## Orientation gate — read these, in this order, to be oriented
 
-1. `redesign/AGENT_BUILD_SYSTEM.md` — the four-axis model and the benchmarking matrix: why the axes exist and why entangling any two of them destroys the product.
+1. `redesign/FOUR_AXIS_SPEC.md` — the four-axis model and the benchmarking matrix: what each axis contains, and why entangling any two of them destroys the product.
 2. `redesign/COMPOSITION_ENGINE_DESIGN.md` — the generic engine: one `compose_section()` for all sections, buffer slots, data gates, zero per-section code.
 3. `redesign/01_PROCESSING_FLOW.md` — the four-stage pipeline (chunk, gather, resolve+render, buffer) and why each stage shrinks the problem.
 4. `redesign/TOML_ARCHITECTURE.md` — the naming law: positional suffixes, field interface patterns, threshold types, section categories. The engine reads names mechanically; this doc is the authority on what names mean.
