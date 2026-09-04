@@ -5,7 +5,7 @@ modules. The internals are a black box — purity is asserted by placement
 in impure/gate_validate/ffi.py.
 
 NornirGate is a type alias for compiled Rust/PyO3 gate modules (.so files
-at ~/.ai/tools/lib/gate_*.cpython-313-darwin.so). Each gate module has a
+at ~/ai/tools/lib/gate_*.cpython-313-darwin.so). Each gate module has a
 .validate() method. Input gates take a file path and return a dict.
 
 All return {"ok": bool, "data": str | None, "error": {"type": str, "message": str} | None}.

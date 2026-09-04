@@ -26,7 +26,7 @@ from galdr.logic.transform.codegen_clean.composed import strip_redundant_constra
 from galdr.logic.transform.codegen_clean.primitive import strip_future_annotations
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
-SMIDJA = Path.home() / ".ai" / "smidja"
+SMIDJA = Path.home() / "ai" / "smidja"
 SCHEMA_DIRS = [
     SMIDJA / "verdandi" / "agent-builder" / "output",
     SMIDJA / "verdandi" / "agent-output" / "output",

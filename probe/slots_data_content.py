@@ -16,13 +16,13 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
-sys.path.insert(0, str(Path.home() / ".ai" / "tools" / "lib"))
+sys.path.insert(0, str(Path.home() / "ai" / "tools" / "lib"))
 
 from galdr.logic.orchestrate.section_compose.orchestrate import load_all_inputs
 from galdr.logic.pure.section_compose.simple import classify_content_slot
 from galdr.structure.gen.output_content import AgentOutputContent
 
-DEFAULT_DATA_PATH = Path.home() / ".ai" / "spaces" / "bragi" / "definitions" / "agents" / "agent-builder" / "anthropic_render.toml"
+DEFAULT_DATA_PATH = Path.home() / "ai" / "spaces" / "bragi" / "definitions" / "agents" / "agent-builder" / "anthropic_render.toml"
 DEFAULT_CONTENT_PATH = REPO_ROOT / "extracted" / "content.toml"
 DEFAULT_STRUCTURE_PATH = REPO_ROOT / "extracted" / "structure.toml"
 DEFAULT_DISPLAY_PATH = REPO_ROOT / "extracted" / "display.toml"

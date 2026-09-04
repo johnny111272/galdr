@@ -48,7 +48,7 @@ The data model is produced by the Regin pipeline and validated by a Nornir gate.
 
 The generated model — `structure/gen/anthropic_render.py` — IS the authoritative section list and field inventory. Read it; do not work from a remembered census. It regenerates whenever the upstream schema changes, so it cannot drift.
 
-Live data instances are not stored in this repo. They are produced by running regin on an agent definition and land in the bragi space, one per agent, alongside the definition that produced them: `~/.ai/spaces/bragi/definitions/agents/{agent-name}/anthropic_render.toml`. To get a fresh one, run regin on any agent definition there.
+Live data instances are not stored in this repo. They are produced by running regin on an agent definition and land in the bragi space, one per agent, alongside the definition that produced them: `~/ai/spaces/bragi/definitions/agents/{agent-name}/anthropic_render.toml`. To get a fresh one, run regin on any agent definition there.
 
 No reshaping. The gate-validated Pydantic model IS the data. Field names are used directly.
 

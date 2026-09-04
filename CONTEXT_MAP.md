@@ -1,6 +1,6 @@
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- DO NOT EDIT THIS BLOCK. Before editing ANY part of this file, you MUST  -->
-<!-- first read /Users/johnny/.ai/CONTEXT_MANAGEMENT_SYSTEM.md — it defines  -->
+<!-- first read /Users/johnny/ai/CONTEXT_MANAGEMENT_SYSTEM.md — it defines  -->
 <!-- what this file is for and what may NOT go in it.                        -->
 <!--                                                                          -->
 <!-- This file is a MAP (a router), not a source. Its only job is to tell    -->
@@ -86,7 +86,7 @@ oriented — go back and read.
 | data / content / structure / display model shapes | `src/galdr/structure/gen/*.py` |
 | the live control-surface TOMLs | `extracted/content.toml`, `extracted/structure.toml`, `extracted/display.toml` |
 | how to run | `src/galdr/cli.py` — the CLI is the truth; `uv run galdr --help` |
-| a live data input to run against | produced by regin, in bragi: `~/.ai/spaces/bragi/definitions/agents/{name}/anthropic_render.toml` |
-| gate pattern / orchestrate wiring reference | `~/.ai/smidja/regin/src/regin/logic/` |
-| level progression reference | `~/.ai/smidja/draupnir/src/draupnir/logic/` |
+| a live data input to run against | produced by regin, in bragi: `~/ai/spaces/bragi/definitions/agents/{name}/anthropic_render.toml` |
+| gate pattern / orchestrate wiring reference | `~/ai/smidja/regin/src/regin/logic/` |
+| level progression reference | `~/ai/smidja/draupnir/src/draupnir/logic/` |
 | current state / what's left to build | read live: the code + `git log`. Nothing is stored. |

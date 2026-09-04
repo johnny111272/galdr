@@ -13,7 +13,7 @@ every stage boundary passes through. Everything else in Nornir is out of scope h
 ## What a gate is, concretely
 
 A gate is a compiled Rust module exposed to Python through PyO3, deployed as a `.so`
-file under `~/.ai/tools/lib/` and imported like any ordinary module. It carries a JSON
+file under `~/ai/tools/lib/` and imported like any ordinary module. It carries a JSON
 Schema baked in at build time.
 
 Calling one is the whole interface:
@@ -288,7 +288,7 @@ argument would not hold.
 **Build with `nornir_deploy`. Never bare `cargo build` or `maturin build`.** A bare cargo
 build leaves the artifact in `target/release/` where nothing looks for it. Gates
 additionally need the maturin path — wheel build, `.so` extraction into
-`~/.ai/tools/lib/`, and code signing, without which macOS kills the process on import.
+`~/ai/tools/lib/`, and code signing, without which macOS kills the process on import.
 
 **When you meet data with no gate for its format or schema, stop and ask the author for
 one.** Not parse it "temporarily," not type it `Any` "for now." Every gate that exists

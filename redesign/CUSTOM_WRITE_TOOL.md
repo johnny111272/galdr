@@ -220,13 +220,13 @@ Two separate scripts in `tools/nornir/`:
 ```bash
 ./tools/nornir/deploy_gates.py
 ```
-Builds 8 CLI check tools (`check_*`) and 32 PyO3 gate modules (`gate_*`) via maturin. Gates deploy to `~/.ai/tools/lib/`, CLI tools symlink to `~/.ai/tools/bin/`. Run after Verdandi/Draupnir schema changes.
+Builds 8 CLI check tools (`check_*`) and 32 PyO3 gate modules (`gate_*`) via maturin. Gates deploy to `~/ai/tools/lib/`, CLI tools symlink to `~/ai/tools/bin/`. Run after Verdandi/Draupnir schema changes.
 
 **Writer tools** — enforcement output binaries:
 ```bash
 ./tools/nornir/deploy_writers.py
 ```
-Builds writer binaries via `cargo build --release`, symlinks to `~/.ai/tools/bin/`, verifies with `--help`. Run after adding or modifying a writer crate.
+Builds writer binaries via `cargo build --release`, symlinks to `~/ai/tools/bin/`, verifies with `--help`. Run after adding or modifying a writer crate.
 
 ## Invocation by the LLM
 

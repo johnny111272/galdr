@@ -451,7 +451,7 @@ class WorkspacePathXAbs(RootModel[PathExistsAbsolute]):
     root: Annotated[
         PathExistsAbsolute,
         Field(
-            description='Absolute filesystem path to the workspace root directory. All workspace- relative paths in the definition (context paths, schema paths, allowed_read/write paths) are resolved relative to this directory. Must be an absolute path (starting with /). Validated against the blocklist during resolution. Any path that resolves outside this workspace or into a blocked zone triggers a SecurityIncident. Example: "/Users/username/.ai/spaces/myproject"\nAbsolute path that must exist on the filesystem',
+            description='Absolute filesystem path to the workspace root directory. All workspace- relative paths in the definition (context paths, schema paths, allowed_read/write paths) are resolved relative to this directory. Must be an absolute path (starting with /). Validated against the blocklist during resolution. Any path that resolves outside this workspace or into a blocked zone triggers a SecurityIncident. Example: "/Users/username/ai/spaces/myproject"\nAbsolute path that must exist on the filesystem',
             title='WorkspacePathXAbs',
         ),
     ]

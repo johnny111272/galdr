@@ -44,14 +44,14 @@ from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT / "src"))
-sys.path.insert(0, str(Path.home() / ".ai" / "tools" / "lib"))
+sys.path.insert(0, str(Path.home() / "ai" / "tools" / "lib"))
 
 from galdr.logic.orchestrate.section_compose.orchestrate import load_all_inputs  # noqa: E402
 from galdr.logic.pure.section_compose.composed import sort_into_slots  # noqa: E402
 from galdr.logic.pure.section_compose.primitive import extract_trunk  # noqa: E402
 from galdr.structure.gen.output_content import AgentOutputContent  # noqa: E402
 
-DEFAULT_DATA_PATH = Path.home() / ".ai" / "spaces" / "bragi" / "definitions" / "agents" / "agent-builder" / "anthropic_render.toml"
+DEFAULT_DATA_PATH = Path.home() / "ai" / "spaces" / "bragi" / "definitions" / "agents" / "agent-builder" / "anthropic_render.toml"
 DEFAULT_CONTENT_PATH = _REPO_ROOT / "extracted" / "content.toml"
 DEFAULT_STRUCTURE_PATH = _REPO_ROOT / "extracted" / "structure.toml"
 DEFAULT_DISPLAY_PATH = _REPO_ROOT / "extracted" / "display.toml"
