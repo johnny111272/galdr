@@ -1,1 +1,1 @@
-/Users/johnny/.ai/control/instructions/EVERY_CHECK_IS_A_PROXY.md
+../../control/instructions/EVERY_CHECK_IS_A_PROXY.md

@@ -1,1 +1,1 @@
-/Users/johnny/.ai/control/instructions/HOW_DATA_ENTERS.md
+../../control/instructions/HOW_DATA_ENTERS.md

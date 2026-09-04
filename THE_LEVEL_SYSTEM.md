@@ -1,1 +1,1 @@
-/Users/johnny/.ai/control/instructions/THE_LEVEL_SYSTEM.md
+../../control/instructions/THE_LEVEL_SYSTEM.md

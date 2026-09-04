@@ -1,1 +1,1 @@
-/Users/johnny/.ai/control/instructions/WHY_THIS_FEELS_WRONG.md
+../../control/instructions/WHY_THIS_FEELS_WRONG.md
